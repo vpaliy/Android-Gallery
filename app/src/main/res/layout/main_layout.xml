@@ -1,0 +1,55 @@
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/background_light"
+        android:fitsSystemWindows="true">
+
+        <include
+            layout="@layout/main_content"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        </include>
+
+        <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/actionBar"
+                app:layout_scrollFlags="scroll|enterAlways|snap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </android.support.design.widget.AppBarLayout>
+
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/addFloatingActionButton"
+            android:layout_margin="25dp"
+            android:layout_gravity="bottom|end"
+            android:layout_width="wrap_content"
+            android:onClick="onClickFloatingButton"
+            android:background="@android:color/holo_blue_dark"
+            app:layout_behavior=".utils.FloatingButtonBehavior"
+            android:layout_height="wrap_content" />
+        <!--  android:src="@drawable/ic_add_white_24dp"-->
+
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation"
+        app:headerLayout="@layout/header"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/item_list"
+        android:background="@android:color/white" />
+</android.support.v4.widget.DrawerLayout>

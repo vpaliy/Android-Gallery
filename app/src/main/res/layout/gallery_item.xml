@@ -1,0 +1,11 @@
+<com.vpaliy.studioq.media.DynamicImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/galleryItem"
+    android:scaleType="centerCrop"
+    android:background="@drawable/border"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"/>
+
+
+
+

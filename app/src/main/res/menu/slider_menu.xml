@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:icon="@android:drawable/ic_menu_delete"
+        app:showAsAction="ifRoom"
+        android:title="@string/deleteItem"
+        android:id="@+id/deleteItem">
+    </item>
+
+    <item
+        android:icon="@android:drawable/ic_menu_share"
+        app:showAsAction="ifRoom"
+        android:title="@string/shareItem"
+        android:id="@+id/shareItem">
+    </item>
+
+    <item
+        android:id="@+id/filter"
+        android:title="@string/filter">
+    </item>
+
+    <item
+        android:id="@+id/showInfo"
+        android:title="@string/info"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_info_details">
+    </item>
+
+</menu>

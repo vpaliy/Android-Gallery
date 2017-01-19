@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="selectItem">
+        <item>Copy</item>
+        <item>Move</item>
+    </array>
+
+
+</resources>

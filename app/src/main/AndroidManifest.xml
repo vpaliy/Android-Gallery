@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.vpaliy.studioq">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:largeHeap="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <meta-data android:name="com.vpaliy.studioq.utils.GlideModuleQ"
+            android:value="GlideModule">
+        </meta-data>
+
+        <activity android:name=".screens.GalleryActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize">
+        </activity>
+
+        <activity android:name=".screens.main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN">
+                </action>
+                <category android:name="android.intent.category.LAUNCHER">
+                </category>
+            </intent-filter>
+        </activity>
+
+
+        <activity   android:name=".slider.screens.MediaSliderActivity"
+                    android:theme="@style/SliderTheme"
+                    android:configChanges="orientation|keyboardHidden|screenSize">
+        </activity>
+
+        <activity android:name=".screens.MediaUtilCreatorScreen">
+        </activity>
+
+
+        <activity android:name=".slider.screens.PlayerActivity"
+            android:theme="@style/PlayerStyle">
+        </activity>
+
+        <activity android:name=".slider.screens.FilterActivity">
+        </activity>
+    </application>
+
+</manifest>
