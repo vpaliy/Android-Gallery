@@ -21,7 +21,7 @@ public abstract class BaseMediaAdapter<T> extends SelectableAdapter {
     protected static final float SCALE_ITEM=0.85f;
 
     public BaseMediaAdapter(Context context, MultiChoiceMode multiChoiceModeListener, ArrayList<T> mDataModel) {
-        super(context, multiChoiceModeListener);
+        super(context, multiChoiceModeListener,mDataModel.size());
         this.mInflater = LayoutInflater.from(context);
         this.mDataModel = mDataModel;
     }

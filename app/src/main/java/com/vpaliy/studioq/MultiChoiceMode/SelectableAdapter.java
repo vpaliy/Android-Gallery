@@ -19,13 +19,22 @@ public abstract  class SelectableAdapter extends RecyclerView.Adapter<Selectable
     protected Drawable mSelectedItemBackground;
     protected Drawable mDefaultItemBackground;
 
+    private static final int NORMAL=0;
+    private static final int ANIMATED=1;
+    private static final int ENTER=2;
+    private static final int EXIT=3;
 
-    public SelectableAdapter(Context context, @NonNull MultiChoiceMode mMultipleChoiceMode) {
+    private int[] itemState;
+
+
+    public SelectableAdapter(Context context, @NonNull MultiChoiceMode mMultipleChoiceMode, int size) {
         this.mAppCompatActivity = (AppCompatActivity) (context);
         this.mMultipleChoiceMode = mMultipleChoiceMode;
         mMultipleChoiceMode.setUpdateListener(this);
         mSelectedItemBackground=new ColorDrawable(Color.BLUE);
         mDefaultItemBackground=new ColorDrawable(Color.WHITE);
+        this.itemState=new int[size];
+
     }
 
     @CallSuper
@@ -43,7 +52,24 @@ public abstract  class SelectableAdapter extends RecyclerView.Adapter<Selectable
             itemView.setOnLongClickListener(this);
         }
 
-        public abstract void setBackground(int position);
+        private void setBackground(int position) {
+            switch (itemState[position]) {
+                case ENTER:
+                    enterState();
+                    itemState[position] = ANIMATED;
+                    break;
+                case ANIMATED:
+                    animatedState();
+                    break;
+                case EXIT:
+                    exitState();
+                    itemState[position] = NORMAL;
+                    break;
+                case NORMAL:
+                    normalState();
+                    break;
+            }
+        }
 
         public abstract void onBindData(int position);
 
@@ -51,16 +77,32 @@ public abstract  class SelectableAdapter extends RecyclerView.Adapter<Selectable
         @Override
         @CallSuper
         public void onClick(View view) {
+            final int position=getAdapterPosition();
             if (mMultipleChoiceMode.isActivated()) {
-                mMultipleChoiceMode.selectItem(getPosition());
-                setBackground(getPosition());
+                mMultipleChoiceMode.selectItem(position);
+                if(itemState[position]==NORMAL||itemState[position]==EXIT) {
+                    itemState[position] = ENTER;
+                }else {
+                    itemState[position] = EXIT;
+                }
             }
+
+            setBackground(position);
         }
+
+        protected abstract void enterState();
+
+        protected abstract void exitState();
+
+        protected abstract void normalState();
+
+        protected abstract void animatedState();
 
         @Override
         public boolean onLongClick(View view) {
-            if(!mMultipleChoiceMode.isActivated())
+            if(!mMultipleChoiceMode.isActivated()) {
                 activateMultipleChoiceMode();
+            }
             onClick(view);
             return true;
         }

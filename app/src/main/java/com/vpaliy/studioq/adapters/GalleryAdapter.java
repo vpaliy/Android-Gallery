@@ -22,7 +22,6 @@ import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.media.MediaFile;
 import com.vpaliy.studioq.MultiChoiceMode.MultiChoiceMode;
 import com.vpaliy.studioq.slider.listeners.OnLaunchMediaSlider;
-import com.vpaliy.studioq.utils.MediaSignature;
 
 
 public class GalleryAdapter
@@ -32,7 +31,6 @@ public class GalleryAdapter
 
     private OnLaunchMediaSlider mediaSliderListener;
     private MediaFileControlListener mediaFileControlListener;
-    private boolean[] isAnimated;
     private Context context;
 
     public GalleryAdapter(Context context, MultiChoiceMode multiChoiceModeListener, ArrayList<MediaFile> mDataModel) {
@@ -40,7 +38,6 @@ public class GalleryAdapter
         this.context=context;
         this.mediaSliderListener=(OnLaunchMediaSlider)(context);
         this.mediaFileControlListener=(MediaFileControlListener)(context);
-        this.isAnimated=new boolean[mDataModel.size()];
     }
 
 
@@ -66,25 +63,35 @@ public class GalleryAdapter
 
 
         @Override
-        public void setBackground(int position) {
-            if(isSelected(position)) {
-                if(!isAnimated[position]) {
-                    itemView.animate()
-                            .scaleX(SCALE_ITEM)
-                            .scaleY(SCALE_ITEM)
-                            .setDuration(180)
-                            .start();
-                    isAnimated[position]=!isAnimated[position];
-                }else {
-                    itemView.setScaleX(SCALE_ITEM);
-                    itemView.setScaleY(SCALE_ITEM);
-                }
-            }else if(itemView.getScaleX()<1.f){
+        protected void enterState() {
+            itemView.animate()
+                .scaleX(SCALE_ITEM)
+                .scaleY(SCALE_ITEM)
+                .setDuration(180).start();
+        }
+
+        @Override
+        protected void exitState() {
+            if (itemView.getScaleY() < 1.f) {
+                itemView.animate().setDuration(180)
+                        .scaleY(1.f).scaleX(1.f)
+                        .start();
+            }
+        }
+
+        @Override
+        protected void animatedState() {
+            itemView.setScaleX(SCALE_ITEM);
+            itemView.setScaleY(SCALE_ITEM);
+        }
+
+        @Override
+        protected void normalState() {
+            if(itemView.getScaleX()<1f) {
                 itemView.setScaleX(1.f);
                 itemView.setScaleY(1.f);
             }
         }
-
 
         @Override
         public void onBindData(int position) {
@@ -108,7 +115,7 @@ public class GalleryAdapter
                             return false;
                         }
                     })
-                   // .signature(MediaSignature.sign(file))
+                    // .signature(MediaSignature.sign(file))
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
                     .thumbnail(0.5f)
@@ -203,21 +210,7 @@ public class GalleryAdapter
         notifyDataSetChanged();
     }
 
-    @Override
-    public void onUnCheckAll() {
-        super.onUnCheckAll();
-        for(int index=0;index<getItemCount();index++) {
-            isAnimated[index]=false;
-        }
-    }
 
-    @Override
-    public void onCheckAll() {
-        super.onCheckAll();
-        for(int index=0;index<getItemCount();index++) {
-            isAnimated[index] = true;
-        }
-    }
 
     @Override
     public GalleryViewHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {

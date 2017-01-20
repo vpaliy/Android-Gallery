@@ -17,7 +17,6 @@ import com.vpaliy.studioq.screens.utils.eventBus.ChangeFilter;
 import com.vpaliy.studioq.screens.utils.eventBus.EventBusProvider;
 import com.zomato.photofilters.imageprocessors.Filter;
 
-import java.net.ConnectException;
 import java.util.List;
 
 public class ThumbnailAdapter extends RecyclerView.Adapter<ThumbnailAdapter.ThumbnailHolder> {

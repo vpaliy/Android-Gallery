@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.graphics.Palette;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +36,6 @@ public class MediaFolderAdapter extends BaseMediaAdapter<MediaFolder> {
     private Mode adapterMode=Mode.ALL;
     private  final Bitmap paletteBitmap;
     private List<Palette.Swatch> swatchList;
-    private boolean[] isAnimated;
 
 
     public MediaFolderAdapter(Context context, MultiChoiceMode
@@ -46,8 +44,7 @@ public class MediaFolderAdapter extends BaseMediaAdapter<MediaFolder> {
         this.mOnLaunchGallery = (OnLaunchGalleryActivity) (context);
         this.currentFolderList=mDataModel;
         this.paletteBitmap= BitmapFactory.decodeResource(context.getResources(), R.drawable.bitmap);
-        this.isAnimated=new boolean[mDataModel.size()];
-        initSwatchList();
+        //initSwatchList();
     }
 
     private void initSwatchList() {
@@ -87,25 +84,33 @@ public class MediaFolderAdapter extends BaseMediaAdapter<MediaFolder> {
         }
 
         @Override
-        public void setBackground(int position) {
-        /*TODO set a background for folder */
+        protected void enterState() {
+            itemView.animate()
+                    .scaleX(SCALE_ITEM)
+                    .scaleY(SCALE_ITEM)
+                    .setDuration(180).start();
+        }
 
-            if(isSelected(position)) {
-                if(!isAnimated[position]) {
-                    itemView.animate()
-                            .scaleX(SCALE_ITEM)
-                            .scaleY(SCALE_ITEM)
-                            .setDuration(180)
-                            .start();
-                    isAnimated[position]=!isAnimated[position];
-                }else {
-                    itemView.setScaleX(SCALE_ITEM);
-                    itemView.setScaleY(SCALE_ITEM);
-                }
-            }else if(itemView.getScaleX()!=1.f){
+        @Override
+        protected void exitState() {
+            if (itemView.getScaleY() < 1.f) {
+                itemView.animate().setDuration(180)
+                        .scaleY(1.f).scaleX(1.f)
+                        .start();
+            }
+        }
+
+        @Override
+        protected void animatedState() {
+            itemView.setScaleX(SCALE_ITEM);
+            itemView.setScaleY(SCALE_ITEM);
+        }
+
+        @Override
+        protected void normalState() {
+            if(itemView.getScaleX()<1f) {
                 itemView.setScaleX(1.f);
                 itemView.setScaleY(1.f);
-                isAnimated[position]=false;
             }
         }
 

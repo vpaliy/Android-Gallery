@@ -3,6 +3,7 @@ package com.vpaliy.studioq.MultiChoiceMode;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.v7.view.ActionMode;
+import android.support.v7.widget.Toolbar;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -156,8 +157,5 @@ public abstract class MultiChoiceMode implements ActionMode.Callback {
     public boolean isActivated() {
         return mActionMode != null;
     }
-
-
-
 
 }

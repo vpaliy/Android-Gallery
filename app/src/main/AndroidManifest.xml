@@ -37,7 +37,8 @@
                     android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-        <activity android:name=".screens.MediaUtilCreatorScreen">
+        <activity android:name=".screens.MediaUtilCreatorScreen"
+                  android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
 
