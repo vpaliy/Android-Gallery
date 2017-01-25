@@ -12,6 +12,10 @@
     <string name="shareItem">Share</string>
     <string name="doYouWantToDelete">Do you want to delete last file?</string>
 
+    <!-- For utils !-->
+    <string name="createAlbum">Create</string>
+    <string name="checkAll">Check all</string>
+
     <!-- For slider !-->
     <string name="filter">Filter</string>
     <string name="info">Details</string>

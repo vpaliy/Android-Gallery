@@ -1,12 +1,13 @@
+
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/background_light"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
     <android.support.design.widget.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -22,12 +23,25 @@
 
     </android.support.design.widget.AppBarLayout>
 
-
     <android.support.v7.widget.RecyclerView
         android:id="@+id/mediaRecyclerView"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
     </android.support.v7.widget.RecyclerView>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/cameraButton"
+        android:layout_margin="25dp"
+        android:onClick="openCamera"
+        android:visibility="invisible"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:layout_gravity="bottom|end"
+        android:layout_width="wrap_content"
+        app:layout_behavior=".utils.FloatingButtonBehavior"
+        android:src="@android:drawable/ic_menu_camera"
+        android:layout_height="wrap_content" />
+
 </android.support.design.widget.CoordinatorLayout>
+    

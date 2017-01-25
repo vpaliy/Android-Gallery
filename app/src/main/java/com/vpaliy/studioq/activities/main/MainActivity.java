@@ -1,21 +1,21 @@
-package com.vpaliy.studioq.screens.main;
+package com.vpaliy.studioq.activities.main;
 
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -24,15 +24,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
-import com.vpaliy.studioq.MultiChoiceMode.MultiChoiceMode;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.adapters.MediaFolderAdapter;
+import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
+import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
+import com.vpaliy.studioq.adapters.FolderAdapter;
+import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
+import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.media.MediaFile;
 import com.vpaliy.studioq.media.MediaFolder;
-import com.vpaliy.studioq.screens.GalleryActivity;
-import com.vpaliy.studioq.screens.MediaUtilCreatorScreen;
+import com.vpaliy.studioq.activities.GalleryActivity;
+import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.utils.FileUtils;
-import com.vpaliy.studioq.utils.OnLaunchGalleryActivity;
 import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.io.File;
@@ -40,59 +42,104 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import android.support.annotation.NonNull;
+import com.squareup.otto.Subscribe;
 
 
-public class MainActivity extends AppCompatActivity
-        implements OnLaunchGalleryActivity {
+public class MainActivity extends AppCompatActivity {
 
     private final static String TAG=MainActivity.class.getSimpleName();
 
     private RecyclerView mContentGrid;
     private FloatingActionButton mFab;
-    private MediaFolderAdapter adapter;
+    private FolderAdapter adapter;
+    private Toolbar actionBar;
+    private int currentMode;
+
+
+    private MultiMode.Callback callback=new MultiMode.Callback() {
+        @Override
+        public boolean onMenuItemClick(BaseAdapter adapter, MenuItem item) {
+            //TODO finish that
+            return false;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
-        init();
+
+        initUI(savedInstanceState);
+    }
+
+    private void initUI(Bundle savedInstanceState) {
         initActionBar();
-        initNavigation();
+        bindData(savedInstanceState);
+        initNavigation(savedInstanceState);
+
+        mFab=(FloatingActionButton)(findViewById(R.id.addFloatingActionButton));
     }
 
     private void initActionBar() {
+        actionBar=(Toolbar)(findViewById(R.id.actionBar));
+
         if(getSupportActionBar()==null) {
-            setSupportActionBar((Toolbar) (findViewById(R.id.actionBar)));
+            setSupportActionBar(actionBar);
         }
+
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setShowHideAnimationEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        actionBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
     }
 
-    private void init() {
-        mFab=(FloatingActionButton)(findViewById(R.id.addFloatingActionButton));
+    private void bindData(Bundle state) {
         if(!Permissions.requestIfNotAllowed(this,Manifest.permission.READ_EXTERNAL_STORAGE,
-            new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE},ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE)) {
-             makeQuery();
+                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE)) {
+            makeQuery(state);
         }
 
     }
 
-    private void initNavigation() {
+    private void initNavigation(Bundle state) {
+        if(state==null) {
+            currentMode = R.id.allMedia;
+        }else {
+            currentMode = state.getInt(ProjectUtils.MODE, R.id.allMedia);
+        }
         final DrawerLayout layout=(DrawerLayout)(findViewById(R.id.drawerLayout));
         NavigationView navigationView=(NavigationView)(findViewById(R.id.navigation));
+        navigationView.setCheckedItem(currentMode);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.allMedia:
-                        adapter.setAdapterMode(MediaFolderAdapter.Mode.ALL);
+                        currentMode=R.id.allMedia;
+                        adapter.setAdapterMode(FolderAdapter.Mode.ALL);
                         break;
                     case R.id.photos:
-                        adapter.setAdapterMode(MediaFolderAdapter.Mode.IMAGE);
+                        currentMode=R.id.photos;
+                        adapter.setAdapterMode(FolderAdapter.Mode.IMAGE);
                         break;
                     case R.id.videos:
-                        adapter.setAdapterMode(MediaFolderAdapter.Mode.VIDEO);
+                        currentMode=R.id.videos;
+                        adapter.setAdapterMode(FolderAdapter.Mode.VIDEO);
                         break;
                     case R.id.settings:
+                        currentMode=R.id.settings; //TODO keep an eye on this
                         startSettings();
                         break;
                 }
@@ -103,15 +150,22 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void makeQuery() {
+    private void makeQuery(final Bundle savedInstanceState) {
         new DataProvider(this) {
             @Override
             public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
-                adapter= new MediaFolderAdapter(MainActivity.this,
-                        new MultiChoiceMode(R.menu.gallery_menu) {},mediaFolders);
-                mContentGrid=(RecyclerView)(findViewById(R.id.mainContent));
+                MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
+                        .setMenu(R.menu.gallery_menu, callback)
+                        .setBackgroundColor(Color.WHITE)
+                        .build();
+                if(savedInstanceState==null) {
+                    adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
+                }else {
+                    adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders, savedInstanceState);
+                }
+                mContentGrid = (RecyclerView) (findViewById(R.id.mainContent));
                 mContentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
-                    2,GridLayoutManager.VERTICAL, false));
+                        2,GridLayoutManager.VERTICAL, false));
                 mContentGrid.setAdapter(adapter);
             }
         };
@@ -121,30 +175,24 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     @Override
-    public void onRequestPermissionsResult(int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE:
-                if(grantResults[0]== PackageManager.PERMISSION_GRANTED) {
-                    makeQuery();
-                }
-                break;
-        }
+    protected void onStart() {
+        super.onStart();
+        Registrator.register(this);
     }
 
 
     @Override
-    @TargetApi(21)
-    public void onLaunchGalleryActivity(ArrayList<MediaFolder> allMediaFolders,MediaFolder mediaFolder,View imageView) {
-        final Intent intent=new Intent(this, GalleryActivity.class);
+    protected void onStop() {
+        super.onStop();
+        Registrator.unregister(this);
+    }
 
-      /* ArrayList<MediaFolder> copyList=new ArrayList<>(allMediaFolders);
-        if(mMainFolder!=mediaFolder)
-            copyList.remove(mediaFolder);
-        copyList.remove(mMainFolder);
-        intent.putExtra(ProjectUtils.ALL_MEDIA,copyList); */
-
-        intent.putExtra(ProjectUtils.MEDIA_DATA,mediaFolder);
+    @Subscribe
+    public void startGalleryActivity(Launcher<MediaFolder> launcher) {
+        final Intent intent=new Intent(this,GalleryActivity.class);
+        intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
         mFab.animate().scaleX(0f).scaleY(0f)
                 .setInterpolator(new DecelerateInterpolator())
                 .setDuration(100).setListener(new AnimatorListenerAdapter() {
@@ -162,8 +210,35 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE:
+                if(grantResults[0]== PackageManager.PERMISSION_GRANTED) {
+                    makeQuery(null);
+                }else {
+                    Toast.makeText(this,"Give me the permission!",Toast.LENGTH_LONG).show();
+                }
+                break;
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if(adapter!=null) {
+            adapter.saveState(outState);
+        }
+    }
+
+
+    @Override
     protected void onResume() {
         super.onResume();
+
+        if(adapter!=null) {
+            adapter.onResume();
+        }
+
         if(mFab!=null) {
             if(mFab.getScaleX()<1f) {
                 mFab.animate().scaleX(1.f)
@@ -187,7 +262,7 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                makeQuery();
+                                makeQuery(null);
                             }
                         });
                     break;
@@ -195,6 +270,25 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(adapter!=null) {
+            if (adapter.isMultiModeActivated()) {
+                mContentGrid.setItemAnimator(null);
+                adapter.unCheckAll(true);
+                mContentGrid.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mContentGrid.setItemAnimator(new DefaultItemAnimator());
+                    }
+                });
+
+            }
+        }else {
+            super.onBackPressed();
+        }
     }
 
     public void onClickFloatingButton(View view) {
@@ -205,7 +299,7 @@ public class MainActivity extends AppCompatActivity
     //TODO provide all of the media files
     private void addMediaFolder() {
         Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
-        ArrayList<MediaFolder> folderList=adapter.getMediaList();
+        List<MediaFolder> folderList=adapter.geMediaFolderList();
         Set<MediaFile> fileSet=new LinkedHashSet<>();
         for(MediaFolder folder:folderList) {
             List<MediaFile> fileList=folder.getMediaFileList();
@@ -251,59 +345,12 @@ public class MainActivity extends AppCompatActivity
                     return;
                 }
                 FileUtils.copyFileList(MainActivity.this,contentList,mediaFolder,moveTo);
-                /*if (contentList != null) {
-                    ContentValues values=new ContentValues();
-                    for (MediaFile mediaFile : contentList) {
-                        File file = new File(mediaFolder, mediaFile.getMediaFile().getName());
-                        if (!file.exists()) {
-                            try {
-                                if (!file.createNewFile()) {
-                                    //showing only path here
-                                    Log.e(TAG, "Cannot create a file here " + mediaFile.getMediaFile().getName());
-                                    //No need to copy the file any more
-                                    continue;
-                                }
-
-                                //copying file byte by byte
-                                FileUtils.makeFileCopy(mediaFile.getMediaFile().getAbsoluteFile(), file);
-
-                                //if user's selected "move" option, you need to delete the file
-                                if (moveTo) {
-                                    if (!mediaFile.getMediaFile().delete()) {
-                                        Log.e(TAG, "Cannot delete file " + mediaFile.getMediaFile().getAbsoluteFile());
-                                    }
-
-                                    //TODO it ain't working because MediaFile is neither ImageFile nor VideoFile
-                                    if(mediaFile instanceof VideoFile) {
-                                        getContentResolver().delete(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                                                MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.getMediaFile().getAbsolutePath()});
-                                    }else {
-                                        getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                                MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.getMediaFile().getAbsolutePath()});
-                                    }
-                                }
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                                Log.e(TAG, ex.toString(), ex);
-                                continue;
-                            }
-                            if (mediaFile instanceof VideoFile) {
-                                values.put(MediaStore.Video.VideoColumns.DATA, file.getAbsolutePath());
-                                getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
-                            } else {
-                                values.put(MediaStore.Images.ImageColumns.DATA, file.getAbsolutePath());
-                                getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                            }
-                        }
-                    }
-                }*/
-                //afterwards, you need to start thread for retrieving media data
             }
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            makeQuery();
+            makeQuery(null);
         }
     }
 }

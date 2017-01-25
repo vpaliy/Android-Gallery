@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="@string/createAlbum"
+        app:showAsAction="ifRoom"
+        android:id="@+id/proceed">
+    </item>
+    <item
+        android:title="@string/checkAll"
+        app:showAsAction="never"
+        android:id="@+id/checkAll">
+    </item>
+</menu>

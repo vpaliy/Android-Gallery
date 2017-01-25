@@ -18,11 +18,11 @@
             android:value="GlideModule">
         </meta-data>
 
-        <activity android:name=".screens.GalleryActivity"
+        <activity android:name=".activities.GalleryActivity"
             android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-        <activity android:name=".screens.main.MainActivity">
+        <activity android:name=".activities.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN">
                 </action>
@@ -37,7 +37,7 @@
                     android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-        <activity android:name=".screens.MediaUtilCreatorScreen"
+        <activity android:name=".activities.MediaUtilCreatorScreen"
                   android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 

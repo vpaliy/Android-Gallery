@@ -23,7 +23,6 @@ import java.util.Locale;
 import com.vpaliy.studioq.media.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
-//TODO change the name
 public class MediaFolderUtilSelectionFragment extends Fragment {
 
 

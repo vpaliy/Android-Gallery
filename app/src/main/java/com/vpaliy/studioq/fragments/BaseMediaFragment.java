@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.vpaliy.studioq.R;
 import java.util.ArrayList;
-
-import com.vpaliy.studioq.MultiChoiceMode.MultiChoiceMode;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
 
@@ -19,10 +17,6 @@ public abstract class BaseMediaFragment<T extends Parcelable> extends Fragment {
 
     protected ArrayList<T> mMediaDataList;
 
-    public static MultiChoiceMode getMultiChoiceModeInstance(int menuResource) {
-        return new MultiChoiceMode(menuResource) {
-        };
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

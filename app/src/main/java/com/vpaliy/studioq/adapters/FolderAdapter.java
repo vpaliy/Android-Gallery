@@ -1,22 +1,16 @@
 package com.vpaliy.studioq.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.bumptech.glide.Glide;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -24,65 +18,62 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.DrawableCrossFadeFactory;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.media.MediaFile;
 import com.vpaliy.studioq.media.MediaFolder;
-import com.vpaliy.studioq.utils.OnLaunchGalleryActivity;
 
-public class MediaFolderAdapter extends BaseAdapter {
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-    private final static String TAG=MediaFolderAdapter.class.getSimpleName();
-    private static final float SCALE_F=0.85F;
+public class FolderAdapter extends BaseAdapter {
 
-    private ArrayList<MediaFolder> mediaFileList;
-    private OnLaunchGalleryActivity mOnLaunchGallery;
-    private ArrayList<MediaFolder> currentFolderList;
-    private Mode adapterMode=Mode.ALL;
+    private final String KEY="adapter:mode";
+
+    private final static float SCALE_F=0.85f;
     private LayoutInflater inflater;
-    private  final Bitmap paletteBitmap;
-    private List<Palette.Swatch> swatchList;
+    private List<MediaFolder> mediaFolderList;
+
+    private List<MediaFolder> currentFolderList;
+    private Mode adapterMode=Mode.ALL;
 
 
-    public MediaFolderAdapter(Context context, MultiMode mode, ArrayList<MediaFolder> mDataModel) {
+    public FolderAdapter(Context context, MultiMode mode, List<MediaFolder> mediaFolderList) {
         super(mode,true);
-        this.mediaFileList=mDataModel;
         this.inflater=LayoutInflater.from(context);
-        this.mOnLaunchGallery = (OnLaunchGalleryActivity) (context);
-        this.currentFolderList=mDataModel;
-        this.paletteBitmap= BitmapFactory.decodeResource(context.getResources(), R.drawable.bitmap);
-        //initSwatchList();
+        this.mediaFolderList=mediaFolderList;
+        this.currentFolderList=mediaFolderList;
     }
 
-    public MediaFolderAdapter(Context context, MultiMode mode, ArrayList<MediaFolder> mDataModel, @NonNull Bundle state) {
+    public FolderAdapter(Context context, @NonNull  MultiMode mode,
+            List<MediaFolder> mediaFolderList, @NonNull Bundle state) {
         super(mode,true,state);
-        this.mediaFileList=mDataModel;
+        this.mediaFolderList=mediaFolderList;
+        this.currentFolderList=mediaFolderList;
         this.inflater=LayoutInflater.from(context);
-        this.mOnLaunchGallery = (OnLaunchGalleryActivity) (context);
-        this.currentFolderList=mDataModel;
-        this.paletteBitmap= BitmapFactory.decodeResource(context.getResources(), R.drawable.bitmap);
-        //initSwatchList();
+        adapterMode=Mode.valueOf(state.getString(KEY,Mode.ALL.name()));
+        initCurrentList();
     }
 
-
-
-    private void initSwatchList() {
-        if(paletteBitmap!=null) {
-            if (!paletteBitmap.isRecycled()) {
-                Palette.from(paletteBitmap).generate(new Palette.PaletteAsyncListener() {
-                    @Override
-                    public void onGenerated(Palette palette) {
-                        swatchList=new ArrayList<>(palette.getSwatches());
-                    }
-                });
-            }
-        }
+    @Override
+    public FolderViewHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {
+        View root=inflater.inflate(R.layout.media_folder_adapter_item,parentGroup,false);
+        return new FolderViewHolder(root);
     }
 
 
     @Override
     public void onBindViewHolder(BaseViewHolder holder, int position) {
         holder.onBindData();
+    }
+
+    @Override
+    public int getItemCount() {
+        return currentFolderList.size();
     }
 
     public class FolderViewHolder extends BaseAdapter.BaseViewHolder {
@@ -136,13 +127,6 @@ public class MediaFolderAdapter extends BaseAdapter {
         }
 
 
-        private void applySwatch() {
-            Palette.Swatch currentSwatch=swatchList.get(getAdapterPosition() % 16);
-            if(currentSwatch!=null) {
-                bodyLayout.setBackgroundColor(currentSwatch.getRgb());
-                mFolderName.setTextColor(currentSwatch.getTitleTextColor());
-            }
-        }
 
         @Override
         public void onClick(View view) {
@@ -153,7 +137,7 @@ public class MediaFolderAdapter extends BaseAdapter {
                 }else if(adapterMode==Mode.VIDEO) {
                     resultFolder = resultFolder.createVideoSubfolder();
                 }
-                mOnLaunchGallery.onLaunchGalleryActivity(currentFolderList,resultFolder,itemView);
+                EventBusProvider.defaultBus().post(new Launcher<>(resultFolder,view));
             }
             super.onClick(view);
         }
@@ -198,20 +182,12 @@ public class MediaFolderAdapter extends BaseAdapter {
 
             mFolderName.setText(currentFolderList.get(position).getFolderName());
             mImageCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).getFileCount()));
-            if(swatchList!=null) {
-                applySwatch();
-            }
+
             determineState();
         }
 
     }
 
-
-    @Override
-    public FolderViewHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {
-        View root=inflater.inflate(R.layout.media_folder_adapter_item,parentGroup,false);
-        return new FolderViewHolder(root);
-    }
 
 
     public void setAdapterMode(Mode mode) {
@@ -219,28 +195,6 @@ public class MediaFolderAdapter extends BaseAdapter {
             this.adapterMode=mode;
             initCurrentList();
             notifyDataSetChanged();
-        }
-    }
-
-    private void initCurrentList() {
-        if(adapterMode==Mode.ALL) {
-            this.currentFolderList=mediaFileList;
-        }else if(adapterMode==Mode.IMAGE) {
-            ArrayList<MediaFolder> imageFolderList=new ArrayList<>();
-            for(MediaFolder folder:mediaFileList) {
-                if(folder.getCoverForImage()!=null) {
-                    imageFolderList.add(folder);
-                }
-            }
-            currentFolderList=imageFolderList;
-        }else {
-            ArrayList<MediaFolder> videoFolderList=new ArrayList<>();
-            for(MediaFolder folder:mediaFileList) {
-                if(folder.getCoverForVideo()!=null) {
-                    videoFolderList.add(folder);
-                }
-            }
-            currentFolderList=videoFolderList;
         }
     }
 
@@ -254,18 +208,44 @@ public class MediaFolderAdapter extends BaseAdapter {
     }
 
 
-    public ArrayList<MediaFolder> getMediaList() {
-        return mediaFileList;
+    private void initCurrentList() {
+        if(adapterMode==Mode.ALL) {
+            this.currentFolderList=mediaFolderList;
+        }else if(adapterMode==Mode.IMAGE) {
+            ArrayList<MediaFolder> imageFolderList=new ArrayList<>();
+            for(MediaFolder folder:mediaFolderList) {
+                if(folder.getCoverForImage()!=null) {
+                    imageFolderList.add(folder);
+                }
+            }
+            currentFolderList=imageFolderList;
+        }else {
+            ArrayList<MediaFolder> videoFolderList=new ArrayList<>();
+            for(MediaFolder folder:mediaFolderList) {
+                if(folder.getCoverForVideo()!=null) {
+                    videoFolderList.add(folder);
+                }
+            }
+            currentFolderList=videoFolderList;
+        }
     }
 
+    public List<MediaFolder> geMediaFolderList() {
+        return mediaFolderList;
+    }
+
+
     public void removeAt(int index) {
-        mediaFileList.remove(index);
+        super.removeAt(index,true);
+        mediaFolderList.remove(index);
+        currentFolderList.remove(index);
         notifyItemRemoved(index);
     }
 
     @Override
-    public int getItemCount() {
-        return currentFolderList.size();
+    public void saveState(@NonNull Bundle outState) {
+        super.saveState(outState);
+        outState.putString(KEY,adapterMode.name());
     }
 
     public enum Mode {

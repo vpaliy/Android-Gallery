@@ -2,10 +2,10 @@ package com.vpaliy.studioq.adapters;
 
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.view.MenuItem;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -19,30 +19,37 @@ import com.bumptech.glide.request.animation.DrawableCrossFadeFactory;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
+import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
+import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.MultiChoiceMode.MultiChoiceMode;
-import com.vpaliy.studioq.slider.listeners.OnLaunchMediaSlider;
 
 
-public class GalleryAdapter
-        extends  BaseMediaAdapter<MediaFile> {
+public class GalleryAdapter extends BaseAdapter {
 
     private static final String TAG=GalleryAdapter.class.getSimpleName();
+    private final static float SCALE_F=0.85f;
 
-    private OnLaunchMediaSlider mediaSliderListener;
-    private MediaFileControlListener mediaFileControlListener;
-    private Context context;
+    private ArrayList<MediaFile> mediaFileList;
+    private LayoutInflater inflater;
 
-    public GalleryAdapter(Context context, MultiChoiceMode multiChoiceModeListener, ArrayList<MediaFile> mDataModel) {
-        super(context, multiChoiceModeListener,mDataModel);
-        this.context=context;
-        this.mediaSliderListener=(OnLaunchMediaSlider)(context);
-        this.mediaFileControlListener=(MediaFileControlListener)(context);
+    public GalleryAdapter(Context context, MultiMode mode, ArrayList<MediaFile> mDataModel) {
+        super(mode,true);
+        this.inflater=LayoutInflater.from(context);
+        this.mediaFileList=mDataModel;
+    }
+
+    public GalleryAdapter(Context context, MultiMode mode,
+            @NonNull ArrayList<MediaFile> mDataModel,@NonNull Bundle savedInstanceState) {
+        super(mode,true,savedInstanceState);
+        this.inflater=LayoutInflater.from(context);
+        this.mediaFileList=mDataModel;
     }
 
 
 
-    public final class GalleryViewHolder extends SelectableViewHolder {
+    public final class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
         private ImageView mImageView;
         private ImageView icon;
@@ -53,25 +60,26 @@ public class GalleryAdapter
             icon=(ImageView)(itemView.findViewById(R.id.icon));
         }
 
-
+        @Override
         public void onClick(View view) {
-            if(!isActivatedMultipleChoiceMode()) {
-                mediaSliderListener.onLaunchMediaSlider(getAdapterPosition(), mImageView);
+            if(!isMultiModeActivated()) {
+                EventBusProvider.defaultBus().post(new Launcher<>(mediaFileList,null,getAdapterPosition()));
             }
             super.onClick(view);
         }
 
-
         @Override
-        protected void enterState() {
+        public void enterState() {
+            super.enterState();
             itemView.animate()
-                .scaleX(SCALE_ITEM)
-                .scaleY(SCALE_ITEM)
+                .scaleX(SCALE_F)
+                .scaleY(SCALE_F)
                 .setDuration(180).start();
         }
 
         @Override
-        protected void exitState() {
+        public void exitState() {
+            super.exitState();
             if (itemView.getScaleY() < 1.f) {
                 itemView.animate().setDuration(180)
                         .scaleY(1.f).scaleX(1.f)
@@ -80,13 +88,13 @@ public class GalleryAdapter
         }
 
         @Override
-        protected void animatedState() {
-            itemView.setScaleX(SCALE_ITEM);
-            itemView.setScaleY(SCALE_ITEM);
+        public void animatedState() {
+            itemView.setScaleX(SCALE_F);
+            itemView.setScaleY(SCALE_F);
         }
 
         @Override
-        protected void normalState() {
+        public void defaultState() {
             if(itemView.getScaleX()<1f) {
                 itemView.setScaleX(1.f);
                 itemView.setScaleY(1.f);
@@ -94,8 +102,8 @@ public class GalleryAdapter
         }
 
         @Override
-        public void onBindData(int position) {
-            final MediaFile file=mDataModel.get(position);
+        public void onBindData() {
+            final MediaFile file=mediaFileList.get(getAdapterPosition());
             Glide.with(itemView.getContext())
                     .load(file.mediaFile())
                     .listener(new RequestListener<File, GlideDrawable>() {
@@ -122,14 +130,13 @@ public class GalleryAdapter
                     .placeholder(R.drawable.placeholder)
                     .animate(R.anim.fade_in)
                     .into(mImageView);
-
-            mImageView.clearColorFilter();
-
-
-            //mImageView.setTag(ProjectUtils.TRANSITION_NAME(position));
+            determineState();
         }
 
+        @Override
+        public void updateBackground() {
 
+        }
     }
 
     private static class Target extends GlideDrawableImageViewTarget {
@@ -153,7 +160,7 @@ public class GalleryAdapter
         }
     }
 
-    @Override
+  /*  @Override
     public void onActionItemClicked(MenuItem item,int[] mCheckedIndices) {
 
         ArrayList<MediaFile> changeMediaFileList = new ArrayList<>(mCheckedIndices.length);
@@ -203,25 +210,34 @@ public class GalleryAdapter
 
         }
 
-    }
+    }*/
 
     public void setMediaFileList(ArrayList<MediaFile> mediaFileList) {
-        this.mDataModel=mediaFileList;
+        this.mediaFileList=mediaFileList;
         notifyDataSetChanged();
     }
 
-
+    @Override
+    public void onBindViewHolder(BaseViewHolder holder, int position) {
+        holder.onBindData();
+    }
 
     @Override
     public GalleryViewHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {
-        View root=mInflater.inflate(R.layout.item,parentGroup,false);
+        View root=inflater.inflate(R.layout.item,parentGroup,false);
         return new GalleryViewHolder(root);
     }
 
-
-    public interface MediaFileControlListener {
-        void onDeleteMediaFile(GalleryAdapter adapter, ArrayList<MediaFile> fullMediaFileList, ArrayList<MediaFile> deleteMediaFileList);
-        void onCopyTo(GalleryAdapter adapter, ArrayList<MediaFile> fullMediaFileList, ArrayList<MediaFile> copyMediaFileList, boolean moveTo);
+    public void removeAt(int index) {
+        super.removeAt(index,true);
+        mediaFileList.remove(index);
+        notifyItemRemoved(index);
     }
+
+    @Override
+    public int getItemCount() {
+        return mediaFileList.size();
+    }
+
 
 }

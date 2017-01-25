@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.screens.utils.eventBus;
+package com.vpaliy.studioq.activities.utils.eventBus;
 
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;

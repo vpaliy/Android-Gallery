@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.screens.main;
+package com.vpaliy.studioq.activities.main;
 
 import android.content.ContentResolver;
 import android.content.Context;

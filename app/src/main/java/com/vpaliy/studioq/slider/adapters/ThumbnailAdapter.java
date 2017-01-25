@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.screens.utils.eventBus.ChangeFilter;
-import com.vpaliy.studioq.screens.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.activities.utils.eventBus.ChangeFilter;
+import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.zomato.photofilters.imageprocessors.Filter;
 
 import java.util.List;

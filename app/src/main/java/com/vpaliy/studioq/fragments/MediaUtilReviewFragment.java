@@ -24,13 +24,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
+import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.media.DynamicImageView;
 import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.screens.utils.eventBus.EventBusProvider;
-import com.vpaliy.studioq.screens.utils.eventBus.ReviewStateTrigger;
+import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.activities.utils.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
-//TODO change the name
 public class MediaUtilReviewFragment extends Fragment
         implements View.OnClickListener{
 
@@ -38,8 +39,6 @@ public class MediaUtilReviewFragment extends Fragment
 
     private ArrayList<MediaFile> reviewMediaFileList;
     private MediaAdapter adapter;
-    //TODO please, change the name as well
-    private OnMediaDataSetReviewedListener mediaDataSetReviewedListener;
 
 
     public static MediaUtilReviewFragment newInstance(ArrayList<MediaFile> mediaFileList) {
@@ -48,13 +47,6 @@ public class MediaUtilReviewFragment extends Fragment
         args.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaFileList);
         fragment.setArguments(args);
         return fragment;
-    }
-
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.mediaDataSetReviewedListener=(OnMediaDataSetReviewedListener)(context);
     }
 
 
@@ -140,11 +132,11 @@ public class MediaUtilReviewFragment extends Fragment
                                 switch (itemIndex) {
                                     case COPY_ITEM:
                                         data.putExtra(ProjectUtils.MOVE_FILE_TO,false);
-                                        mediaDataSetReviewedListener.onMediaSetReviewed(data);
+                                        EventBusProvider.defaultBus().post(new ExitEvent(data));
                                         break;
                                     case MOVE_ITEM:
                                         data.putExtra(ProjectUtils.MOVE_FILE_TO,true);
-                                        mediaDataSetReviewedListener.onMediaSetReviewed(data);
+                                        EventBusProvider.defaultBus().post(new ExitEvent(data));
                                         break;
                                 }
 
@@ -167,7 +159,6 @@ public class MediaUtilReviewFragment extends Fragment
         private List<MediaFile> mediaFileList;
         private LayoutInflater inflater;
         private final Glide glideInstance;
-        private int deleted=0;
         private CaptionItem captionItem;
 
         private final static int HEADER_TYPE=0;
@@ -257,7 +248,6 @@ public class MediaUtilReviewFragment extends Fragment
 
         @Override
         public int getItemCount() {
-            //plus header view
             return mediaFileList.size()+1;
         }
 
@@ -267,7 +257,6 @@ public class MediaUtilReviewFragment extends Fragment
         public AbstractMediaItem onCreateViewHolder(ViewGroup parentGroup, int viewType) {
             View root;
             switch (viewType) {
-
                 case HEADER_TYPE:
                     root=inflater.inflate(R.layout.caption_layout_item,parentGroup,false);
                     if(captionItem==null)
@@ -294,10 +283,4 @@ public class MediaUtilReviewFragment extends Fragment
             return mediaFileList;
         }
     }
-
-
-    public interface OnMediaDataSetReviewedListener {
-        void onMediaSetReviewed(Intent data);
-    }
-
 }

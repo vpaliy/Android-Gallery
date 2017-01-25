@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.screens.utils.eventBus;
+package com.vpaliy.studioq.activities.utils.eventBus;
 
 public final class Registrator {
 
