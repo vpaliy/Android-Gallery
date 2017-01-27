@@ -19,7 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ContentAdapter;
 import com.vpaliy.studioq.slider.adapters.NavigationAdapter;
 import com.vpaliy.studioq.slider.listeners.OnBarChangeStateListener;

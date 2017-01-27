@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
 import com.vpaliy.studioq.utils.FragmentPageAdapter;
 import com.vpaliy.studioq.utils.ProjectUtils;

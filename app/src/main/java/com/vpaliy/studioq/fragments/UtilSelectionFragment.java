@@ -24,7 +24,7 @@ import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.activities.utils.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 import java.util.List;

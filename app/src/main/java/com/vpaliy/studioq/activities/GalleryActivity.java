@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,8 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
-import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.media.MediaFolder;
+import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
 import com.vpaliy.studioq.fragments.GalleryFragment;
 import com.vpaliy.studioq.fragments.MediaFolderUtilSelectionFragment;
@@ -131,10 +132,10 @@ public class GalleryActivity extends AppCompatActivity
                         adapter.setMediaFileList(fullMediaFileList);
                     }
                 })
-                .setCallback(new Snackbar.Callback() {
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                     @Override
-                    public void onDismissed(Snackbar snackbar, int event) {
-                        super.onDismissed(snackbar, event);
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        super.onDismissed(transientBottomBar, event);
                         switch (event) {
                             case DISMISS_EVENT_SWIPE:
                             case DISMISS_EVENT_TIMEOUT:

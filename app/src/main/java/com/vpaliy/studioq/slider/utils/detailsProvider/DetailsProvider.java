@@ -1,17 +1,13 @@
 package com.vpaliy.studioq.slider.utils.detailsProvider;
 
 
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,3 +51,5 @@ public class DetailsProvider {
     }
 
 }
+
+

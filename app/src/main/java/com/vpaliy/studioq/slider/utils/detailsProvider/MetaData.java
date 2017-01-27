@@ -1,12 +1,9 @@
 package com.vpaliy.studioq.slider.utils.detailsProvider;
 
 import android.graphics.BitmapFactory;
-import android.media.MediaDataSource;
 import android.util.Log;
-import android.view.animation.TranslateAnimation;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
 import com.drew.lang.GeoLocation;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
@@ -17,7 +14,6 @@ import com.drew.metadata.exif.GpsDirectory;
 import com.drew.metadata.xmp.XmpDirectory;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashSet;

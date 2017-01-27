@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.vpaliy.studioq.media.MediaFolder;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
 public class MediaFolderUtilSelectionFragment extends Fragment {

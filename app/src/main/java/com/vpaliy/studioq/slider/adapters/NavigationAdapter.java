@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.vpaliy.studioq.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -11,7 +10,7 @@ import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.fragments.UtilSelectionFragment;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.fragments.MediaUtilReviewFragment;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.squareup.otto.Subscribe;

@@ -1,6 +1,6 @@
 package com.vpaliy.studioq.activities.utils.eventBus;
 
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 
 public class ReviewStateTrigger {
 

@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.media.VideoFile;
+import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.model.VideoFile;
 
 public final class FileUtils {
 

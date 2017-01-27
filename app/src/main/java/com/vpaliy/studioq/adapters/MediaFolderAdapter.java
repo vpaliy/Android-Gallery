@@ -26,8 +26,8 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.media.MediaFolder;
+import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.OnLaunchGalleryActivity;
 
 public class MediaFolderAdapter extends BaseAdapter {

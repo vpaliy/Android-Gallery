@@ -1,6 +1,6 @@
 package com.vpaliy.studioq.activities.main;
 
-import com.vpaliy.studioq.media.MediaFolder;
+import com.vpaliy.studioq.model.MediaFolder;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

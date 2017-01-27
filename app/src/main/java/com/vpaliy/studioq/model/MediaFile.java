@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.media;
+package com.vpaliy.studioq.model;
 
 
 import android.database.Cursor;

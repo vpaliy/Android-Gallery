@@ -1,10 +1,10 @@
-package com.vpaliy.studioq.media;
+package com.vpaliy.studioq.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 import org.parceler.ParcelConstructor;
 import org.parceler.ParcelPropertyConverter;
-import java.io.File;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

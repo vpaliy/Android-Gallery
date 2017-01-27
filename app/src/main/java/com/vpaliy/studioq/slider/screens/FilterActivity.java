@@ -14,7 +14,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.squareup.otto.Subscribe;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.activities.utils.eventBus.ChangeFilter;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.slider.adapters.ThumbnailAdapter;

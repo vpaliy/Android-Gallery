@@ -1,9 +1,7 @@
 package com.vpaliy.studioq.utils;
 
-import android.provider.MediaStore;
-
 import com.bumptech.glide.signature.StringSignature;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 
 public class MediaSignature extends StringSignature {
 

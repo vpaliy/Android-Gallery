@@ -23,7 +23,7 @@ import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.media.MediaFile;
+import com.vpaliy.studioq.model.MediaFile;
 
 
 public class GalleryAdapter extends BaseAdapter {

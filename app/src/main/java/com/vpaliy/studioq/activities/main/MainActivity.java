@@ -11,8 +11,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -30,8 +32,8 @@ import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.media.MediaFile;
-import com.vpaliy.studioq.media.MediaFolder;
+import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.activities.GalleryActivity;
 import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.utils.FileUtils;
@@ -56,11 +58,15 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar actionBar;
     private int currentMode;
 
+    private boolean isActivityCalled=false;
 
-    private MultiMode.Callback callback=new MultiMode.Callback() {
+    private final MultiMode.Callback callback=new MultiMode.Callback() {
         @Override
         public boolean onMenuItemClick(BaseAdapter adapter, MenuItem item) {
-            //TODO finish that
+            switch(item.getItemId()) {
+                case R.id.deleteAction:
+
+            }
             return false;
         }
     };
@@ -79,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         bindData(savedInstanceState);
         initNavigation(savedInstanceState);
 
+        //TODO get rid off this
         mFab=(FloatingActionButton)(findViewById(R.id.addFloatingActionButton));
     }
 
@@ -139,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                         adapter.setAdapterMode(FolderAdapter.Mode.VIDEO);
                         break;
                     case R.id.settings:
-                        currentMode=R.id.settings; //TODO keep an eye on this
+                      //  currentMode=R.id.settings; //TODO keep an eye on this
                         startSettings();
                         break;
                 }
@@ -165,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mContentGrid = (RecyclerView) (findViewById(R.id.mainContent));
                 mContentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
-                        2,GridLayoutManager.VERTICAL, false));
+                        2,GridLayoutManager.VERTICAL, false));  //TODO replace with XML
                 mContentGrid.setAdapter(adapter);
             }
         };
@@ -250,6 +257,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void deleteFolder(MediaFolder deleteFolder) {
+        Snackbar.make(findViewById(R.id.rootView),
+                //TODO support for languages here
+                deleteFolder.getFolderName()+" has been moved to trash",7000)
+                .setAction("UNDO", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        //adapter.setMediaFileList(fullMediaFileList);
+                    }
+                })
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        super.onDismissed(transientBottomBar, event);
+                        switch (event) {
+                            case DISMISS_EVENT_SWIPE:
+                            case DISMISS_EVENT_TIMEOUT:
+                              //  onDeleteMediaFileList(deleteMediaFileList,fullMediaFileList);
+                        }
+                    }
+                })
+                .show();
+    }
+
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         if (resultCode == RESULT_OK) {
@@ -262,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                makeQuery(null);
+                                makeQuery(null);    //TODO check out this code
                             }
                         });
                     break;
@@ -284,11 +315,10 @@ public class MainActivity extends AppCompatActivity {
                         mContentGrid.setItemAnimator(new DefaultItemAnimator());
                     }
                 });
-
+                return;
             }
-        }else {
-            super.onBackPressed();
         }
+        super.onBackPressed();
     }
 
     public void onClickFloatingButton(View view) {
