@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-
 import com.vpaliy.studioq.R;
 
 import java.util.HashSet;
@@ -250,7 +249,7 @@ public class MultiMode {
             vibrator.vibrate(vibrationLength);
         }
 
-        actionBar.setTitle(Integer.toString(itemCount)+currentState.title);
+        actionBar.setTitle(Integer.toString(itemCount) + currentState.title);
         if(!isColored) {
             isColored = true;
             if(currentState.statusBarColor!=0) {
@@ -268,7 +267,7 @@ public class MultiMode {
         adapterInstance=adapter;
     }
 
-    void turnOff() {
+    void  turnOff() {
         isActivated=false;
         isColored=false;
 
@@ -289,18 +288,23 @@ public class MultiMode {
             }
         }
 
-        actionBar.setNavigationIcon(prevState.navigationIcon);
-        actionBar.setLogo(prevState.logo);
-        if(prevState.statusBarColor!=0) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                Window window = activity.getWindow();
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                window.setStatusBarColor(prevState.statusBarColor);
+        actionBar.post(new Runnable() {
+            @Override
+            public void run() {
+                actionBar.setNavigationIcon(prevState.navigationIcon);
+                actionBar.setLogo(prevState.logo);
+                if(prevState.statusBarColor!=0) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        Window window = activity.getWindow();
+                        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                        window.setStatusBarColor(prevState.statusBarColor);
+                    }
+                }
+                actionBar.setBackgroundColor(prevState.toolbarColor);
+                actionBar.setTitle(prevState.title);
+                actionBar.setSubtitle(prevState.subTitle);
             }
-        }
-        actionBar.setBackgroundColor(prevState.toolbarColor);
-        actionBar.setTitle(prevState.title);
-        actionBar.setSubtitle(prevState.subTitle);
+        });
     }
 
     boolean isActivated() {

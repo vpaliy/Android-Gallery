@@ -67,7 +67,7 @@ public final class FileUtils {
         }
     }
 
-    public static void deleteFileList(Context context, List<MediaFile> deleteMediaFileList) {
+    public static void deleteFileList(Context context, List<? extends MediaFile> deleteMediaFileList) {
         for (MediaFile mediaFile : deleteMediaFileList) {
                 deleteFile(context,mediaFile);
         }

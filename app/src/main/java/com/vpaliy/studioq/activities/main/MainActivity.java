@@ -62,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
 
     private final MultiMode.Callback callback=new MultiMode.Callback() {
         @Override
-        public boolean onMenuItemClick(BaseAdapter adapter, MenuItem item) {
+        public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
             switch(item.getItemId()) {
-                case R.id.deleteAction:
-
+                case R.id.deleteItem:
+                    deleteFolder();
             }
             return false;
         }
@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         if(!Permissions.requestIfNotAllowed(this,Manifest.permission.READ_EXTERNAL_STORAGE,
                 new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE)) {
+                ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE)) {
             makeQuery(state);
         }
 
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                         adapter.setAdapterMode(FolderAdapter.Mode.VIDEO);
                         break;
                     case R.id.settings:
-                      //  currentMode=R.id.settings; //TODO keep an eye on this
+                        //  currentMode=R.id.settings; //TODO keep an eye on this
                         startSettings();
                         break;
                 }
@@ -257,29 +257,63 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void deleteFolder(MediaFolder deleteFolder) {
-        Snackbar.make(findViewById(R.id.rootView),
-                //TODO support for languages here
-                deleteFolder.getFolderName()+" has been moved to trash",7000)
-                .setAction("UNDO", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        //adapter.setMediaFileList(fullMediaFileList);
-                    }
-                })
-                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        super.onDismissed(transientBottomBar, event);
-                        switch (event) {
-                            case DISMISS_EVENT_SWIPE:
-                            case DISMISS_EVENT_TIMEOUT:
-                              //  onDeleteMediaFileList(deleteMediaFileList,fullMediaFileList);
-                        }
-                    }
-                })
-                .show();
+    private void deleteFolder() {
+        if (adapter != null) {
+            if (adapter.isMultiModeActivated()) {
+                final ArrayList<MediaFolder> deleteFolderList = adapter.getAllChecked();
+                final List<MediaFolder> originalList=new ArrayList<>(adapter.getData());
+                int[] checked=adapter.getAllCheckedForDeletion();
+                for(int index:checked) {
+                    adapter.removeAt(index);
+                }
+                Snackbar.make(findViewById(R.id.rootView),
+                        //TODO support for languages here
+                        Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)
+                        .setAction("UNDO", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                adapter.setData(originalList);
+                            }
+                        })
+                        .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            @Override
+                            public void onDismissed(Snackbar transientBottomBar, int event) {
+                                super.onDismissed(transientBottomBar, event);
+                                switch (event) {
+                                    case DISMISS_EVENT_SWIPE:
+                                    case DISMISS_EVENT_TIMEOUT:
+                                        deleteInBackground(deleteFolderList, adapter.getAdapterMode());
+                                        break;
+                                }
+                            }
+                        })
+                        .show();
+            }
+        }
     }
+
+    private void deleteInBackground(final ArrayList<MediaFolder> deleteFolderList, final FolderAdapter.Mode mode) {
+        new AsyncTask<Void,Void,Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if(deleteFolderList!=null) {
+                    for(MediaFolder folder:deleteFolderList) {
+                        List<? extends MediaFile> result;
+                        if(mode== FolderAdapter.Mode.IMAGE) {
+                            result = folder.getImageFileList();
+                        }else if(mode== FolderAdapter.Mode.VIDEO) {
+                            result=folder.getVideoFileList();
+                        }else {
+                            result = folder.getMediaFileList();
+                        }
+                        FileUtils.deleteFileList(MainActivity.this,result);
+                    }
+                }
+                return null;
+            }
+        }.execute(null,null);
+    }
+
 
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {

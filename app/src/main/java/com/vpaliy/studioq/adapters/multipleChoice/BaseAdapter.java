@@ -137,8 +137,9 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         public  boolean onLongClick(View view) {
             if(!mode.isActivated()) {
                 mode.turnOn();
+                onClick(view);
             }
-            return false;
+            return true;
         }
     }
 
@@ -234,9 +235,6 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
     public void removeAt(int index, boolean animate) {
         tracker.setStateFor(index,animate?StateTracker.EXIT:StateTracker.DEFAULT);
         mode.update(tracker.getCheckedItemCount());
-        if(tracker.getCheckedItemCount()==0) {
-            checkStatus();
-        }
     }
 
     public void saveState(@NonNull Bundle outState) {

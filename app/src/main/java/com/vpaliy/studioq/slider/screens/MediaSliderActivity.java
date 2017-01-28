@@ -289,9 +289,7 @@ public class MediaSliderActivity extends AppCompatActivity
                 }
             }while(!isTurnedOff);
 
-            //TODO you don't need to worry about this, because you can implement a double-click to enlarge the image
-          //  if(mNavigationRecyclerView.getAnimation()==null||mNavigationRecyclerView.getAnimation().hasEnded())
-                hideNavigationContentList();
+            hideNavigationContentList();
         }
 
         public void turnOn() {

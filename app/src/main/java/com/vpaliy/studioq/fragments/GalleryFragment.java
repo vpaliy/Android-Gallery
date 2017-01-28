@@ -2,8 +2,11 @@ package com.vpaliy.studioq.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.design.widget.BaseTransientBottomBar;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -15,11 +18,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.FragmentPageAdapter;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
@@ -31,8 +37,13 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
 
     private MultiMode.Callback callback=new MultiMode.Callback() {
         @Override
-        public boolean onMenuItemClick(BaseAdapter adapter, MenuItem item) {
-            return false;
+        public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.deleteItem:
+                    delete();
+                    break;
+            }
+            return true;
         }
 
     };
@@ -77,6 +88,47 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
     }
 
 
+    private void delete() {
+        View root=getView();
+        if (root!= null) {
+            if (adapter.isMultiModeActivated()) {
+                final ArrayList<MediaFile> deleteFolderList = adapter.getAllChecked();
+                final ArrayList<MediaFile> originalList=new ArrayList<>(adapter.getData());
+                int[] checked=adapter.getAllCheckedForDeletion();
+                for(int index:checked) {
+                    adapter.removeAt(index);
+                }
+                Snackbar.make(root,
+                        //TODO support for languages here
+                        Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)
+                        .setAction("UNDO", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                adapter.setData(originalList);
+                            }
+                        })
+                        .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            @Override
+                            public void onDismissed(Snackbar transientBottomBar, int event) {
+                                super.onDismissed(transientBottomBar, event);
+                                switch (event) {
+                                    case DISMISS_EVENT_SWIPE:
+                                    case DISMISS_EVENT_TIMEOUT:
+                                        deleteInBackground(deleteFolderList,
+                                             deleteFolderList.size()==originalList.size());
+                                        break;
+                                }
+                            }
+                        })
+                        .show();
+            }
+        }
+    }
+
+    private void deleteInBackground(List<MediaFile> mediaFileList, boolean finish) {
+
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -103,7 +155,6 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
     public void onViewCreated(View root, Bundle savedInstanceState) {
         if(root!=null) {
             final Toolbar actionBar=(Toolbar)(root.findViewById(R.id.actionBar));
-            actionBar.setNavigationIcon(R.drawable.ic_clear_black_24dp);
             recyclerView=(RecyclerView)(root.findViewById(R.id.mediaRecyclerView));
             actionBar.setNavigationOnClickListener(onNavigationIconClick);
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())

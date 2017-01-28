@@ -18,11 +18,14 @@
             android:value="GlideModule">
         </meta-data>
 
-        <activity android:name=".activities.GalleryActivity"
+        <activity
+            android:name=".activities.GalleryActivity"
             android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-        <activity android:name=".activities.main.MainActivity">
+        <activity
+             android:name=".activities.main.MainActivity"
+             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN">
                 </action>
@@ -31,22 +34,24 @@
             </intent-filter>
         </activity>
 
-
-        <activity   android:name=".slider.screens.MediaSliderActivity"
-                    android:theme="@style/SliderTheme"
-                    android:configChanges="orientation|keyboardHidden|screenSize">
+        <activity
+             android:name=".slider.screens.MediaSliderActivity"
+             android:theme="@style/SliderTheme"
+             android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-        <activity android:name=".activities.MediaUtilCreatorScreen"
-                  android:configChanges="orientation|keyboardHidden|screenSize">
+        <activity
+            android:name=".activities.MediaUtilCreatorScreen"
+            android:configChanges="orientation|keyboardHidden|screenSize">
         </activity>
 
-
-        <activity android:name=".slider.screens.PlayerActivity"
+        <activity
+            android:name=".slider.screens.PlayerActivity"
             android:theme="@style/PlayerStyle">
         </activity>
 
-        <activity android:name=".slider.screens.FilterActivity">
+        <activity
+            android:name=".slider.screens.FilterActivity">
         </activity>
     </application>
 

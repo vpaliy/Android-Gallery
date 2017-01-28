@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -24,9 +23,9 @@ import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
-
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -234,12 +233,46 @@ public class FolderAdapter extends BaseAdapter {
         return mediaFolderList;
     }
 
+    public ArrayList<MediaFolder> getAllChecked() {
+        int[] checked=super.getAllChecked(false);
+        if(checked!=null) {
+            ArrayList<MediaFolder> resultList = new ArrayList<>(checked.length);
+            for (int index : checked) {
+                resultList.add(mediaFolderList.get(index));
+            }
+            return resultList;
+        }
+        return null;
+    }
 
     public void removeAt(int index) {
-        super.removeAt(index,true);
-        mediaFolderList.remove(index);
+        super.removeAt(index,false);
+        MediaFolder folder=currentFolderList.get(index);
         currentFolderList.remove(index);
+        if(currentFolderList!=mediaFolderList) {
+            mediaFolderList.remove(folder);
+        }
         notifyItemRemoved(index);
+    }
+
+    public void setData(List<MediaFolder> folderList) {
+        if(folderList!=null) {
+            currentFolderList=folderList;
+            if(adapterMode!=Mode.ALL) {
+                mediaFolderList.addAll(folderList);
+            }else {
+                mediaFolderList = folderList;
+            }
+            notifyDataSetChanged();
+        }
+    }
+
+    public  List<MediaFolder> getData() {
+        return currentFolderList;
+    }
+
+    public Mode getAdapterMode() {
+        return adapterMode;
     }
 
     @Override
