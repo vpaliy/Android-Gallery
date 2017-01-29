@@ -13,7 +13,6 @@ import com.bumptech.glide.Glide;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
@@ -27,6 +26,9 @@ import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class GalleryAdapter extends BaseAdapter {
 
     private static final String TAG=GalleryAdapter.class.getSimpleName();
@@ -34,6 +36,8 @@ public class GalleryAdapter extends BaseAdapter {
 
     private ArrayList<MediaFile> mediaFileList;
     private LayoutInflater inflater;
+
+    private boolean hasFocus=true;
 
     public GalleryAdapter(Context context, MultiMode mode, ArrayList<MediaFile> mDataModel) {
         super(mode,true);
@@ -52,19 +56,21 @@ public class GalleryAdapter extends BaseAdapter {
 
     public final class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
-        private ImageView mImageView;
-        private ImageView icon;
+        @BindView(R.id.mainImage) ImageView mImageView;
+        @BindView(R.id.icon) ImageView icon;
 
         public GalleryViewHolder(View itemView) {
             super(itemView);
-            mImageView=(ImageView) (itemView.findViewById(R.id.mainImage));
-            icon=(ImageView)(itemView.findViewById(R.id.icon));
+            ButterKnife.bind(this,itemView);
         }
 
         @Override
         public void onClick(View view) {
             if(!isMultiModeActivated()) {
-                EventBusProvider.defaultBus().post(new Launcher<>(mediaFileList,null,getAdapterPosition()));
+                if(hasFocus) {
+                    hasFocus = false;
+                    EventBusProvider.defaultBus().post(new Launcher<>(mediaFileList, null, getAdapterPosition()));
+                }
             }
             super.onClick(view);
         }
@@ -138,6 +144,12 @@ public class GalleryAdapter extends BaseAdapter {
         public void updateBackground() {
 
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        hasFocus=true;
     }
 
     private static class Target extends GlideDrawableImageViewTarget {

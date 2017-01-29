@@ -15,13 +15,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.vpaliy.studioq.R;
 import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+import static butterknife.ButterKnife.findById;
 
 public class MediaFolderUtilSelectionFragment extends Fragment {
 
@@ -65,20 +68,20 @@ public class MediaFolderUtilSelectionFragment extends Fragment {
     @Override
     public void onViewCreated(View root, @Nullable Bundle savedInstanceState) {
         if(root!=null) {
-            RecyclerView mMediaRecyclerView=(RecyclerView)(root.findViewById(R.id.mediaRecyclerView));
-            mMediaRecyclerView.setAdapter(adapter);
+            RecyclerView contentGrid=findById(root,R.id.mediaRecyclerView);
+            contentGrid.setAdapter(adapter);
             //TODO change to xml representation
             if(getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE) {
-                mMediaRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 4, GridLayoutManager.VERTICAL, false));
+                contentGrid.setLayoutManager(new GridLayoutManager(getContext(), 4, GridLayoutManager.VERTICAL, false));
             }else {
-                mMediaRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2, GridLayoutManager.VERTICAL, false));
+                contentGrid.setLayoutManager(new GridLayoutManager(getContext(), 2, GridLayoutManager.VERTICAL, false));
             }
-            mMediaRecyclerView.setItemAnimator(new DefaultItemAnimator());
+            contentGrid.setItemAnimator(new DefaultItemAnimator());
         }
     }
 
 
-    private class MediaFolderUtilAdapter extends RecyclerView.Adapter<MediaFolderUtilAdapter.ItemHolder> {
+    public class MediaFolderUtilAdapter extends RecyclerView.Adapter<MediaFolderUtilAdapter.ItemHolder> {
 
         private List<MediaFolder> mediaFolderList;
         private LayoutInflater inflater;
@@ -90,15 +93,13 @@ public class MediaFolderUtilSelectionFragment extends Fragment {
 
         public class ItemHolder extends RecyclerView.ViewHolder {
 
-            private ImageView headerImage;
-            private TextView folderName;
-            private TextView itemCount;
+            @BindView(R.id.mainImage)  ImageView headerImage;
+            @BindView(R.id.folderName) TextView folderName;
+            @BindView(R.id.imageCount) TextView itemCount;
 
             public ItemHolder(View itemView) {
                 super(itemView);
-                this.headerImage=(ImageView)(itemView.findViewById(R.id.mainImage));
-                this.folderName=(TextView)(itemView.findViewById(R.id.folderName));
-                this.itemCount=(TextView)(itemView.findViewById(R.id.imageCount));
+                ButterKnife.bind(this,itemView);
 
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override

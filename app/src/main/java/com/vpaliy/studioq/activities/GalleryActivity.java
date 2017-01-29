@@ -30,11 +30,11 @@ import com.vpaliy.studioq.fragments.GalleryFragment;
 import com.vpaliy.studioq.fragments.MediaFolderUtilSelectionFragment;
 import com.vpaliy.studioq.slider.screens.MediaSliderActivity;
 import com.vpaliy.studioq.utils.FileUtils;
-import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.utils.TransitionListenerAdapter;
 import com.squareup.otto.Subscribe;
+
+import butterknife.ButterKnife;
 
 
 public class GalleryActivity extends AppCompatActivity
@@ -47,11 +47,12 @@ public class GalleryActivity extends AppCompatActivity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
-            requestFeature();
-        }
+      //  if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
+       //     requestFeature();
+        //}
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_layout);
+        ButterKnife.bind(this);
         if(savedInstanceState==null) {
             savedInstanceState = getIntent().getExtras();
         }
@@ -113,7 +114,7 @@ public class GalleryActivity extends AppCompatActivity
                     }
                     final GalleryFragment fragment = (GalleryFragment)
                             (getSupportFragmentManager().findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT));
-                    fragment.getGalleryAdapter().setMediaFileList(mediaFileList);
+                  //  fragment.getGalleryAdapter().setMediaFileList(mediaFileList);
                     //have to do this in order to prevent providing slider activity with wrong data
                     mMediaFolder.setMediaFileList(mediaFileList);
                     break;
@@ -129,7 +130,6 @@ public class GalleryActivity extends AppCompatActivity
                 .setAction("UNDO", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        adapter.setMediaFileList(fullMediaFileList);
                     }
                 })
                 .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
@@ -169,6 +169,12 @@ public class GalleryActivity extends AppCompatActivity
 
         }.execute(null, null);
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(ProjectUtils.MEDIA_DATA,mMediaFolder);
     }
 
     public void onCopyTo(GalleryAdapter adapter, ArrayList<MediaFile> fullMediaFileList, ArrayList<MediaFile> copyMediaFileList, boolean moveTo) {
@@ -225,7 +231,7 @@ public class GalleryActivity extends AppCompatActivity
                             if(moveTo) {
                                 final GalleryFragment fragment = (GalleryFragment)
                                         (getSupportFragmentManager().findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT));
-                                fragment.getGalleryAdapter().setMediaFileList(originalMediaFileList);
+                               // fragment.getGalleryAdapter().setMediaFileList(originalMediaFileList);
                             }
                         }
                     })
@@ -270,7 +276,7 @@ public class GalleryActivity extends AppCompatActivity
 
     @TargetApi(21)
     private void requestFeature() {
-       getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+     /*  getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
        getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
        Transition enterTransition=new Explode();
        enterTransition.excludeTarget(android.R.id.navigationBarBackground,true);
@@ -303,7 +309,7 @@ public class GalleryActivity extends AppCompatActivity
             }
         });
 
-        getWindow().setSharedElementsUseOverlay(true);
+        getWindow().setSharedElementsUseOverlay(true);  */
     }
 
     @Override

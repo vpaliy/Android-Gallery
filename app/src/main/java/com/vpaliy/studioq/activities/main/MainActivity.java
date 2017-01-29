@@ -46,28 +46,56 @@ import java.util.List;
 import java.util.Set;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import static butterknife.ButterKnife.findById;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private final static String TAG=MainActivity.class.getSimpleName();
 
-    private RecyclerView mContentGrid;
-    private FloatingActionButton mFab;
+    @BindView(R.id.mainContent)
+    protected RecyclerView contentGrid;
+
+    @BindView(R.id.addFloatingActionButton)
+    protected FloatingActionButton actionButton;
+
+    @BindView(R.id.actionBar)
+    protected Toolbar actionBar;
+
     private FolderAdapter adapter;
-    private Toolbar actionBar;
     private int currentMode;
 
-    private boolean isActivityCalled=false;
 
     private final MultiMode.Callback callback=new MultiMode.Callback() {
+
+        private boolean isDeleteAction;
+
         @Override
         public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
             switch(item.getItemId()) {
-                case R.id.deleteItem:
+                case R.id.deleteAction:
+                    isDeleteAction=true;
                     deleteFolder();
+                    break;
             }
-            return false;
+            return true;
+        }
+
+        @Override
+        public void onModeActivated() {
+            super.onModeActivated();
+            isDeleteAction=false;
+            hideButton();
+        }
+
+        @Override
+        public void onModeDisabled() {
+            super.onModeDisabled();
+            if(!isDeleteAction) {
+                showButton();
+            }
         }
     };
 
@@ -76,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
-
+        ButterKnife.bind(this);
         initUI(savedInstanceState);
     }
 
@@ -84,13 +112,9 @@ public class MainActivity extends AppCompatActivity {
         initActionBar();
         bindData(savedInstanceState);
         initNavigation(savedInstanceState);
-
-        //TODO get rid off this
-        mFab=(FloatingActionButton)(findViewById(R.id.addFloatingActionButton));
     }
 
     private void initActionBar() {
-        actionBar=(Toolbar)(findViewById(R.id.actionBar));
 
         if(getSupportActionBar()==null) {
             setSupportActionBar(actionBar);
@@ -126,8 +150,10 @@ public class MainActivity extends AppCompatActivity {
         }else {
             currentMode = state.getInt(ProjectUtils.MODE, R.id.allMedia);
         }
-        final DrawerLayout layout=(DrawerLayout)(findViewById(R.id.drawerLayout));
-        NavigationView navigationView=(NavigationView)(findViewById(R.id.navigation));
+
+        final DrawerLayout layout=findById(this,R.id.drawerLayout);
+        final NavigationView navigationView=findById(this,R.id.navigation);
+
         navigationView.setCheckedItem(currentMode);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -146,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                         adapter.setAdapterMode(FolderAdapter.Mode.VIDEO);
                         break;
                     case R.id.settings:
-                        //  currentMode=R.id.settings; //TODO keep an eye on this
+                        //  currentMode=R.id.settings;
                         startSettings();
                         break;
                 }
@@ -157,12 +183,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private void hideButton() {
+        if(actionButton.isShown()) {
+            actionButton.hide();
+        }
+    }
+
+    private void showButton() {
+        if(!actionButton.isShown()) {
+            actionButton.show();
+        }
+    }
+
     private void makeQuery(final Bundle savedInstanceState) {
         new DataProvider(this) {
             @Override
             public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
                 MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                        .setMenu(R.menu.gallery_menu, callback)
+                        .setMenu(R.menu.main_menu, callback)
                         .setBackgroundColor(Color.WHITE)
                         .build();
                 if(savedInstanceState==null) {
@@ -170,10 +209,9 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders, savedInstanceState);
                 }
-                mContentGrid = (RecyclerView) (findViewById(R.id.mainContent));
-                mContentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
                         2,GridLayoutManager.VERTICAL, false));  //TODO replace with XML
-                mContentGrid.setAdapter(adapter);
+                contentGrid.setAdapter(adapter);
             }
         };
     }
@@ -196,11 +234,12 @@ public class MainActivity extends AppCompatActivity {
         Registrator.unregister(this);
     }
 
+
     @Subscribe
     public void startGalleryActivity(Launcher<MediaFolder> launcher) {
         final Intent intent=new Intent(this,GalleryActivity.class);
         intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
-        mFab.animate().scaleX(0f).scaleY(0f)
+        actionButton.animate().scaleX(0f).scaleY(0f)
                 .setInterpolator(new DecelerateInterpolator())
                 .setDuration(100).setListener(new AnimatorListenerAdapter() {
             @Override
@@ -246,11 +285,11 @@ public class MainActivity extends AppCompatActivity {
             adapter.onResume();
         }
 
-        if(mFab!=null) {
-            if(mFab.getScaleX()<1f) {
-                mFab.animate().scaleX(1.f)
-                        .scaleY(1.f).setListener(null)
-                        .setDuration(200).start();
+        if(actionButton!=null) {
+            if(actionButton.getScaleX()<1f) {
+                actionButton.animate().scaleX(1.f).scaleY(1.f)
+                        .setListener(null).setDuration(200)
+                        .start();
             }
         }
 
@@ -273,12 +312,14 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(View view) {
                                 adapter.setData(originalList);
+                                showButton();
                             }
                         })
                         .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                             @Override
                             public void onDismissed(Snackbar transientBottomBar, int event) {
                                 super.onDismissed(transientBottomBar, event);
+                                showButton();
                                 switch (event) {
                                     case DISMISS_EVENT_SWIPE:
                                     case DISMISS_EVENT_TIMEOUT:
@@ -315,6 +356,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    private void shareWith() {
+
+    }
+
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         if (resultCode == RESULT_OK) {
@@ -341,12 +386,12 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(adapter!=null) {
             if (adapter.isMultiModeActivated()) {
-                mContentGrid.setItemAnimator(null);
+                contentGrid.setItemAnimator(null);
                 adapter.unCheckAll(true);
-                mContentGrid.post(new Runnable() {
+                contentGrid.post(new Runnable() {
                     @Override
                     public void run() {
-                        mContentGrid.setItemAnimator(new DefaultItemAnimator());
+                        contentGrid.setItemAnimator(new DefaultItemAnimator());
                     }
                 });
                 return;

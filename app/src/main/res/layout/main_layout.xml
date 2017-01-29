@@ -14,11 +14,6 @@
         android:background="@android:color/background_light"
         android:fitsSystemWindows="true">
 
-        <include
-            layout="@layout/main_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        </include>
-
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize">
@@ -30,16 +25,21 @@
                 android:layout_height="match_parent"/>
         </android.support.design.widget.AppBarLayout>
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/mainContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        </android.support.v7.widget.RecyclerView>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/addFloatingActionButton"
             android:layout_margin="25dp"
             android:layout_gravity="bottom|end"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:onClick="onClickFloatingButton"
-            android:background="@android:color/holo_blue_dark"
-            app:layout_behavior=".utils.FloatingButtonBehavior"
-            android:layout_height="wrap_content" />
+            app:layout_behavior=".activities.utils.FloatingButtonBehavior" />
         <!--  android:src="@drawable/ic_add_white_24dp"-->
 
 

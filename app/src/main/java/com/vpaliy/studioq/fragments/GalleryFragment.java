@@ -2,10 +2,10 @@ package com.vpaliy.studioq.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.BaseTransientBottomBar;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -16,24 +16,32 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
-import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.FragmentPageAdapter;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+import static butterknife.ButterKnife.findById;
 
 
 public class GalleryFragment extends BaseMediaFragment<MediaFile> {
 
+    @BindView(R.id.mediaRecyclerView)
+    protected RecyclerView recyclerView;
+
+    @BindView(R.id.cameraButton)
+    protected FloatingActionButton actionButton;
+
     private GalleryAdapter adapter;
-    private RecyclerView recyclerView;
+
+    private Unbinder unbinder;
 
     private MultiMode.Callback callback=new MultiMode.Callback() {
         @Override
@@ -129,6 +137,8 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
 
     }
 
+
+    //TODO may be you don't need that
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -144,7 +154,9 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
 
     @Override
     public View onCreateView(LayoutInflater mInflater, ViewGroup parentGroup, Bundle savedInstanceState) {
-        return mInflater.inflate(R.layout.fragment_gallery_layout,parentGroup,false);
+        View root= mInflater.inflate(R.layout.fragment_gallery_layout,parentGroup,false);
+        unbinder= ButterKnife.bind(this,root);
+        return root;
     }
 
     public GalleryAdapter getGalleryAdapter() {
@@ -154,8 +166,7 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
     @Override
     public void onViewCreated(View root, Bundle savedInstanceState) {
         if(root!=null) {
-            final Toolbar actionBar=(Toolbar)(root.findViewById(R.id.actionBar));
-            recyclerView=(RecyclerView)(root.findViewById(R.id.mediaRecyclerView));
+            final Toolbar actionBar=findById(root,R.id.actionBar);
             actionBar.setNavigationOnClickListener(onNavigationIconClick);
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())
                     .setBackgroundColor(Color.WHITE)
@@ -168,9 +179,14 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
                 adapter = new GalleryAdapter(getContext(), mode, mMediaDataList);
             }
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3, GridLayoutManager.VERTICAL, false));
-            recyclerView.setHasFixedSize(true);
             recyclerView.setAdapter(adapter);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
     }
 
     public void openCamera(View view) {

@@ -30,6 +30,10 @@ import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+import static butterknife.ButterKnife.findById;
 
 public class MediaUtilReviewFragment extends Fragment
         implements View.OnClickListener{
@@ -69,7 +73,7 @@ public class MediaUtilReviewFragment extends Fragment
     @Override
     public void onViewCreated(final View root, @Nullable Bundle savedInstanceState) {
         if(root!=null) {
-            final RecyclerView mediaRecyclerView=(RecyclerView)(root.findViewById(R.id.mediaRecyclerView));
+            final RecyclerView mediaRecyclerView=findById(root,R.id.mediaRecyclerView);
             //TODO xml representation
             GridLayoutManager manager=new GridLayoutManager(getContext(),2, GridLayoutManager.VERTICAL,false);
             manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -83,7 +87,7 @@ public class MediaUtilReviewFragment extends Fragment
             mediaRecyclerView.setLayoutManager(manager);
             mediaRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mediaRecyclerView.setAdapter(adapter=new MediaAdapter(getContext(),reviewMediaFileList));
-            ImageButton proceedButton=(ImageButton)(root.findViewById(R.id.proceed));
+            ImageButton proceedButton=findById(root,R.id.proceed);
             proceedButton.setOnClickListener(this);
 
         }
@@ -186,14 +190,13 @@ public class MediaUtilReviewFragment extends Fragment
 
         public class ContentItem extends AbstractMediaItem {
 
-            private DynamicImageView image;
-            private FloatingActionButton deleteFab;
+            @BindView(R.id.image) DynamicImageView image;
+            @BindView(R.id.deleteAction) FloatingActionButton deleteButton;
 
             public ContentItem(View itemView) {
                 super(itemView);
-                this.image = (DynamicImageView) (itemView.findViewById(R.id.image));
-                this.deleteFab=(FloatingActionButton)(itemView.findViewById(R.id.deleteAction));
-                deleteFab.setOnClickListener(new View.OnClickListener() {
+                ButterKnife.bind(this,itemView);
+                deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         int position=getAdapterPosition()-1;
@@ -222,11 +225,11 @@ public class MediaUtilReviewFragment extends Fragment
 
         public class CaptionItem extends AbstractMediaItem {
 
-            private EditText captionText;
+            @BindView(R.id.caption) EditText captionText;
 
             public CaptionItem(View itemView) {
                 super(itemView);
-                captionText=(EditText)itemView.findViewById(R.id.caption);
+                ButterKnife.bind(this,itemView);
             }
 
             @Override
@@ -249,7 +252,6 @@ public class MediaUtilReviewFragment extends Fragment
         public int getItemCount() {
             return mediaFileList.size()+1;
         }
-
 
 
         @Override

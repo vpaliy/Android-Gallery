@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">StudioQ</string>
-    <string name="deleteItem">Delete</string>
     <string name="folderName">Folder Name</string>
     <string name="fileCount">File count</string>
     <string name="copy">Copy</string>
@@ -9,12 +8,16 @@
     <string name="Cancel">Cancel</string>
     <string name="Okay">Okay</string>
     <string name="enterTheTitle">Untitled</string>
-    <string name="shareItem">Share</string>
     <string name="doYouWantToDelete">Do you want to delete last file?</string>
+
+    <!-- Common for menus !-->
+    <string name="add">Add</string>
+    <string name="shareItem">Share</string>
+    <string name="checkAll">Check all</string>
+    <string name="deleteItem">Delete</string>
 
     <!-- For utils !-->
     <string name="createAlbum">Create</string>
-    <string name="checkAll">Check all</string>
 
     <!-- For slider !-->
     <string name="filter">Filter</string>
@@ -25,4 +28,5 @@
     <string name="photosOnly">Photos</string>
     <string name="videoOnly">Video</string>
     <string name="allMedia">All</string>
+
 </resources>

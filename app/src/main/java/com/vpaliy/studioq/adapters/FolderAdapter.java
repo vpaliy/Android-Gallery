@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class FolderAdapter extends BaseAdapter {
 
     private final String KEY="adapter:mode";
@@ -77,19 +80,15 @@ public class FolderAdapter extends BaseAdapter {
 
     public class FolderViewHolder extends BaseAdapter.BaseViewHolder {
 
-        private ImageView icon;
-        private ImageView mMainImage;
-        private TextView mFolderName;
-        private TextView mImageCount;
-        private RelativeLayout bodyLayout;
+        @BindView(R.id.icon) ImageView icon;
+        @BindView(R.id.mainImage) ImageView mMainImage;
+        @BindView(R.id.folderName) TextView mFolderName;
+        @BindView(R.id.imageCount) TextView mImageCount;
+        @BindView(R.id.cardBody) RelativeLayout bodyLayout;
 
         public FolderViewHolder(View itemView) {
             super(itemView);
-            this.icon=(ImageView)(itemView.findViewById(R.id.icon));
-            this.mMainImage=(ImageView)(itemView.findViewById(R.id.mainImage));
-            this.mFolderName=(TextView) (itemView.findViewById(R.id.folderName));
-            this.mImageCount=(TextView)(itemView.findViewById(R.id.imageCount));
-            this.bodyLayout=(RelativeLayout)(itemView.findViewById(R.id.cardBody));
+            ButterKnife.bind(this,itemView);
         }
 
         @Override

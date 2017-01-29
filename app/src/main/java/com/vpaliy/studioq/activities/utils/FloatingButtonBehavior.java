@@ -6,14 +6,14 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 public class FloatingButtonBehavior extends FloatingActionButton.Behavior{
 
+    private static final String TAG=FloatingActionButton.class.getSimpleName();
 
-    public FloatingButtonBehavior() {
-        super();
-    }
 
     public FloatingButtonBehavior(@NonNull Context context, @NonNull AttributeSet attrs) {
         super(context,attrs);
@@ -22,9 +22,7 @@ public class FloatingButtonBehavior extends FloatingActionButton.Behavior{
     @Override
     public boolean onStartNestedScroll(CoordinatorLayout coordinatorLayout,
                                        FloatingActionButton child, View directTargetChild, View target, int nestedScrollAxes) {
-        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL ||
-                super.onStartNestedScroll(coordinatorLayout, child, directTargetChild, target,
-                        nestedScrollAxes);
+        return nestedScrollAxes == ViewCompat.SCROLL_AXIS_VERTICAL;
     }
 
     @Override
@@ -33,13 +31,16 @@ public class FloatingButtonBehavior extends FloatingActionButton.Behavior{
         super.onNestedScroll(coordinatorLayout, child, target, dxConsumed, dyConsumed, dxUnconsumed,
                 dyUnconsumed);
 
-        if (dyConsumed >= 0){
-            if(child.getVisibility() == View.VISIBLE)
-                child.hide();
-        } else if (dyConsumed <=0) {
-            if(child.getVisibility()!=View.VISIBLE)
-                child.show();
+        if (dyConsumed > 0) {
+            CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) child.getLayoutParams();
+            int fab_bottomMargin = layoutParams.bottomMargin;
+            child.animate().translationY(child.getHeight() + fab_bottomMargin).setInterpolator(new LinearInterpolator()).start();
+        } else if (dyConsumed < 0) {
+            child.animate().translationY(0).setInterpolator(new LinearInterpolator()).start();
         }
+
+        Log.d(TAG,Integer.toString(dyConsumed));
+
     }
 
 

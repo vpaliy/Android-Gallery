@@ -23,6 +23,8 @@ import com.vpaliy.studioq.slider.screens.PlayerActivity;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.List;
 
+import static butterknife.ButterKnife.findById;
+
 public class ContentAdapter extends PagerAdapter {
 
     private static final String TAG=ContentAdapter.class.getSimpleName();
@@ -110,10 +112,10 @@ public class ContentAdapter extends PagerAdapter {
     private View createVideo(final int position, final ViewGroup container) {
         View root=inflater.inflate(R.layout.video_item,container,false);
         container.addView(root);
-        ImageView videoFrame=(ImageView)(root.findViewById(R.id.videoItem));
-        ImageView icon=(ImageView)(root.findViewById(R.id.icon));
 
-        Log.d(TAG,Integer.toString(position));
+        ImageView videoFrame=findById(root,R.id.videoItem);
+        ImageView icon=findById(root,R.id.icon);
+
         Glide.with(container.getContext())
                 .load(mediaFileList.get(position).mediaFile())
                 .asBitmap()

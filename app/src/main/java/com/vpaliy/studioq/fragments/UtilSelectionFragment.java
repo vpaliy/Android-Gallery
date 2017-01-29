@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.squareup.otto.Subscribe;
 import com.vpaliy.studioq.R;
@@ -28,6 +27,10 @@ import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 import java.util.List;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+import static butterknife.ButterKnife.findById;
 
 //TODO check out removing in BaseAdapter manually
 
@@ -86,7 +89,7 @@ public class UtilSelectionFragment extends Fragment {
     public void onViewCreated(View root, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(root, savedInstanceState);
         if(root!=null) {
-            Toolbar actionBar=(Toolbar)(root.findViewById(R.id.actionBar));
+            Toolbar actionBar=findById(root,R.id.actionBar);
             actionBar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -110,7 +113,7 @@ public class UtilSelectionFragment extends Fragment {
 
             adapter.turnOn();
 
-            RecyclerView recyclerView=(RecyclerView)(root.findViewById(R.id.mediaRecyclerView));
+            RecyclerView recyclerView=findById(root,R.id.mediaRecyclerView);
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(),4,GridLayoutManager.VERTICAL,false));
             recyclerView.setHasFixedSize(true);
             recyclerView.setItemAnimator(null);
@@ -126,7 +129,7 @@ public class UtilSelectionFragment extends Fragment {
     }
 
 
-    private class MediaAdapter extends BaseAdapter {
+    public class MediaAdapter extends BaseAdapter {
 
         private List<MediaFile> mediaFileList;
         private LayoutInflater inflater=LayoutInflater.from(getContext());
@@ -153,11 +156,11 @@ public class UtilSelectionFragment extends Fragment {
 
         public class MediaHolder extends BaseAdapter.BaseViewHolder {
 
-            private ImageView thumbImage;
+            @BindView(R.id.galleryItem) ImageView thumbImage;
 
             public MediaHolder(View itemView) {
                 super(itemView);
-                thumbImage=(ImageView)(itemView);   //TODO make sure here
+                ButterKnife.bind(this,itemView);
             }
 
             @Override

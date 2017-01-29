@@ -1,4 +1,3 @@
-
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,7 +15,7 @@
             android:id="@+id/actionBar"
             app:layout_scrollFlags="scroll|enterAlways|snap"
             android:minHeight="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
+            android:background="@color/colorWhite"
             android:theme="@style/Theme.AppCompat.Light"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"/>
@@ -39,7 +38,7 @@
         android:scaleY="0"
         android:layout_gravity="bottom|end"
         android:layout_width="wrap_content"
-        app:layout_behavior=".utils.FloatingButtonBehavior"
+        app:layout_behavior=".activities.utils.FloatingButtonBehavior"
         android:src="@android:drawable/ic_menu_camera"
         android:layout_height="wrap_content" />
 

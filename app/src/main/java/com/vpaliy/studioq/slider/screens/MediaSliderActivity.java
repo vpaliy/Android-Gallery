@@ -31,17 +31,27 @@ import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MediaSliderActivity extends AppCompatActivity
         implements OnBarChangeStateListener, OnSliderEventListener {
 
-    private ArrayList<MediaFile> mMediaFileList;
+    @BindView(R.id.actionBar)
+    protected Toolbar actionBar;
+
+    @BindView(R.id.mediaNavigator)
+    protected RecyclerView mediaNavigator;
+
+    @BindView(R.id.mediaSlider)
+    protected PhotoSlider mediaSlider;
+
+    private final VisibilityController visibilityController=new VisibilityController();
+    private  Thread navigationThread=new Thread(visibilityController);
+
+    private ArrayList<MediaFile> mediaData;
     private boolean hasDeletionOccurred;
-    private int mStartPosition;
-    private Toolbar mActionBar;
-    private RecyclerView mNavigationRecyclerView;
-    private PhotoSlider mSlidePager;
-    private final VisibilityController mVisibilityController=new VisibilityController();
-    private  Thread mNavigationRecyclerViewThread=new Thread(mVisibilityController);
+    private int startPosition;
 
     private ContentAdapter contentAdapter;
 
@@ -49,7 +59,7 @@ public class MediaSliderActivity extends AppCompatActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.slider_media_layout);
-
+        ButterKnife.bind(this);
         if(savedInstanceState==null) {
             savedInstanceState = getIntent().getExtras();
         }
@@ -59,10 +69,10 @@ public class MediaSliderActivity extends AppCompatActivity
 
     private void initActionBar() {
         getWindow().getDecorView().setBackgroundColor(Color.BLACK);
-        mActionBar=(Toolbar)(findViewById(R.id.actionBar));
-        mActionBar.setVisibility(View.INVISIBLE);
+
+        actionBar.setVisibility(View.INVISIBLE);
         // mActionBar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
-        mActionBar.setNavigationOnClickListener(new View.OnClickListener() {
+        actionBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
@@ -72,50 +82,50 @@ public class MediaSliderActivity extends AppCompatActivity
         //TODO consider screen rotation here
         if(getSupportActionBar()==null) {
             //TODO consider something about this action bar
-            mActionBar.setTitle("");
-            setSupportActionBar(mActionBar);
+            actionBar.setTitle("");
+            setSupportActionBar(actionBar);
         }
 
     }
 
     private void initUI(Bundle args) {
-        mMediaFileList=args.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
-        mStartPosition=args.getInt(ProjectUtils.POSITION);
+        mediaData=args.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+        startPosition=args.getInt(ProjectUtils.POSITION);
         hasDeletionOccurred=args.getBoolean(ProjectUtils.DELETED);
-        mSlidePager=(PhotoSlider) (findViewById(R.id.slider));
-        mSlidePager.setAdapter((contentAdapter=new ContentAdapter(this,mMediaFileList,mStartPosition,this)));
-        mSlidePager.setCurrentItem(mStartPosition);
-        initPager();
-        mNavigationRecyclerView = (RecyclerView) (findViewById(R.id.mediaSliderList));
-        mNavigationRecyclerView.setAdapter(new NavigationAdapter(MediaSliderActivity.this,mMediaFileList,this));
-        mNavigationRecyclerView.setLayoutManager(new LinearLayoutManager(MediaSliderActivity.this, LinearLayoutManager.HORIZONTAL,false));
-        mNavigationRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mNavigationRecyclerView.setVisibility(View.INVISIBLE);
-        mNavigationRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        mediaSlider.setAdapter((contentAdapter=new ContentAdapter(this,mediaData,startPosition,this)));
+        mediaSlider.setCurrentItem(startPosition);
+
+        initTransformation();
+
+        mediaNavigator.setAdapter(new NavigationAdapter(MediaSliderActivity.this,mediaData,this));
+        mediaNavigator.setLayoutManager(new LinearLayoutManager(MediaSliderActivity.this, LinearLayoutManager.HORIZONTAL,false));
+        mediaNavigator.setItemAnimator(new DefaultItemAnimator());
+        mediaNavigator.setVisibility(View.INVISIBLE);
+        mediaNavigator.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                mVisibilityController.turnOn();
+                visibilityController.turnOn();
             }
         });
-        onClick(mStartPosition);
+        onClick(startPosition);
 
 
     }
 
 
-    private void initPager() {
-        mSlidePager.setPageTransformer(false,new ZoomIn());
+    private void initTransformation() {
+        mediaSlider.setPageTransformer(false,new ZoomIn());
     }
 
 
     @Override
     public void onClick(int position) {
-        mSlidePager.setCurrentItem(position);
+        mediaSlider.setCurrentItem(position);
         //TODO make the rect for selected navigation image
-        mNavigationRecyclerView.scrollToPosition(position);
-        if(mNavigationRecyclerViewThread.isAlive()) {
-            mNavigationRecyclerViewThread.interrupt();
+        mediaNavigator.scrollToPosition(position);
+        if(navigationThread.isAlive()) {
+            navigationThread.interrupt();
             hideNavigationContentList();
         } else {
             showNavigationContentList();
@@ -126,31 +136,31 @@ public class MediaSliderActivity extends AppCompatActivity
 
     @Override
     public void onSwitchActionBarOn() {
-        mActionBar.setVisibility(View.VISIBLE);
-        mActionBar.setAlpha(0.0f);
-        mActionBar.animate()
+        actionBar.setVisibility(View.VISIBLE);
+        actionBar.setAlpha(0.0f);
+        actionBar.animate()
                 .translationY(0.0f)
                 .alpha(1.0f)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mActionBar.setVisibility(View.VISIBLE);
+                        actionBar.setVisibility(View.VISIBLE);
                     }
                 });
     }
 
     @Override
     public void onSwitchActionBarOff() {
-        mActionBar.animate()
-                .translationY(-mActionBar.getHeight())
+        actionBar.animate()
+                .translationY(-actionBar.getHeight())
                 .setInterpolator(new DecelerateInterpolator(1.5f))
                 .alpha(1.0f)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mActionBar.setVisibility(View.INVISIBLE);
+                        actionBar.setVisibility(View.INVISIBLE);
                     }
                 });
     }
@@ -198,7 +208,7 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
 
             case R.id.deleteItem: {
-                final MediaFile mediaFile = mMediaFileList.get(mSlidePager.getCurrentItem());
+                final MediaFile mediaFile = mediaData.get(mediaSlider.getCurrentItem());
                 //TODO consider languages here
                 new AlertDialog.Builder(this)
                         .setTitle("Are you sure that you want to delete " + mediaFile.mediaFile().getName())
@@ -211,7 +221,7 @@ public class MediaSliderActivity extends AppCompatActivity
                         .setPositiveButton(R.string.Okay, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                int index = mSlidePager.getCurrentItem();
+                                int index = mediaSlider.getCurrentItem();
                                 hasDeletionOccurred = true;
                                 new Thread(new Runnable() {
                                     @Override
@@ -219,13 +229,13 @@ public class MediaSliderActivity extends AppCompatActivity
                                         FileUtils.deleteFile(MediaSliderActivity.this, mediaFile);
                                     }
                                 }).start();
-                                if (mMediaFileList.size() == 1) {
-                                    mMediaFileList.remove(index);
+                                if (mediaData.size() == 1) {
+                                    mediaData.remove(index);
                                     onBackPressed();
                                 } else {
-                                    mMediaFileList.remove(index);
-                                    mSlidePager.getAdapter().notifyDataSetChanged();
-                                    mNavigationRecyclerView.getAdapter().notifyItemRemoved(index);
+                                    mediaData.remove(index);
+                                    mediaSlider.getAdapter().notifyDataSetChanged();
+                                    mediaNavigator.getAdapter().notifyItemRemoved(index);
                                 }
                             }
                         })
@@ -233,7 +243,7 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
             }
             case R.id.shareItem:
-                final MediaFile mediaFile=mMediaFileList.get(mSlidePager.getCurrentItem());
+                final MediaFile mediaFile=mediaData.get(mediaSlider.getCurrentItem());
                 Intent intent=new Intent();
                 intent.setAction(Intent.ACTION_SEND);
                 intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mediaFile.mediaFile()));
@@ -247,12 +257,12 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
 
             case R.id.showInfo:
-                DetailsProvider.provideFor(this,mMediaFileList.get(mSlidePager.getCurrentItem()));
+                DetailsProvider.provideFor(this,mediaData.get(mediaSlider.getCurrentItem()));
                 break;
 
             case R.id.filter: {
                 Intent dataIntent=new Intent(this,FilterActivity.class);
-                dataIntent.putExtra(ProjectUtils.MEDIA_DATA,mMediaFileList.get(mSlidePager.getCurrentItem()));
+                dataIntent.putExtra(ProjectUtils.MEDIA_DATA,mediaData.get(mediaSlider.getCurrentItem()));
             //    dataIntent.putExtra(ProjectUtils.BITMAP,contentAdapter.getCurrentBitmap());
                 startActivity(dataIntent);
                 break;
@@ -267,8 +277,8 @@ public class MediaSliderActivity extends AppCompatActivity
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,(mMediaFileList));
-        outState.putInt(ProjectUtils.POSITION,mStartPosition);
+        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,(mediaData));
+        outState.putInt(ProjectUtils.POSITION,startPosition);
         outState.putBoolean(ProjectUtils.DELETED,hasDeletionOccurred);
     }
 
@@ -300,14 +310,14 @@ public class MediaSliderActivity extends AppCompatActivity
 
 
     private void hideNavigationContentList() {
-        mNavigationRecyclerView.animate()
-                .translationY(mNavigationRecyclerView.getHeight())
+        mediaNavigator.animate()
+                .translationY(mediaNavigator.getHeight())
                 .alpha(1.0f)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mNavigationRecyclerView.setVisibility(View.INVISIBLE);
+                        mediaNavigator.setVisibility(View.INVISIBLE);
                     }
                 });
         onWindowFocusChanged(false);
@@ -315,9 +325,9 @@ public class MediaSliderActivity extends AppCompatActivity
     }
 
     private void showNavigationContentList() {
-        mNavigationRecyclerView.setVisibility(View.VISIBLE);
-        mNavigationRecyclerView.setAlpha(0.f);
-        mNavigationRecyclerView.animate()
+        mediaNavigator.setVisibility(View.VISIBLE);
+        mediaNavigator.setAlpha(0.f);
+        mediaNavigator.animate()
                 .translationY(0)
                 .alpha(1.0f)
                 .setListener(new AnimatorListenerAdapter() {
@@ -331,9 +341,9 @@ public class MediaSliderActivity extends AppCompatActivity
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if(mNavigationRecyclerViewThread.getState()!=Thread.State.NEW)
-                            mNavigationRecyclerViewThread=new Thread(mVisibilityController);
-                        mNavigationRecyclerViewThread.start();
+                        if(navigationThread.getState()!=Thread.State.NEW)
+                            navigationThread=new Thread(visibilityController);
+                        navigationThread.start();
                     }
                 });
     }
@@ -342,14 +352,14 @@ public class MediaSliderActivity extends AppCompatActivity
 
     @Override
     public boolean isNavigationActivated() {
-        return mNavigationRecyclerView.getVisibility()==View.VISIBLE;
+        return mediaNavigator.getVisibility()==View.VISIBLE;
     }
 
     @Override
     public void onBackPressed() {
         if(hasDeletionOccurred) {
             Intent data=new Intent();
-            data.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mMediaFileList);
+            data.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaData);
             setResult(RESULT_OK,data);
         }
         super.onBackPressed();

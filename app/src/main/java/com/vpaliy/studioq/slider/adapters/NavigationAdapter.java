@@ -1,7 +1,6 @@
 package com.vpaliy.studioq.slider.adapters;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +11,11 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
-
 import java.util.List;
+import butterknife.ButterKnife;
+import android.support.annotation.NonNull;
+import butterknife.BindView;
+
 
 public class NavigationAdapter extends
         RecyclerView.Adapter<NavigationAdapter.NavigationItem>  {
@@ -38,11 +40,11 @@ public class NavigationAdapter extends
     public class NavigationItem extends RecyclerView.ViewHolder
         implements View.OnClickListener {
 
-        private ImageView image;
+        @BindView(R.id.navigationImage) ImageView image;
 
         public NavigationItem(View itemView) {
             super(itemView);
-            this.image=(ImageView) (itemView);
+            ButterKnife.bind(this,itemView);
             image.setOnClickListener(this);
         }
 

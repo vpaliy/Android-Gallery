@@ -100,7 +100,7 @@ public final class FileUtils {
                             }
 
                             //TODO it ain't working because MediaFile is neither ImageFile nor VideoFile
-                            if(mediaFile instanceof VideoFile) {
+                            if(mediaFile.getType()== MediaFile.Type.IMAGE || mediaFile.getType()== MediaFile.Type.GIF) {
                                 context.getContentResolver().delete(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                                         MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.mediaFile().getAbsolutePath()});
                             }else {

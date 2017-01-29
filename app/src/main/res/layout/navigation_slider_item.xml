@@ -1,5 +1,6 @@
 <ImageView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigationImage"
     android:background="@drawable/dark_border"
     android:layout_width="100dp"
     android:layout_height="100dp"/>

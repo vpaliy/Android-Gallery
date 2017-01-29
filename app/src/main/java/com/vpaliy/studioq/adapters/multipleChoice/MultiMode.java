@@ -206,7 +206,9 @@ public class MultiMode {
     }
 
     void turnOn() {
+
         isActivated=true;
+        callback.onModeActivated();
 
         if(actionBar.getTranslationX()!=0.f||actionBar.getTranslationY()!=0.f) {
             actionBar.setTranslationX(0.f);
@@ -303,6 +305,7 @@ public class MultiMode {
                 actionBar.setBackgroundColor(prevState.toolbarColor);
                 actionBar.setTitle(prevState.title);
                 actionBar.setSubtitle(prevState.subTitle);
+                callback.onModeDisabled();
             }
         });
     }
@@ -319,6 +322,10 @@ public class MultiMode {
         }
 
         public abstract boolean onMenuItemClick(BaseAdapter adapter, MenuItem item);
+
+        public void onModeActivated() {}
+
+        public void onModeDisabled() {}
 
     }
 
