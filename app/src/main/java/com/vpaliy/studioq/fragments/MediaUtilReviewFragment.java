@@ -168,7 +168,7 @@ public class MediaUtilReviewFragment extends Fragment
 
         private final static int CONTENT_TYPE=1;
 
-        public MediaAdapter(Context context, ArrayList<MediaFile> mDataModel) {
+         MediaAdapter(Context context, ArrayList<MediaFile> mDataModel) {
             this.inflater=LayoutInflater.from(context);
             this.mediaFileList=mDataModel;
             this.glideInstance=Glide.get(context);
@@ -223,11 +223,11 @@ public class MediaUtilReviewFragment extends Fragment
 
         }
 
-        public class CaptionItem extends AbstractMediaItem {
+        class CaptionItem extends AbstractMediaItem {
 
             @BindView(R.id.caption) EditText captionText;
 
-            public CaptionItem(View itemView) {
+            CaptionItem(View itemView) {
                 super(itemView);
                 ButterKnife.bind(this,itemView);
             }

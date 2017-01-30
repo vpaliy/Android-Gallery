@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,6 +23,8 @@ import android.view.Window;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.model.MediaFile;
@@ -53,9 +57,7 @@ public class GalleryActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_layout);
         ButterKnife.bind(this);
-        if(savedInstanceState==null) {
-            savedInstanceState = getIntent().getExtras();
-        }
+
         initUI(savedInstanceState);
     }
 
@@ -73,15 +75,17 @@ public class GalleryActivity extends AppCompatActivity
     }
 
     private void initUI(Bundle args) {
-
-        mMediaFolder= args.getParcelable(ProjectUtils.MEDIA_DATA);
-        if(mMediaFolder!=null) {
-            FragmentManager manager = getSupportFragmentManager();
-            FragmentTransaction transaction = manager.beginTransaction();
-            transaction.replace(R.id.mediaFragmentPlaceHolder, GalleryFragment.PROVIDER.
-                            createInstance((ArrayList<MediaFile>) (mMediaFolder.getMediaFileList())),
-                    ProjectUtils.GALLERY_FRAGMENT);
-            transaction.commit();
+        if(args==null) {
+            args=getIntent().getExtras();
+            mMediaFolder= args.getParcelable(ProjectUtils.MEDIA_DATA);
+            if (mMediaFolder != null) {
+                FragmentManager manager = getSupportFragmentManager();
+                FragmentTransaction transaction = manager.beginTransaction();
+                transaction.replace(R.id.mediaFragmentPlaceHolder, GalleryFragment.PROVIDER.
+                                createInstance((ArrayList<MediaFile>) (mMediaFolder.getMediaFileList())),
+                        ProjectUtils.GALLERY_FRAGMENT);
+                transaction.commit();
+            }
         }
     }
 
@@ -97,6 +101,16 @@ public class GalleryActivity extends AppCompatActivity
         intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
         intent.putExtra(ProjectUtils.POSITION,launcher.position);
         startActivityForResult(intent,ProjectUtils.LAUNCH_SLIDER);
+    }
+
+    @Subscribe
+    public void onExit(@NonNull ExitEvent exitEvent) {
+        if(exitEvent.intent!=null) {
+            exitEvent.intent.putExtra(ProjectUtils.DELETED, true);
+            exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, mMediaFolder);
+            setResult(RESULT_OK, exitEvent.intent);
+            finish();
+        }
     }
 
     @Override
@@ -170,6 +184,7 @@ public class GalleryActivity extends AppCompatActivity
         }.execute(null, null);
 
     }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {

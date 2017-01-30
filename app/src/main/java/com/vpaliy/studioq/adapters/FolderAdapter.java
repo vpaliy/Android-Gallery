@@ -25,7 +25,6 @@ import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,7 +33,10 @@ import butterknife.ButterKnife;
 
 public class FolderAdapter extends BaseAdapter {
 
-    private final String KEY="adapter:mode";
+    private final String KEY_MODE="adapter:mode";
+    private final String KEY_DATA="adapter:data";
+
+    private final String TAG=FolderAdapter.class.getSimpleName();
 
     private final static float SCALE_F=0.85f;
     private LayoutInflater inflater;
@@ -51,13 +53,13 @@ public class FolderAdapter extends BaseAdapter {
         this.currentFolderList=mediaFolderList;
     }
 
-    public FolderAdapter(Context context, @NonNull  MultiMode mode,
-            List<MediaFolder> mediaFolderList, @NonNull Bundle state) {
+
+    public FolderAdapter(Context context, @NonNull  MultiMode mode, @NonNull Bundle state) {
         super(mode,true,state);
-        this.mediaFolderList=mediaFolderList;
+        this.mediaFolderList=state.getParcelableArrayList(KEY_DATA);
         this.currentFolderList=mediaFolderList;
         this.inflater=LayoutInflater.from(context);
-        adapterMode=Mode.valueOf(state.getString(KEY,Mode.ALL.name()));
+        adapterMode=Mode.valueOf(state.getString(KEY_MODE,Mode.ALL.name()));
         initCurrentList();
     }
 
@@ -78,7 +80,7 @@ public class FolderAdapter extends BaseAdapter {
         return currentFolderList.size();
     }
 
-    public class FolderViewHolder extends BaseAdapter.BaseViewHolder {
+    class FolderViewHolder extends BaseAdapter.BaseViewHolder {
 
         @BindView(R.id.icon) ImageView icon;
         @BindView(R.id.mainImage) ImageView mMainImage;
@@ -86,7 +88,7 @@ public class FolderAdapter extends BaseAdapter {
         @BindView(R.id.imageCount) TextView mImageCount;
         @BindView(R.id.cardBody) RelativeLayout bodyLayout;
 
-        public FolderViewHolder(View itemView) {
+        FolderViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }
@@ -254,6 +256,24 @@ public class FolderAdapter extends BaseAdapter {
         notifyItemRemoved(index);
     }
 
+    public void removeWith(MediaFolder folder) {
+        if(folder!=null) {
+            int removeIndex=currentFolderList.indexOf(folder);
+            if(removeIndex!=-1) {
+                currentFolderList.remove(removeIndex);
+                if (adapterMode != Mode.ALL) {
+                    int index = mediaFolderList.indexOf(folder);
+                    if (index != -1) {
+                        if (mediaFolderList.get(index).removeAll(folder)) {
+                            mediaFolderList.remove(index);
+                        }
+                    }
+                }
+                notifyItemRemoved(removeIndex);
+            }
+        }
+    }
+
     public void setData(List<MediaFolder> folderList) {
         if(folderList!=null) {
             currentFolderList=folderList;
@@ -277,7 +297,8 @@ public class FolderAdapter extends BaseAdapter {
     @Override
     public void saveState(@NonNull Bundle outState) {
         super.saveState(outState);
-        outState.putString(KEY,adapterMode.name());
+        outState.putParcelableArrayList(KEY_DATA,(ArrayList<MediaFolder>)(mediaFolderList));
+        outState.putString(KEY_MODE,adapterMode.name());
     }
 
     public enum Mode {

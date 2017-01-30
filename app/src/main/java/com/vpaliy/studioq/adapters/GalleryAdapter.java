@@ -54,12 +54,12 @@ public class GalleryAdapter extends BaseAdapter {
 
 
 
-    public final class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
+    final class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
         @BindView(R.id.mainImage) ImageView mImageView;
         @BindView(R.id.icon) ImageView icon;
 
-        public GalleryViewHolder(View itemView) {
+        GalleryViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }

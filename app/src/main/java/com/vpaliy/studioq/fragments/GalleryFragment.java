@@ -2,6 +2,7 @@ package com.vpaliy.studioq.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.BaseTransientBottomBar;
@@ -19,10 +20,13 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
+import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.FragmentPageAdapter;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import butterknife.BindView;
@@ -31,7 +35,9 @@ import butterknife.Unbinder;
 import static butterknife.ButterKnife.findById;
 
 
-public class GalleryFragment extends BaseMediaFragment<MediaFile> {
+public class GalleryFragment extends Fragment {
+
+    private static final String TAG=GalleryFragment.class.getSimpleName();
 
     @BindView(R.id.mediaRecyclerView)
     protected RecyclerView recyclerView;
@@ -40,6 +46,7 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
     protected FloatingActionButton actionButton;
 
     private GalleryAdapter adapter;
+    private ArrayList<MediaFile> mediaData;
 
     private Unbinder unbinder;
 
@@ -55,6 +62,16 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
         }
 
     };
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState==null) {
+            savedInstanceState=getArguments();
+        }
+        setRetainInstance(true);
+        restoreMediaDataList(savedInstanceState);
+    }
 
     private View.OnClickListener onNavigationIconClick=new View.OnClickListener() {
         @Override
@@ -103,6 +120,7 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
                 final ArrayList<MediaFile> deleteFolderList = adapter.getAllChecked();
                 final ArrayList<MediaFile> originalList=new ArrayList<>(adapter.getData());
                 int[] checked=adapter.getAllCheckedForDeletion();
+                //remove the items from the list
                 for(int index:checked) {
                     adapter.removeAt(index);
                 }
@@ -133,23 +151,37 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
         }
     }
 
-    private void deleteInBackground(List<MediaFile> mediaFileList, boolean finish) {
+    private void deleteInBackground(final List<MediaFile> mediaFileList, final boolean finish) {
+        new AsyncTask<Void,Void,Void>() {
 
+            @Override
+            protected Void doInBackground(Void... params) {
+                FileUtils.deleteFileList(getContext(),mediaFileList);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                if(finish) {
+                    EventBusProvider.defaultBus().post(new ExitEvent(new Intent()));
+                }
+            }
+        }.execute();
     }
 
 
-    //TODO may be you don't need that
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
         if(adapter!=null) {
             adapter.saveState(outState);
         }
+        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaData);
+        super.onSaveInstanceState(outState);
     }
 
-    @Override
-    public void restoreMediaDataList(Bundle savedInstanceState) {
-        this.mMediaDataList=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+    private void restoreMediaDataList(Bundle savedInstanceState) {
+        this.mediaData=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
     }
 
     @Override
@@ -174,9 +206,9 @@ public class GalleryFragment extends BaseMediaFragment<MediaFile> {
                     .setMenu(R.menu.gallery_menu, callback)
                     .build();
             if(savedInstanceState!=null) {
-                adapter = new GalleryAdapter(getContext(), mode, mMediaDataList,savedInstanceState);
+                adapter = new GalleryAdapter(getContext(), mode, mediaData,savedInstanceState);
             }else {
-                adapter = new GalleryAdapter(getContext(), mode, mMediaDataList);
+                adapter = new GalleryAdapter(getContext(), mode, mediaData);
             }
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3, GridLayoutManager.VERTICAL, false));
             recyclerView.setAdapter(adapter);

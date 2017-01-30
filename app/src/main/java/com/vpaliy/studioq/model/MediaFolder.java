@@ -2,9 +2,9 @@ package com.vpaliy.studioq.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.parceler.ParcelConstructor;
 import org.parceler.ParcelPropertyConverter;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,8 +17,8 @@ public final class MediaFolder implements Parcelable {
     @ParcelPropertyConverter(MediaFile.MediaListConverter.class)
     private List<MediaFile> mediaFileList;
 
-    private List<ImageFile> imageFileList;
-    private List<VideoFile> videoFileList;
+    private List<MediaFile> imageFileList;
+    private List<MediaFile> videoFileList;
 
     public MediaFolder(String folderName) {
         this.folderName = folderName;
@@ -27,10 +27,21 @@ public final class MediaFolder implements Parcelable {
         this.imageFileList=new ArrayList<>();
     }
 
-    public MediaFolder(Parcel in) {
+    private MediaFolder(Parcel in) {
         this.folderName=in.readString();
         mediaFileList=new ArrayList<>();
         in.readTypedList(mediaFileList, MediaFile.CREATOR);
+        if(mediaFileList!=null) {
+            videoFileList=new ArrayList<>();
+            imageFileList=new ArrayList<>();
+            for(MediaFile file:mediaFileList) {
+                if(file.getType()== MediaFile.Type.VIDEO) {
+                    videoFileList.add(file);
+                }else if(file.getType()== MediaFile.Type.IMAGE) {
+                    imageFileList.add(file);
+                }
+            }
+        }
     }
 
     @ParcelConstructor
@@ -49,7 +60,7 @@ public final class MediaFolder implements Parcelable {
         return this;
     }
 
-    public MediaFolder addAll(Collection<? extends MediaFile> collection) {
+    public  MediaFolder addAll(Collection<? extends MediaFile> collection) {
         mediaFileList.addAll(collection);
         return this;
     }
@@ -62,6 +73,17 @@ public final class MediaFolder implements Parcelable {
     public void addImageFile(ImageFile imageFile) {
         mediaFileList.add(imageFile);
         imageFileList.add(imageFile);
+    }
+
+    //returns true if folder is empty now
+    public boolean removeAll(MediaFolder mediaFolder) {
+        if(mediaFolder!=null) {
+            mediaFileList.removeAll(mediaFolder.getMediaFileList());
+            imageFileList.removeAll(mediaFolder.getImageFileList());
+            videoFileList.removeAll(mediaFolder.getVideoFileList());
+            return mediaFileList.isEmpty();
+        }
+        return false;
     }
 
     public String getAbsolutePathToFolder() {
@@ -96,13 +118,12 @@ public final class MediaFolder implements Parcelable {
         return imageFileList.get(0);
     }
 
-
     //Data providers
-    public List<ImageFile> getImageFileList() {
+    public List<MediaFile> getImageFileList() {
         return imageFileList;
     }
 
-    public List<VideoFile> getVideoFileList() {
+    public List<MediaFile> getVideoFileList() {
         return videoFileList;
     }
 
@@ -124,6 +145,16 @@ public final class MediaFolder implements Parcelable {
         return getFolderName();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof MediaFolder)) {
+            return false;
+        }
+        MediaFolder folder=(MediaFolder) (obj);
+        return new EqualsBuilder()
+                .append(folder.folderName,folderName)
+                .isEquals();
+    }
 
     public MediaFolder createImageSubfolder() {
         MediaFolder imageFolder=new MediaFolder(folderName);

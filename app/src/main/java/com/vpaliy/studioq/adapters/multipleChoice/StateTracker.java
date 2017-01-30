@@ -22,7 +22,7 @@ class StateTracker implements Parcelable {
 
     StateTracker(){}
 
-    public StateTracker(Parcel in) {
+    private StateTracker(Parcel in) {
         int size=in.readInt();
         if(size>0) {
             stateMap=new ArrayMap<>(size);
@@ -30,6 +30,7 @@ class StateTracker implements Parcelable {
                 stateMap.put(in.readInt(),in.readInt());
             }
         }
+        checkedItemCount=in.readInt();
     }
 
     int getStateFor(int position) {
@@ -117,6 +118,7 @@ class StateTracker implements Parcelable {
             out.writeInt(entry.getKey());
             out.writeInt(entry.getValue());
         }
+        out.writeInt(checkedItemCount);
     }
 
     public static final Creator<StateTracker> CREATOR=new Creator<StateTracker>() {
@@ -131,7 +133,7 @@ class StateTracker implements Parcelable {
         }
     };
 
-    public void saveState(String key, @NonNull Bundle outState) {
+    void saveState(String key, @NonNull Bundle outState) {
         outState.putParcelable(key,this);
     }
 }

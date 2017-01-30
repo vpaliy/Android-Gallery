@@ -47,7 +47,7 @@ public class MultiMode {
     private Vibrator vibrator;
     private int vibrationLength=10; //be default it's 10
 
-    public MultiMode(Builder builder) {
+    MultiMode(Builder builder) {
         this.actionBar=builder.toolbar;
         this.prevState=initPrevState(actionBar);
         this.activity=builder.activity;

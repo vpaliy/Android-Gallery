@@ -197,23 +197,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void makeQuery(final Bundle savedInstanceState) {
-        new DataProvider(this) {
-            @Override
-            public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
-                MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                        .setMenu(R.menu.main_menu, callback)
-                        .setBackgroundColor(Color.WHITE)
-                        .build();
-                if(savedInstanceState==null) {
+        adapter=null;
+        final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
+                .setMenu(R.menu.main_menu, callback)
+                .setBackgroundColor(Color.WHITE)
+                .build();
+        contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                2, GridLayoutManager.VERTICAL, false));
+        if(savedInstanceState!=null) {
+            adapter=new FolderAdapter(this,mode,savedInstanceState);
+            contentGrid.setAdapter(adapter);
+        }
+
+        if(adapter==null||adapter.getItemCount()==0) {
+            new DataProvider(this) {
+                @Override
+                public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
                     adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
-                }else {
-                    adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders, savedInstanceState);
+                    //TODO replace with XML
+                    contentGrid.setAdapter(adapter);
                 }
-                contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
-                        2,GridLayoutManager.VERTICAL, false));  //TODO replace with XML
-                contentGrid.setAdapter(adapter);
-            }
-        };
+            };
+        }
     }
 
     private void startSettings() {
@@ -280,7 +285,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         if(adapter!=null) {
             adapter.onResume();
         }
@@ -356,9 +360,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void shareWith() {
-
-    }
 
     @Override
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
@@ -368,15 +369,11 @@ public class MainActivity extends AppCompatActivity {
                     new AsyncOnResultTask().execute(data);
                     break;
                 case ProjectUtils.LAUNCH_GALLERY:
-                    if(data.getBooleanExtra(ProjectUtils.DELETED,false))
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                makeQuery(null);    //TODO check out this code
-                            }
-                        });
+                    if(data.getBooleanExtra(ProjectUtils.DELETED,false)) {
+                        MediaFolder folder=data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
+                        adapter.removeWith(folder);
+                    }
                     break;
-
             }
         }
 
@@ -425,7 +422,7 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, ProjectUtils.CREATE_MEDIA_FOLDER);
         }else {
             //TODO language
-            Toast.makeText(this,"There is no media files",Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"You don't have any photos",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -447,10 +444,7 @@ public class MainActivity extends AppCompatActivity {
                 String pathTo= Environment.getExternalStorageDirectory() + File.separator + folderName;
                 File mediaFolder=new File(pathTo);
                 if(!mediaFolder.mkdir()) {
-                    if(!mediaFolder.exists())
-                        Log.e(TAG,"Cannot create a folder here "+pathTo);
-                    else
-                        Log.e(TAG,"Folder exists "+pathTo);
+                    Toast.makeText(MainActivity.this, "Failed to create a folder", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 FileUtils.copyFileList(MainActivity.this,contentList,mediaFolder,moveTo);

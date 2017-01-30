@@ -2,8 +2,10 @@ package com.vpaliy.studioq.adapters.multipleChoice;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseViewHolder> {
@@ -72,7 +74,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
 
         }
 
-        public final void determineState() {
+        protected final void determineState() {
             if(isScreenRotation) {
                 isScreenRotation=false;
                 if(mode.isActivated()) {
@@ -199,7 +201,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         return resultArray;
     }
 
-    public int[] getAllChecked(boolean cancel) {
+    protected int[] getAllChecked(boolean cancel) {
         int[] result=tracker.getSelectedItemArray(cancel);
         if(cancel) {
             update(result);
@@ -232,7 +234,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
     }
 
     @CallSuper
-    public void removeAt(int index, boolean animate) {
+    protected void removeAt(int index, boolean animate) {
         tracker.setStateFor(index,animate?StateTracker.EXIT:StateTracker.DEFAULT);
         mode.update(tracker.getCheckedItemCount());
     }
