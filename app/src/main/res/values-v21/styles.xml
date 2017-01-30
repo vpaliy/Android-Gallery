@@ -3,7 +3,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="android:windowActivityTransitions">true</item>
+      <!--  <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
 
         <item name="android:windowAllowEnterTransitionOverlap">true</item>
@@ -11,7 +11,7 @@
 
         <item name="android:windowEnterTransition">@transition/enter</item>
         <item name="android:windowReturnTransition">@transition/return_transition</item>
-
+        !-->
         <item name="colorPrimary">@color/colorWhite</item>
         <item name="colorPrimaryDark">@android:color/darker_gray</item>
         <item name="colorAccent">@color/colorAccent</item>

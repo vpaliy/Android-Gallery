@@ -57,6 +57,9 @@ public class GalleryFragment extends Fragment {
                 case R.id.deleteItem:
                     delete();
                     break;
+                case R.id.checkAll:
+                    adapter.checkAll(true);
+                    break;
             }
             return true;
         }

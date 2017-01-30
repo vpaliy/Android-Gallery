@@ -35,6 +35,13 @@ public class MediaFile implements Parcelable{
         this.Id=cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID));
     }
 
+    public MediaFile(MediaFile mediaFile, File file) {
+        this.mediaFile=file.getAbsolutePath();
+        this.mimeType=mediaFile.mimeType;
+        this.Id=mediaFile.Id;
+        this.type=mediaFile.type;
+    }
+
     public MediaFile(Parcel in) {
         this.mediaFile=in.readString();
         this.mimeType=in.readString();

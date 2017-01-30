@@ -274,6 +274,21 @@ public class FolderAdapter extends BaseAdapter {
         }
     }
 
+    public void addFolder(@NonNull MediaFolder folder) {
+        int index=mediaFolderList.size()!=0?mediaFolderList.size()-1:0;
+        mediaFolderList.add(index,folder);
+        if(adapterMode!=Mode.ALL) {
+            index=currentFolderList.size()!=0?currentFolderList.size()-1:0;
+            if(adapterMode==Mode.IMAGE) {
+                if (folder.getCoverForImage() != null)
+                    currentFolderList.add(index,folder);
+            }else if(folder.getCoverForVideo()!=null) {
+                currentFolderList.add(index,folder);
+            }
+        }
+        notifyItemInserted(index);
+    }
+
     public void setData(List<MediaFolder> folderList) {
         if(folderList!=null) {
             currentFolderList=folderList;

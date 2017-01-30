@@ -10,7 +10,6 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -21,7 +20,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -39,7 +37,6 @@ import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -365,15 +362,18 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode,int resultCode,Intent data) {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case ProjectUtils.CREATE_MEDIA_FOLDER:
-                    new AsyncOnResultTask().execute(data);
+                case ProjectUtils.CREATE_MEDIA_FOLDER: {
+                    MediaFolder folder = data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
+                    adapter.addFolder(folder);
                     break;
-                case ProjectUtils.LAUNCH_GALLERY:
-                    if(data.getBooleanExtra(ProjectUtils.DELETED,false)) {
-                        MediaFolder folder=data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
+                }
+                case ProjectUtils.LAUNCH_GALLERY: {
+                    if (data.getBooleanExtra(ProjectUtils.DELETED, false)) {
+                        MediaFolder folder = data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
                         adapter.removeWith(folder);
                     }
                     break;
+                }
             }
         }
 
@@ -402,7 +402,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //TODO provide all of the media files
     private void addMediaFolder() {
         Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
         List<MediaFolder> folderList=adapter.geMediaFolderList();
@@ -421,39 +420,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaFileList);
             startActivityForResult(intent, ProjectUtils.CREATE_MEDIA_FOLDER);
         }else {
-            //TODO language
             Toast.makeText(this,"You don't have any photos",Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-    private class AsyncOnResultTask extends AsyncTask<Intent,Void,Void> {
-
-        @Override
-        protected Void doInBackground(Intent... intents) {
-            createFolderOnResult(intents[0]);
-            return null;
-        }
-
-        private void createFolderOnResult(Intent data) {
-            Bundle folderData=data.getExtras();
-            String folderName=folderData.getString(ProjectUtils.MEDIA_TITLE);
-            boolean moveTo=data.getBooleanExtra(ProjectUtils.MOVE_FILE_TO,false);
-            List<MediaFile> contentList=folderData.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
-            if(folderName!=null) {
-                String pathTo= Environment.getExternalStorageDirectory() + File.separator + folderName;
-                File mediaFolder=new File(pathTo);
-                if(!mediaFolder.mkdir()) {
-                    Toast.makeText(MainActivity.this, "Failed to create a folder", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                FileUtils.copyFileList(MainActivity.this,contentList,mediaFolder,moveTo);
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            makeQuery(null);
         }
     }
 }

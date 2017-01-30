@@ -29,4 +29,10 @@
         android:title="@string/move">
     </item>
 
+    <item
+        android:id="@+id/checkAll"
+        app:showAsAction="never"
+        android:title="@string/checkAll">
+    </item>
+
 </menu>

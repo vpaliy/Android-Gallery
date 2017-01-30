@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.VideoFile;
@@ -26,7 +27,7 @@ public final class FileUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static   void makeFileCopy(File source, File dest) throws IOException {
+    private static void makeFileCopy(File source, File dest) throws IOException {
         InputStream is = null;
         OutputStream os = null;
         try {
@@ -38,10 +39,14 @@ public final class FileUtils {
                 os.write(buffer, 0, length);
             }
         }finally {
-            if(is!=null)
-                is.close();
-            if(os!=null)
-                os.close();
+            try {
+                if (is != null)
+                    is.close();
+                if (os != null)
+                    os.close();
+            }catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -75,11 +80,16 @@ public final class FileUtils {
 
     }
 
-    public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo) {
+    public static List<MediaFile> copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo) {
+       return copyFileList(context,contentList,mediaFolder,moveTo,null);
+    }
 
+    public static List<MediaFile> copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo, UpdateCallback callback) {
+        List<MediaFile> result=new LinkedList<>();
         if (contentList != null) {
             ContentValues values=new ContentValues();
-            for (MediaFile mediaFile : contentList) {
+            for (int index=0;index<contentList.size();index++) {
+                MediaFile mediaFile=contentList.get(index);
                 File file = new File(mediaFolder, mediaFile.mediaFile().getName());
                 if (!file.exists()) {
                     try {
@@ -99,7 +109,6 @@ public final class FileUtils {
                                 Log.e(TAG, "Cannot delete file " + mediaFile.mediaFile().getAbsoluteFile());
                             }
 
-                            //TODO it ain't working because MediaFile is neither ImageFile nor VideoFile
                             if(mediaFile.getType()== MediaFile.Type.IMAGE || mediaFile.getType()== MediaFile.Type.GIF) {
                                 context.getContentResolver().delete(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                                         MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.mediaFile().getAbsolutePath()});
@@ -120,11 +129,24 @@ public final class FileUtils {
                         values.put(MediaStore.Images.ImageColumns.DATA, file.getAbsolutePath());
                         context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                     }
+                    result.add(convertToCopy(file,mediaFile));
+                    if(callback!=null) {
+                        callback.onUpdate(index,contentList.size());
+                    }
                 }
             }
         }
-
+        return result;
     }
 
+
+    private static MediaFile convertToCopy(File to, MediaFile from) {
+        return new MediaFile(from,to);
+    }
+
+
+    public interface UpdateCallback {
+        void onUpdate(int index, int max);
+    }
 
 }
