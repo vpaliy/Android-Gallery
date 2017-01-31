@@ -2,6 +2,7 @@ package com.vpaliy.studioq.fragments;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -56,6 +57,9 @@ public class GalleryFragment extends Fragment {
             switch (item.getItemId()) {
                 case R.id.deleteItem:
                     delete();
+                    break;
+                case R.id.shareItem:
+                    share();
                     break;
                 case R.id.checkAll:
                     adapter.checkAll(true);
@@ -122,11 +126,19 @@ public class GalleryFragment extends Fragment {
             if (adapter.isMultiModeActivated()) {
                 final ArrayList<MediaFile> deleteFolderList = adapter.getAllChecked();
                 final ArrayList<MediaFile> originalList=new ArrayList<>(adapter.getData());
-                int[] checked=adapter.getAllCheckedForDeletion();
+                recyclerView.setItemAnimator(null);
+                final int[] checked=adapter.getAllCheckedForDeletion();
                 //remove the items from the list
-                for(int index:checked) {
-                    adapter.removeAt(index);
-                }
+                recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        recyclerView.setItemAnimator(new DefaultItemAnimator());
+                        for(int index:checked) {
+                            adapter.removeAt(index);
+                        }
+                    }
+                });
+
                 Snackbar.make(root,
                         //TODO support for languages here
                         Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)
@@ -156,7 +168,6 @@ public class GalleryFragment extends Fragment {
 
     private void deleteInBackground(final List<MediaFile> mediaFileList, final boolean finish) {
         new AsyncTask<Void,Void,Void>() {
-
             @Override
             protected Void doInBackground(Void... params) {
                 FileUtils.deleteFileList(getContext(),mediaFileList);
@@ -173,6 +184,20 @@ public class GalleryFragment extends Fragment {
         }.execute();
     }
 
+    private void share() {
+        List<MediaFile> data=adapter.getAllChecked();
+        Intent shareIntent=new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+        ArrayList<Uri> sharedData=new ArrayList<>(data.size());
+        for(MediaFile mediaFile:data) {
+            sharedData.add(Uri.fromFile(mediaFile.mediaFile()));
+        }
+        onNavigationIconClick.onClick(null);
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM,sharedData);
+        shareIntent.setType("image/*");
+        getContext().startActivity(Intent.createChooser(shareIntent,"Share via"));
+
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {

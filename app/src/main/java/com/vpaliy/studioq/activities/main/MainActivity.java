@@ -211,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
                     adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
-                    //TODO replace with XML
                     contentGrid.setAdapter(adapter);
                 }
             };
@@ -302,10 +301,17 @@ public class MainActivity extends AppCompatActivity {
             if (adapter.isMultiModeActivated()) {
                 final ArrayList<MediaFolder> deleteFolderList = adapter.getAllChecked();
                 final List<MediaFolder> originalList=new ArrayList<>(adapter.getData());
-                int[] checked=adapter.getAllCheckedForDeletion();
-                for(int index:checked) {
-                    adapter.removeAt(index);
-                }
+                contentGrid.setItemAnimator(null);
+                final int[] checked=adapter.getAllCheckedForDeletion();
+                contentGrid.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        contentGrid.setItemAnimator(new DefaultItemAnimator());
+                        for(int index:checked) {
+                            adapter.removeAt(index);
+                        }
+                    }
+                });
                 Snackbar.make(findViewById(R.id.rootView),
                         //TODO support for languages here
                         Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)

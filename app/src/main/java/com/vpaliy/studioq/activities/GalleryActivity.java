@@ -4,26 +4,17 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BaseTransientBottomBar;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.transition.Explode;
-import android.transition.Fade;
-import android.transition.Transition;
 import android.view.View;
-import android.view.Window;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-
 import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
@@ -37,7 +28,6 @@ import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.R;
 import com.squareup.otto.Subscribe;
-
 import butterknife.ButterKnife;
 
 
@@ -137,55 +127,6 @@ public class GalleryActivity extends AppCompatActivity
         }
     }
 
-    public void onDeleteMediaFile(final GalleryAdapter adapter, final ArrayList<MediaFile> fullMediaFileList, final ArrayList<MediaFile> deleteMediaFileList) {
-        Snackbar.make(findViewById(R.id.rootView),
-                //TODO support for languages here
-                Integer.toString(deleteMediaFileList.size())+" moved to trash",7000)
-                .setAction("UNDO", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                    }
-                })
-                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                    @Override
-                    public void onDismissed(Snackbar transientBottomBar, int event) {
-                        super.onDismissed(transientBottomBar, event);
-                        switch (event) {
-                            case DISMISS_EVENT_SWIPE:
-                            case DISMISS_EVENT_TIMEOUT:
-                                onDeleteMediaFileList(deleteMediaFileList,fullMediaFileList);
-                        }
-                    }
-                })
-                .show();
-    }
-
-    private void onDeleteMediaFileList(final List<MediaFile> deleteMediaFileList, final List<MediaFile> fullMediaFileList) {
-
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... aVoids) {
-                FileUtils.deleteFileList(GalleryActivity.this,deleteMediaFileList);
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                Intent data=new Intent();
-                data.putExtra(ProjectUtils.DELETED,true);
-                setResult(RESULT_OK,data);
-                if(fullMediaFileList!=null) {
-                    if (deleteMediaFileList.size() == fullMediaFileList.size())
-                        finish();
-                }
-            }
-
-        }.execute(null, null);
-
-    }
-
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -250,7 +191,7 @@ public class GalleryActivity extends AppCompatActivity
                             }
                         }
                     })
-                    .setCallback(new Snackbar.Callback() {
+                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
                         @Override
                         public void onDismissed(Snackbar snackbar, int event) {
                             super.onDismissed(snackbar, event);
@@ -280,7 +221,7 @@ public class GalleryActivity extends AppCompatActivity
                                             }
 
                                         }
-                                    }.execute(null,null);
+                                    }.execute();
                                     break;
                             }
                         }
@@ -327,8 +268,4 @@ public class GalleryActivity extends AppCompatActivity
         getWindow().setSharedElementsUseOverlay(true);  */
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
 }

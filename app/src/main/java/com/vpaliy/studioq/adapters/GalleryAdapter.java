@@ -25,7 +25,6 @@ import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -54,7 +53,7 @@ public class GalleryAdapter extends BaseAdapter {
 
 
 
-    final class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
+     class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
         @BindView(R.id.mainImage) ImageView mImageView;
         @BindView(R.id.icon) ImageView icon;
@@ -262,7 +261,7 @@ public class GalleryAdapter extends BaseAdapter {
     }
 
     public void removeAt(int index) {
-        super.removeAt(index,true);
+     //   super.removeAt(index,false);
         mediaFileList.remove(index);
         notifyItemRemoved(index);
     }

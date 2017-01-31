@@ -46,6 +46,7 @@
                 android:id="@+id/folderName"
                 style="@style/Base.TextAppearance.AppCompat.Large"
                 android:textStyle="bold"
+                android:textColor="@color/colorAccent"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginLeft="10dp"
