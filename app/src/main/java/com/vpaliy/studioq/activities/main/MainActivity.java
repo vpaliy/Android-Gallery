@@ -325,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
                                 switch (event) {
                                     case DISMISS_EVENT_SWIPE:
                                     case DISMISS_EVENT_TIMEOUT:
+                                        showButton();
                                         deleteInBackground(deleteFolderList, adapter.getAdapterMode());
                                         break;
                                 }

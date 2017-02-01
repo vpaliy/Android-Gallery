@@ -1,11 +1,14 @@
 package com.vpaliy.studioq.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -27,8 +30,8 @@ import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
+import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.FileUtils;
-import com.vpaliy.studioq.utils.FragmentPageAdapter;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,6 +43,15 @@ public class GalleryFragment extends Fragment {
 
     private static final String TAG=GalleryFragment.class.getSimpleName();
 
+
+    public static GalleryFragment newInstance(@NonNull MediaFolder folder) {
+        GalleryFragment fragment=new GalleryFragment();
+        Bundle args=new Bundle();
+        args.putParcelable(ProjectUtils.MEDIA_DATA,folder);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @BindView(R.id.mediaRecyclerView)
     protected RecyclerView recyclerView;
 
@@ -47,15 +59,19 @@ public class GalleryFragment extends Fragment {
     protected FloatingActionButton actionButton;
 
     private GalleryAdapter adapter;
-    private ArrayList<MediaFile> mediaData;
+    private MediaFolder mediaFolder;
 
     private Unbinder unbinder;
 
     private MultiMode.Callback callback=new MultiMode.Callback() {
+
+        private boolean isDeleteAction;
+
         @Override
         public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.deleteItem:
+                    isDeleteAction=true;
                     delete();
                     break;
                 case R.id.shareItem:
@@ -68,7 +84,22 @@ public class GalleryFragment extends Fragment {
             return true;
         }
 
+        @Override
+        public void onModeActivated() {
+            super.onModeActivated();
+            hideActionButton();
+        }
+
+        @Override
+        public void onModeDisabled() {
+            super.onModeDisabled();
+            if(!isDeleteAction) {
+                showActionButton();
+            }
+
+        }
     };
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +107,7 @@ public class GalleryFragment extends Fragment {
         if(savedInstanceState==null) {
             savedInstanceState=getArguments();
         }
+
         setRetainInstance(true);
         restoreMediaDataList(savedInstanceState);
     }
@@ -100,22 +132,25 @@ public class GalleryFragment extends Fragment {
         }
     };
 
-    public final static FragmentPageAdapter.FragmentInstanceProvider<MediaFile> PROVIDER=new FragmentPageAdapter.FragmentInstanceProvider<MediaFile>() {
-        @Override
-        public Fragment createInstance(ArrayList<MediaFile> mDataModel) {
-            GalleryFragment galleryFragment=new GalleryFragment();
-            Bundle args=new Bundle();
-            args.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mDataModel);
-            galleryFragment.setArguments(args);
-            return galleryFragment;
-        }
-    };
 
     @Override
     public void onResume() {
         super.onResume();
+        boolean isModeActivated=false;
         if(adapter!=null) {
             adapter.onResume();
+            isModeActivated=adapter.isMultiModeActivated();
+        }
+
+        if(!isModeActivated) {
+            if(actionButton!=null) {
+                actionButton.setVisibility(View.VISIBLE);
+                if (actionButton.getScaleX() < 1f) {
+                    actionButton.animate().scaleX(1.f).scaleY(1.f)
+                            .setListener(null).setDuration(200)
+                            .start();
+                }
+            }
         }
     }
 
@@ -145,6 +180,7 @@ public class GalleryFragment extends Fragment {
                         .setAction("UNDO", new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
+                                showActionButton();
                                 adapter.setData(originalList);
                             }
                         })
@@ -155,8 +191,9 @@ public class GalleryFragment extends Fragment {
                                 switch (event) {
                                     case DISMISS_EVENT_SWIPE:
                                     case DISMISS_EVENT_TIMEOUT:
+                                        showActionButton();
                                         deleteInBackground(deleteFolderList,
-                                             deleteFolderList.size()==originalList.size());
+                                                deleteFolderList.size()==originalList.size());
                                         break;
                                 }
                             }
@@ -199,17 +236,33 @@ public class GalleryFragment extends Fragment {
 
     }
 
+    public void showActionButton() {
+        if(actionButton!=null) {
+            if(!actionButton.isShown()) {
+                actionButton.show();
+            }
+        }
+    }
+
+    public void hideActionButton() {
+        if(actionButton!=null) {
+            if (actionButton.isShown()) {
+                actionButton.hide();
+            }
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         if(adapter!=null) {
             adapter.saveState(outState);
         }
-        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaData);
+        outState.putParcelable(ProjectUtils.MEDIA_DATA,mediaFolder);
         super.onSaveInstanceState(outState);
     }
 
     private void restoreMediaDataList(Bundle savedInstanceState) {
-        this.mediaData=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+        this.mediaFolder=savedInstanceState.getParcelable(ProjectUtils.MEDIA_DATA);
     }
 
     @Override
@@ -234,9 +287,9 @@ public class GalleryFragment extends Fragment {
                     .setMenu(R.menu.gallery_menu, callback)
                     .build();
             if(savedInstanceState!=null) {
-                adapter = new GalleryAdapter(getContext(), mode, mediaData,savedInstanceState);
+                adapter = new GalleryAdapter(getContext(), mode, mediaFolder.getMediaFileList(),savedInstanceState);
             }else {
-                adapter = new GalleryAdapter(getContext(), mode, mediaData);
+                adapter = new GalleryAdapter(getContext(), mode, mediaFolder.getMediaFileList());
             }
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3, GridLayoutManager.VERTICAL, false));
             recyclerView.setAdapter(adapter);
@@ -249,6 +302,15 @@ public class GalleryFragment extends Fragment {
         unbinder.unbind();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(actionButton!=null) {
+            actionButton.hide();
+        }
+    }
+
+
     public boolean onBackPressed() {
         if(adapter.isMultiModeActivated()) {
             adapter.unCheckAll(false);
@@ -260,4 +322,5 @@ public class GalleryFragment extends Fragment {
     public void openCamera(View view) {
         startActivity(new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA));
     }
+
 }

@@ -33,19 +33,19 @@ public class GalleryAdapter extends BaseAdapter {
     private static final String TAG=GalleryAdapter.class.getSimpleName();
     private final static float SCALE_F=0.85f;
 
-    private ArrayList<MediaFile> mediaFileList;
+    private List<MediaFile> mediaFileList;
     private LayoutInflater inflater;
 
     private boolean hasFocus=true;
 
-    public GalleryAdapter(Context context, MultiMode mode, ArrayList<MediaFile> mDataModel) {
+    public GalleryAdapter(Context context, MultiMode mode, List<MediaFile> mDataModel) {
         super(mode,true);
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mDataModel;
     }
 
     public GalleryAdapter(Context context, MultiMode mode,
-            @NonNull ArrayList<MediaFile> mDataModel,@NonNull Bundle savedInstanceState) {
+            @NonNull List<MediaFile> mDataModel,@NonNull Bundle savedInstanceState) {
         super(mode,true,savedInstanceState);
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mDataModel;

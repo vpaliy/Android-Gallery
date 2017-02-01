@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BaseTransientBottomBar;
@@ -12,7 +13,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Explode;
+import android.transition.Fade;
+import android.transition.Transition;
 import android.view.View;
+import android.view.Window;
 import java.io.File;
 import java.util.ArrayList;
 import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
@@ -25,6 +30,7 @@ import com.vpaliy.studioq.fragments.GalleryFragment;
 import com.vpaliy.studioq.fragments.MediaFolderUtilSelectionFragment;
 import com.vpaliy.studioq.slider.screens.MediaSliderActivity;
 import com.vpaliy.studioq.utils.FileUtils;
+import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.R;
 import com.squareup.otto.Subscribe;
@@ -36,11 +42,14 @@ public class GalleryActivity extends AppCompatActivity
             OnMediaContainerSelectedListener{
 
     private final static String TAG=GalleryActivity.class.getSimpleName();
-    private MediaFolder mMediaFolder;
+    private MediaFolder mediaFolder;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
+            requestFeature();
+        }
         setContentView(R.layout.gallery_layout);
         ButterKnife.bind(this);
         initUI(savedInstanceState);
@@ -62,14 +71,20 @@ public class GalleryActivity extends AppCompatActivity
     private void initUI(Bundle args) {
         if(args==null) {
             args=getIntent().getExtras();
-            mMediaFolder= args.getParcelable(ProjectUtils.MEDIA_DATA);
-            if (mMediaFolder != null) {
+            mediaFolder= args.getParcelable(ProjectUtils.MEDIA_DATA);
+            if (mediaFolder != null) {
+                Fragment fragment=GalleryFragment.newInstance(mediaFolder);
                 FragmentManager manager = getSupportFragmentManager();
                 FragmentTransaction transaction = manager.beginTransaction();
-                transaction.replace(R.id.mediaFragmentPlaceHolder, GalleryFragment.PROVIDER.
-                                createInstance((ArrayList<MediaFile>) (mMediaFolder.getMediaFileList())),
+                if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
+                    startPostponedEnterTransition();
+                }else {
+                    //transaction.setCustomAnimations(R.anim.enter, R.anim.exit);
+                }
+                transaction.replace(R.id.mediaFragmentPlaceHolder, fragment,
                         ProjectUtils.GALLERY_FRAGMENT);
                 transaction.commit();
+                manager.executePendingTransactions();
             }
         }
     }
@@ -102,7 +117,7 @@ public class GalleryActivity extends AppCompatActivity
     public void onExit(@NonNull ExitEvent exitEvent) {
         if(exitEvent.intent!=null) {
             exitEvent.intent.putExtra(ProjectUtils.DELETED, true);
-            exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, mMediaFolder);
+            exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, mediaFolder);
             setResult(RESULT_OK, exitEvent.intent);
             finish();
         }
@@ -125,7 +140,7 @@ public class GalleryActivity extends AppCompatActivity
                             (getSupportFragmentManager().findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT));
                   //  fragment.getGalleryAdapter().setMediaFileList(mediaFileList);
                     //have to do this in order to prevent providing slider activity with wrong data
-                    mMediaFolder.setMediaFileList(mediaFileList);
+                    mediaFolder.setMediaFileList(mediaFileList);
                     break;
                 }
             }
@@ -135,7 +150,7 @@ public class GalleryActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelable(ProjectUtils.MEDIA_DATA,mMediaFolder);
+        outState.putParcelable(ProjectUtils.MEDIA_DATA,mediaFolder);
     }
 
     public void onCopyTo(GalleryAdapter adapter, ArrayList<MediaFile> fullMediaFileList, ArrayList<MediaFile> copyMediaFileList, boolean moveTo) {
@@ -245,40 +260,17 @@ public class GalleryActivity extends AppCompatActivity
 
     @TargetApi(21)
     private void requestFeature() {
-     /*  getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
-       getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-       Transition enterTransition=new Explode();
-       enterTransition.excludeTarget(android.R.id.navigationBarBackground,true);
-       enterTransition.excludeTarget(android.R.id.statusBarBackground,true);
-       enterTransition.excludeTarget(R.id.cameraButton,true);
-       enterTransition.setDuration(200);
-       getWindow().setEnterTransition(enterTransition);
-       getWindow().getEnterTransition().addListener(new TransitionListenerAdapter() {
-            @Override
-            public void onTransitionEnd(Transition transition) {
-                super.onTransitionStart(transition);
-                FloatingActionButton fab=(FloatingActionButton)
-                        (findViewById(R.id.cameraButton));
-                fab.setVisibility(View.VISIBLE);
-                fab.animate().scaleX(1.f).scaleY(1.f)
-                        .setDuration(200).start();
-            }
-        });
 
-      getWindow().setReturnTransition(new Fade());
-      getWindow().getReturnTransition().addListener(new TransitionListenerAdapter() {
-            @Override
-            public void onTransitionStart(Transition transition) {
-                super.onTransitionStart(transition);
-                FloatingActionButton fab=(FloatingActionButton)
-                        (findViewById(R.id.cameraButton));
-                fab.setVisibility(View.VISIBLE);
-                fab.animate().scaleX(0f).scaleY(0f)
-                        .setDuration(200).start();
-            }
-        });
+        getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        Transition enterTransition=new Explode();
+        enterTransition.excludeTarget(android.R.id.navigationBarBackground,true);
+        enterTransition.excludeTarget(android.R.id.statusBarBackground,true);
+        enterTransition.excludeTarget(R.id.cameraButton,true);
+        enterTransition.setDuration(200);
+        getWindow().setEnterTransition(enterTransition);
+        getWindow().setReturnTransition(new Fade());
+        getWindow().setSharedElementsUseOverlay(true);
 
-        getWindow().setSharedElementsUseOverlay(true);  */
+        postponeEnterTransition();
     }
-
 }
