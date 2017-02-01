@@ -32,22 +32,17 @@ import butterknife.ButterKnife;
 
 
 public class GalleryActivity extends AppCompatActivity
-        implements MediaFolderUtilSelectionFragment.OnMediaContainerSelectedListener{
-
+        implements MediaFolderUtilSelectionFragment.
+            OnMediaContainerSelectedListener{
 
     private final static String TAG=GalleryActivity.class.getSimpleName();
-
     private MediaFolder mMediaFolder;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-      //  if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
-       //     requestFeature();
-        //}
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_layout);
         ButterKnife.bind(this);
-
         initUI(savedInstanceState);
     }
 
@@ -82,7 +77,17 @@ public class GalleryActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        Fragment current=isGallery();
+        if(current!=null) {
+            GalleryFragment galleryFragment=(GalleryFragment)(current);
+            if(galleryFragment.onBackPressed()) {
+
+            }else {
+                super.onBackPressed();
+            }
+        }else {
+            super.onBackPressed();
+        }
     }
 
     @Subscribe
@@ -150,6 +155,14 @@ public class GalleryActivity extends AppCompatActivity
                 .commit();
     }
 
+    private Fragment isGallery() {
+        return getSupportFragmentManager().findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT);
+    }
+
+    private Fragment isSelection() {
+        return getSupportFragmentManager().findFragmentByTag(ProjectUtils.SELECTION_FRAGMENT);
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -180,7 +193,7 @@ public class GalleryActivity extends AppCompatActivity
         if(copyMediaFileList!=null && pathTo!=null) {
             Snackbar.make(findViewById(R.id.rootView),
                     //TODO support for languages here
-                    Integer.toString(copyMediaFileList.size()) + " moved to "+pathTo, 7000)
+                    Integer.toString(copyMediaFileList.size()) + " have been moved to "+pathTo, 7000)
                     .setAction("UNDO", new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {

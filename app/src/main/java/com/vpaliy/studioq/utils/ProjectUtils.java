@@ -18,7 +18,7 @@ public final class ProjectUtils {
 
     public static final int CREATE_MEDIA_FOLDER=0x0010;
 
-
+    public static final String INIT="init";
 
     public static final String MEDIA_DATA="mediaData";
 

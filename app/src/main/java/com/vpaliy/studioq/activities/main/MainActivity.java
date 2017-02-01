@@ -1,11 +1,9 @@
 package com.vpaliy.studioq.activities.main;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.ActivityOptions;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -35,7 +33,6 @@ import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.activities.GalleryActivity;
 import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.utils.FileUtils;
-import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -132,13 +129,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindData(Bundle state) {
-        if(!Permissions.requestIfNotAllowed(this,Manifest.permission.READ_EXTERNAL_STORAGE,
-                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE)) {
-            makeQuery(state);
+        if(state==null) {
+            state = getIntent().getExtras();
+            if (state == null) {
+                makeQuery();
+                return;
+            }
         }
 
+        final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
+                .setMenu(R.menu.main_menu, callback)
+                .setBackgroundColor(Color.WHITE)
+                .build();
+        contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                2, GridLayoutManager.VERTICAL, false));
+        if(state.getBoolean(ProjectUtils.INIT,false)) {
+            ArrayList<MediaFolder> data=state.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+            adapter=new FolderAdapter(this,mode,data);
+        }else {
+            adapter=new FolderAdapter(this,mode,state);
+        }
+
+        contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                2, GridLayoutManager.VERTICAL, false));
+        contentGrid.setAdapter(adapter);
     }
 
     private void initNavigation(Bundle state) {
@@ -193,28 +207,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void makeQuery(final Bundle savedInstanceState) {
+    private void makeQuery() {
         adapter=null;
-        final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                .setMenu(R.menu.main_menu, callback)
-                .setBackgroundColor(Color.WHITE)
-                .build();
-        contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
-                2, GridLayoutManager.VERTICAL, false));
-        if(savedInstanceState!=null) {
-            adapter=new FolderAdapter(this,mode,savedInstanceState);
-            contentGrid.setAdapter(adapter);
-        }
-
-        if(adapter==null||adapter.getItemCount()==0) {
-            new DataProvider(this) {
-                @Override
-                public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
-                    adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
-                    contentGrid.setAdapter(adapter);
-                }
-            };
-        }
+        new DataProvider(this) {
+            @Override
+            public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
+                final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
+                        .setMenu(R.menu.main_menu, callback)
+                        .setBackgroundColor(Color.WHITE)
+                        .build();
+                contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                        2, GridLayoutManager.VERTICAL, false));
+                adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
+                contentGrid.setAdapter(adapter);
+            }
+        };
     }
 
     private void startSettings() {
@@ -256,18 +263,6 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE:
-                if(grantResults[0]== PackageManager.PERMISSION_GRANTED) {
-                    makeQuery(null);
-                }else {
-                    Toast.makeText(this,"Give me the permission!",Toast.LENGTH_LONG).show();
-                }
-                break;
-        }
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -347,6 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 if(deleteFolderList!=null) {
                     for(MediaFolder folder:deleteFolderList) {
                         List<? extends MediaFile> result;
+                        //TODO find a better way of doing this determination
                         if(mode== FolderAdapter.Mode.IMAGE) {
                             result = folder.getImageFileList();
                         }else if(mode== FolderAdapter.Mode.VIDEO) {
@@ -359,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return null;
             }
-        }.execute(null,null);
+        }.execute();
     }
 
 
@@ -420,12 +416,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
         if(!fileSet.isEmpty()) {
             ArrayList<MediaFile> mediaFileList=new ArrayList<>(fileSet);
             intent.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaFileList);
             startActivityForResult(intent, ProjectUtils.CREATE_MEDIA_FOLDER);
         }else {
+            //TODO propose some options | my creativity goes down at this point :(
             Toast.makeText(this,"You don't have any photos",Toast.LENGTH_LONG).show();
         }
     }

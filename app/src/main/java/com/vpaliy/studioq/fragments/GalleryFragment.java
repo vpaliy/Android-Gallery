@@ -249,6 +249,14 @@ public class GalleryFragment extends Fragment {
         unbinder.unbind();
     }
 
+    public boolean onBackPressed() {
+        if(adapter.isMultiModeActivated()) {
+            adapter.unCheckAll(false);
+            return true;
+        }
+        return false;
+    }
+
     public void openCamera(View view) {
         startActivity(new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA));
     }

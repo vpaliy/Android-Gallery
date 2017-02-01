@@ -1,5 +1,7 @@
 <ImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/thumbnail"
     android:layout_width="@android:dimen/thumbnail_width"
     android:layout_height="@android:dimen/thumbnail_width"
-    xmlns:android="http://schemas.android.com/apk/res/android" />
+    tools:ignore="ContentDescription"/>
