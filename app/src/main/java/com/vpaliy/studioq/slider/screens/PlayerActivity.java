@@ -18,7 +18,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.player_layout);
+        setContentView(R.layout.activity_player);
         if(savedInstanceState==null)
             savedInstanceState=getIntent().getExtras();
 

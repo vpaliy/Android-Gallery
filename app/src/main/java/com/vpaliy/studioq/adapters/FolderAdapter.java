@@ -21,8 +21,11 @@ import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
+import com.vpaliy.studioq.model.DummyFolder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
+import com.vpaliy.studioq.utils.ProjectUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,7 +140,10 @@ public class FolderAdapter extends BaseAdapter {
                 }else if(adapterMode==Mode.VIDEO) {
                     resultFolder = resultFolder.createVideoSubfolder();
                 }
-                EventBusProvider.defaultBus().post(new Launcher<>(resultFolder,view));
+                Bundle data=new Bundle();
+                data.putParcelable(ProjectUtils.MEDIA_FOLDER,resultFolder);
+                data.putParcelableArrayList(ProjectUtils.ALL_MEDIA,convertToDummy());
+                EventBusProvider.defaultBus().post(new Launcher<>(data,view));
             }
             super.onClick(view);
         }
@@ -228,6 +234,14 @@ public class FolderAdapter extends BaseAdapter {
             }
             currentFolderList=videoFolderList;
         }
+    }
+
+    private ArrayList<DummyFolder> convertToDummy() {
+        ArrayList<DummyFolder> list=new ArrayList<>(mediaFolderList.size());
+        for(MediaFolder folder:mediaFolderList) {
+            list.add(MediaFolder.createDummy(folder));
+        }
+        return list;
     }
 
     public List<MediaFolder> geMediaFolderList() {

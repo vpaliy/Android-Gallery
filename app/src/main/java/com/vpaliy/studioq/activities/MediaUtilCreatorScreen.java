@@ -37,7 +37,7 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.media_util_creator_layout);
+        setContentView(R.layout.activity_add_util);
         ButterKnife.bind(this,MediaUtilCreatorScreen.this);
 
         Bundle intentData=getIntent().getExtras();

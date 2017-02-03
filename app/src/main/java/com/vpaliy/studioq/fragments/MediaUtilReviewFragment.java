@@ -66,7 +66,7 @@ public class MediaUtilReviewFragment extends Fragment
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.media_review_layout,container,false);
+        return inflater.inflate(R.layout.fragment_util_review,container,false);
     }
 
 

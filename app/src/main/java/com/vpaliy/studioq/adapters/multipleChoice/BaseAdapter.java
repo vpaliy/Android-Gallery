@@ -201,7 +201,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         return resultArray;
     }
 
-    protected int[] getAllChecked(boolean cancel) {
+    public int[] getAllChecked(boolean cancel) {
         int[] result=tracker.getSelectedItemArray(cancel);
         if(cancel) {
             update(result);

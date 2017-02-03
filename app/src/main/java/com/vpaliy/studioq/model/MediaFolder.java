@@ -2,6 +2,8 @@ package com.vpaliy.studioq.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.parceler.ParcelConstructor;
 import org.parceler.ParcelPropertyConverter;
@@ -132,6 +134,7 @@ public final class MediaFolder implements Parcelable {
     }
 
 
+
     public int getFileCount() {
         return mediaFileList.size();
     }
@@ -192,5 +195,10 @@ public final class MediaFolder implements Parcelable {
             return new MediaFolder[size];
         }
     };
+
+    public static DummyFolder createDummy(@NonNull MediaFolder folder) {
+        int size=folder.mediaFileList!=null?folder.mediaFileList.size():0;
+        return new DummyFolder(folder.getCoverForAll(),folder.folderName,size);
+    }
 
 }

@@ -13,6 +13,7 @@ import android.support.annotation.StyleableRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,7 +48,7 @@ public class MultiMode {
     private Vibrator vibrator;
     private int vibrationLength=10; //be default it's 10
 
-    MultiMode(Builder builder) {
+    private MultiMode(Builder builder) {
         this.actionBar=builder.toolbar;
         this.prevState=initPrevState(actionBar);
         this.activity=builder.activity;
@@ -275,6 +276,7 @@ public class MultiMode {
 
         if(currentState.menuId!=-1) {
             Menu menu = actionBar.getMenu();
+            actionBar.hideOverflowMenu();   //you son of a bitch!
             List<MenuItem> menuItemList=new LinkedList<>();
             for (int index = 0; index < menu.size(); index++) {
                 MenuItem item = menu.getItem(index);
@@ -302,6 +304,7 @@ public class MultiMode {
                         window.setStatusBarColor(prevState.statusBarColor);
                     }
                 }
+                Log.d(TAG,"TurnedOff");
                 actionBar.setBackgroundColor(prevState.toolbarColor);
                 actionBar.setTitle(prevState.title);
                 actionBar.setSubtitle(prevState.subTitle);
@@ -326,8 +329,6 @@ public class MultiMode {
         public void onModeActivated() {}
 
         public void onModeDisabled() {}
-
     }
-
 
 }

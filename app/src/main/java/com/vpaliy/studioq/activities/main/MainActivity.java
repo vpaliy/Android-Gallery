@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_layout);
+        setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initUI(savedInstanceState);
     }
@@ -244,9 +244,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Subscribe
-    public void startGalleryActivity(Launcher<MediaFolder> launcher) {
+    public void startGalleryActivity(Launcher<Bundle> launcher) {
         final Intent intent=new Intent(this,GalleryActivity.class);
-        intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
+        intent.putExtras(launcher.data);
         actionButton.animate().scaleX(0f).scaleY(0f)
                 .setInterpolator(new DecelerateInterpolator())
                 .setDuration(100).setListener(new AnimatorListenerAdapter() {
@@ -296,17 +296,10 @@ public class MainActivity extends AppCompatActivity {
             if (adapter.isMultiModeActivated()) {
                 final ArrayList<MediaFolder> deleteFolderList = adapter.getAllChecked();
                 final List<MediaFolder> originalList=new ArrayList<>(adapter.getData());
-                contentGrid.setItemAnimator(null);
                 final int[] checked=adapter.getAllCheckedForDeletion();
-                contentGrid.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        contentGrid.setItemAnimator(new DefaultItemAnimator());
-                        for(int index:checked) {
-                            adapter.removeAt(index);
-                        }
-                    }
-                });
+                for(int index:checked) {
+                    adapter.removeAt(index);
+                }
                 Snackbar.make(findViewById(R.id.rootView),
                         //TODO support for languages here
                         Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)

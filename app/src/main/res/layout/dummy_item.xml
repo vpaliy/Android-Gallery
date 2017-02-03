@@ -1,0 +1,65 @@
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="4dp"
+    android:foreground="@drawable/ripple"
+    android:layout_width="match_parent"
+    android:layout_height="200dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/topContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <com.vpaliy.studioq.views.SquareImage
+                android:id="@+id/mainImage"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="@android:string/no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/cardBody"
+            android:layout_alignParentBottom="true"
+            android:layout_alignLeft="@+id/topContainer"
+            android:layout_alignStart="@+id/topContainer"
+            android:layout_alignRight="@+id/topContainer"
+            android:layout_alignEnd="@+id/topContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp">
+
+            <TextView
+                android:id="@+id/folderName"
+                style="@style/Base.TextAppearance.AppCompat.Large"
+                android:textStyle="bold"
+                android:textColor="@color/colorAccent"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:text="@string/folderName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/imageCount"
+                android:text="@string/fileCount"
+                android:textColor="@color/colorWhite"
+                android:textStyle="bold"
+                android:alpha="1"
+                style="@style/Base.TextAppearance.AppCompat.Medium"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_below="@+id/folderName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

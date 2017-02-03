@@ -91,6 +91,7 @@ public final class FileUtils {
             for (int index=0;index<contentList.size();index++) {
                 MediaFile mediaFile=contentList.get(index);
                 File file = new File(mediaFolder, mediaFile.mediaFile().getName());
+                boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
                 if (!file.exists()) {
                     try {
                         if (!file.createNewFile()) {
@@ -109,7 +110,7 @@ public final class FileUtils {
                                 Log.e(TAG, "Cannot delete file " + mediaFile.mediaFile().getAbsoluteFile());
                             }
 
-                            if(mediaFile.getType()== MediaFile.Type.IMAGE || mediaFile.getType()== MediaFile.Type.GIF) {
+                            if(isVideo) {
                                 context.getContentResolver().delete(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                                         MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.mediaFile().getAbsolutePath()});
                             }else {
@@ -122,7 +123,7 @@ public final class FileUtils {
                         Log.e(TAG, ex.toString(), ex);
                         continue;
                     }
-                    if (mediaFile instanceof VideoFile) {
+                    if (isVideo) {
                         values.put(MediaStore.Video.VideoColumns.DATA, file.getAbsolutePath());
                         context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
                     } else {
