@@ -1,6 +1,6 @@
 package com.vpaliy.studioq.activities;
 
-import android.support.v7.app.AppCompatActivity;
+import android.preference.PreferenceActivity;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends PreferenceActivity {
 }

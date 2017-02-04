@@ -7,9 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -35,6 +33,8 @@ import com.vpaliy.studioq.adapters.GalleryAdapter;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
+import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -192,32 +192,22 @@ public class GalleryFragment extends Fragment {
                     }
                 });
 
-                Snackbar.make(root,
-                        //TODO support for languages here
-                        Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)
-                        .setAction("UNDO", new View.OnClickListener() {
+                SnackbarWrapper.start(root,Integer.toString(deleteFolderList.size()) +
+                        " have been moved to trash", R.integer.snackbarLength)
+                        .callback(new ActionCallback("UNDO") {
                             @Override
-                            public void onClick(View view) {
+                            public void onCancel() {
                                 showActionButton();
                                 adapter.setData(originalList);
                             }
-                        })
-                        .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                            @Override
-                            public void onDismissed(Snackbar transientBottomBar, int event) {
-                                super.onDismissed(transientBottomBar, event);
-                                switch (event) {
-                                    case DISMISS_EVENT_SWIPE:
-                                    case DISMISS_EVENT_TIMEOUT:
 
-                                        showActionButton();
-                                        deleteInBackground(deleteFolderList,
-                                                deleteFolderList.size()==originalList.size());
-                                        break;
-                                }
+                            @Override
+                            public void onPerform() {
+                                showActionButton();
+                                deleteInBackground(deleteFolderList,
+                                        deleteFolderList.size() == originalList.size());
                             }
-                        })
-                        .show();
+                        }).show();
             }
         }
     }
@@ -389,7 +379,7 @@ public class GalleryFragment extends Fragment {
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
-              moveData(event);
+                moveData(event);
             }
         });
     }
@@ -411,39 +401,33 @@ public class GalleryFragment extends Fragment {
             }
 
             hideActionButton();
-            Snackbar.make(root,
-                    //TODO support for languages here
-                    Integer.toString(event.checked.length) + " have been moved to " + event.folderName, 7000)
-                    .setAction("UNDO", new View.OnClickListener() {
+
+            SnackbarWrapper.start(root,
+                    Integer.toString(event.checked.length) +
+                     " have been moved to " + event.folderName, R.integer.snackbarLength)
+                    .callback(new ActionCallback("UNDO") {
                         @Override
-                        public void onClick(View view) {
+                        public void onCancel() {
                             showActionButton();
                             if (event.move) {
                                 mediaFolder.setMediaFileList(original);
                                 adapter.setData(original);
                             }
                         }
-                    })
-                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+
                         @Override
-                        public void onDismissed(Snackbar transientBottomBar, int eve) {
-                            super.onDismissed(transientBottomBar, eve);
-                            switch (eve) {
-                                case DISMISS_EVENT_SWIPE:
-                                case DISMISS_EVENT_TIMEOUT:
-                                    changed = event.move || changed;
-                                    updateWith(event.folderName,delete);
-                                    if (event.move) {
-                                        if (delete.size() == original.size()) {
-                                            finish();
-                                            return;
-                                        }
-                                    }
-                                    showActionButton();
-                                    break;
+                        public void onPerform() {
+                            changed = event.move || changed;
+                            updateWith(event.folderName, delete);
+                            if (event.move) {
+                                if (delete.size() == original.size()) {
+                                    finish();
+                                    return;
+                                }
                             }
+                            showActionButton();
                         }
-                    }).show();
+                    });
         }
 
     }

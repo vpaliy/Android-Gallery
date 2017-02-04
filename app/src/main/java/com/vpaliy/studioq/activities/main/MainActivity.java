@@ -8,10 +8,8 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -40,6 +38,9 @@ import java.util.List;
 import java.util.Set;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
+import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
+import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import static butterknife.ButterKnife.findById;
@@ -297,34 +298,28 @@ public class MainActivity extends AppCompatActivity {
                 final ArrayList<MediaFolder> deleteFolderList = adapter.getAllChecked();
                 final List<MediaFolder> originalList=new ArrayList<>(adapter.getData());
                 final int[] checked=adapter.getAllCheckedForDeletion();
+
                 for(int index:checked) {
                     adapter.removeAt(index);
                 }
-                Snackbar.make(findViewById(R.id.rootView),
-                        //TODO support for languages here
-                        Integer.toString(deleteFolderList.size()) + " have been moved to trash", 7000)
-                        .setAction("UNDO", new View.OnClickListener() {
+
+                SnackbarWrapper.start(findViewById(R.id.rootView),
+                        Integer.toString(deleteFolderList.size()) +
+                                " have been moved to trash", R.integer.snackbarLength)
+                        .callback(new ActionCallback("UNDO") {
                             @Override
-                            public void onClick(View view) {
+                            public void onCancel() {
                                 adapter.setData(originalList);
                                 showButton();
                             }
-                        })
-                        .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+
                             @Override
-                            public void onDismissed(Snackbar transientBottomBar, int event) {
-                                super.onDismissed(transientBottomBar, event);
+                            public void onPerform() {
                                 showButton();
-                                switch (event) {
-                                    case DISMISS_EVENT_SWIPE:
-                                    case DISMISS_EVENT_TIMEOUT:
-                                        showButton();
-                                        deleteInBackground(deleteFolderList, adapter.getAdapterMode());
-                                        break;
-                                }
+                                deleteInBackground(deleteFolderList, adapter.getAdapterMode());
                             }
-                        })
-                        .show();
+                        }).show();
+
             }
         }
     }
