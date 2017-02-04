@@ -276,7 +276,7 @@ public class MultiMode {
 
         if(currentState.menuId!=-1) {
             Menu menu = actionBar.getMenu();
-            actionBar.hideOverflowMenu();   //you son of a bitch!
+            actionBar.hideOverflowMenu();   //son of a bitch!
             List<MenuItem> menuItemList=new LinkedList<>();
             for (int index = 0; index < menu.size(); index++) {
                 MenuItem item = menu.getItem(index);
