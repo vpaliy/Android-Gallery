@@ -3,7 +3,6 @@ package com.vpaliy.studioq.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.parceler.ParcelConstructor;
 import org.parceler.ParcelPropertyConverter;
@@ -25,31 +24,21 @@ public final class MediaFolder implements Parcelable {
     public MediaFolder(String folderName) {
         this.folderName = folderName;
         this.mediaFileList= new ArrayList<>();
-        this.videoFileList=new ArrayList<>();
-        this.imageFileList=new ArrayList<>();
+        init();
     }
 
     private MediaFolder(Parcel in) {
         this.folderName=in.readString();
         mediaFileList=new ArrayList<>();
         in.readTypedList(mediaFileList, MediaFile.CREATOR);
-        if(mediaFileList!=null) {
-            videoFileList=new ArrayList<>();
-            imageFileList=new ArrayList<>();
-            for(MediaFile file:mediaFileList) {
-                if(file.getType()== MediaFile.Type.VIDEO) {
-                    videoFileList.add(file);
-                }else if(file.getType()== MediaFile.Type.IMAGE) {
-                    imageFileList.add(file);
-                }
-            }
-        }
+        init();
     }
 
     @ParcelConstructor
     public MediaFolder(String folderName, List<MediaFile> mediaFileList) {
         this.folderName=folderName;
         this.mediaFileList=mediaFileList;
+        init();
     }
 
     public MediaFolder(String folderName, Collection<? extends MediaFile> collection) {
@@ -57,14 +46,44 @@ public final class MediaFolder implements Parcelable {
         this.mediaFileList=new ArrayList<>(collection);
     }
 
-    public MediaFolder addMediaFile(MediaFile mediaFile) {
+    public MediaFolder add(MediaFile mediaFile) {
         mediaFileList.add(mediaFile);
+        if(mediaFile.getType()== MediaFile.Type.VIDEO) {
+            videoFileList.add(mediaFile);
+        }else {
+            imageFileList.add(mediaFile);
+        }
         return this;
     }
 
+    public void updateWith(@NonNull  MediaFolder folder) {
+        List<MediaFile> data=folder.getMediaFileList();
+        if(data!=null) {
+            for (MediaFile mediaFile : data) {
+                if(!mediaFileList.contains(mediaFile)) {
+                    add(mediaFile);
+                }
+            }
+        }
+    }
+
     public  MediaFolder addAll(Collection<? extends MediaFile> collection) {
-        mediaFileList.addAll(collection);
+        if(collection!=null) {
+            for (MediaFile mediaFile : collection) {
+                mediaFileList.add(mediaFile);
+                boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
+                if(isVideo) {
+                    videoFileList.add(mediaFile);
+                }else {
+                    imageFileList.add(mediaFile);
+                }
+            }
+        }
         return this;
+    }
+
+    public boolean isEmpty() {
+        return mediaFileList == null || mediaFileList.isEmpty();
     }
 
     public void addVideoFile(VideoFile videoFile) {
@@ -101,6 +120,20 @@ public final class MediaFolder implements Parcelable {
         this.mediaFileList=mediaFileList;
     }
 
+    private void init(){
+        if(mediaFileList!=null) {
+            imageFileList=new ArrayList<>();
+            videoFileList=new ArrayList<>();
+            for (MediaFile mediaFile : mediaFileList) {
+                boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
+                if(isVideo) {
+                    videoFileList.add(mediaFile);
+                }else {
+                    imageFileList.add(mediaFile);
+                }
+            }
+        }
+    }
 
     //Covers
     public MediaFile getCoverForAll() {
@@ -195,6 +228,7 @@ public final class MediaFolder implements Parcelable {
             return new MediaFolder[size];
         }
     };
+
 
     public static DummyFolder createDummy(@NonNull MediaFolder folder) {
         int size=folder.mediaFileList!=null?folder.mediaFileList.size():0;

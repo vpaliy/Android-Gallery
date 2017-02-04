@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    public void onActivityResult(int requestCode,int resultCode,Intent data) {
+    public void onActivityResult(int requestCode,int resultCode, @NonNull Intent data) {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case ProjectUtils.CREATE_MEDIA_FOLDER: {
@@ -364,9 +364,14 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 case ProjectUtils.LAUNCH_GALLERY: {
-                    if (data.getBooleanExtra(ProjectUtils.DELETED, false)) {
-                        MediaFolder folder = data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
-                        adapter.removeWith(folder);
+                    MediaFolder result=data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
+                    if(result!=null) {
+                        adapter.replace(result);
+                    }
+
+                    List<MediaFolder> updatedData=data.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
+                    if(updatedData!=null) {
+                        adapter.update(updatedData);
                     }
                     break;
                 }

@@ -3,6 +3,7 @@ package com.vpaliy.studioq.adapters;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +26,9 @@ import com.vpaliy.studioq.model.DummyFolder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
-
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -142,7 +143,7 @@ public class FolderAdapter extends BaseAdapter {
                 }
                 Bundle data=new Bundle();
                 data.putParcelable(ProjectUtils.MEDIA_FOLDER,resultFolder);
-                data.putParcelableArrayList(ProjectUtils.ALL_MEDIA,convertToDummy());
+                data.putParcelableArrayList(ProjectUtils.ALL_MEDIA,convertToDummy(resultFolder));
                 EventBusProvider.defaultBus().post(new Launcher<>(data,view));
             }
             super.onClick(view);
@@ -236,10 +237,12 @@ public class FolderAdapter extends BaseAdapter {
         }
     }
 
-    private ArrayList<DummyFolder> convertToDummy() {
+    private ArrayList<DummyFolder> convertToDummy(MediaFolder exception) {
         ArrayList<DummyFolder> list=new ArrayList<>(mediaFolderList.size());
         for(MediaFolder folder:mediaFolderList) {
-            list.add(MediaFolder.createDummy(folder));
+            if(!exception.equals(folder)) {
+                list.add(MediaFolder.createDummy(folder));
+            }
         }
         return list;
     }
@@ -270,7 +273,7 @@ public class FolderAdapter extends BaseAdapter {
         notifyItemRemoved(index);
     }
 
-    public void removeWith(MediaFolder folder) {
+    private void removeWith(MediaFolder folder) {
         if(folder!=null) {
             int removeIndex=currentFolderList.indexOf(folder);
             if(removeIndex!=-1) {
@@ -284,6 +287,53 @@ public class FolderAdapter extends BaseAdapter {
                     }
                 }
                 notifyItemRemoved(removeIndex);
+            }
+        }
+    }
+
+    //TODO block the file
+    public void update(@NonNull List<MediaFolder> mediaFolders) {
+        for(MediaFolder folder:mediaFolders) {
+            int index=currentFolderList.indexOf(folder);
+            if(index!=-1) {
+                MediaFolder mediaFolder=currentFolderList.get(index);
+                mediaFolder.updateWith(folder);
+                if(adapterMode!=Mode.ALL) {
+                    int jIndex=mediaFolderList.indexOf(folder);
+                    if(jIndex!=-1) {
+                        mediaFolderList.get(jIndex).updateWith(folder);
+                    }
+                }
+
+                //TODO update size
+
+            }else {
+                currentFolderList.add(folder);
+                notifyItemInserted(currentFolderList.size()-1);
+            }
+        }
+    }
+
+    public void replace(@NonNull MediaFolder folder) {
+        if(folder.isEmpty()) {
+            removeWith(folder);
+        }else {
+            int index=currentFolderList.indexOf(folder);
+            if(index!=-1) {
+                currentFolderList.set(index,folder);
+                if(adapterMode!=Mode.ALL) {
+                    int jIndex=mediaFolderList.indexOf(folder);
+                    if(jIndex!=-1) {
+                        MediaFolder temp = mediaFolderList.get(jIndex);
+                        Collection<MediaFile> collection = folder.getMediaFileList();
+                        if (adapterMode == Mode.IMAGE) {
+                            temp.getImageFileList().retainAll(collection);
+                        } else {
+                            temp.getVideoFileList().retainAll(collection);
+                        }
+                    }
+                }
+                notifyItemChanged(index);
             }
         }
     }

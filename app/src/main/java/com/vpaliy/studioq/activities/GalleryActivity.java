@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +17,6 @@ import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.model.MediaFile;
-import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.fragments.GalleryFragment;
 import com.vpaliy.studioq.slider.screens.MediaSliderActivity;
 import com.vpaliy.studioq.utils.Permissions;
@@ -32,7 +30,6 @@ public class GalleryActivity extends AppCompatActivity {
 
     private final static String TAG=GalleryActivity.class.getSimpleName();
 
-    private MediaFolder mediaFolder;
     private GalleryFragment fragment;
 
     @Override
@@ -81,9 +78,7 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if(fragment!=null) {
-            if(fragment.onBackPressed()) {
-                super.onBackPressed();
-            }
+            fragment.onBackPressed();
         }
     }
 
@@ -98,11 +93,9 @@ public class GalleryActivity extends AppCompatActivity {
     @Subscribe
     public void onExit(@NonNull ExitEvent exitEvent) {
         if(exitEvent.intent!=null) {
-            exitEvent.intent.putExtra(ProjectUtils.DELETED, true);
-            exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, mediaFolder);
             setResult(RESULT_OK, exitEvent.intent);
-            finish();
         }
+        finish();
     }
 
     @Override
@@ -118,22 +111,16 @@ public class GalleryActivity extends AppCompatActivity {
                     if(mediaFileList==null||mediaFileList.isEmpty()) {
                         finish();
                     }
-                    mediaFolder.setMediaFileList(mediaFileList);
+                   // mediaFolder.setMediaFileList(mediaFileList);
                     break;
                 }
             }
         }
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(ProjectUtils.MEDIA_DATA,mediaFolder);
-    }
 
     @TargetApi(21)
     private void requestFeature() {
-
         getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
         Transition enterTransition=new Explode();
         enterTransition.excludeTarget(android.R.id.navigationBarBackground,true);

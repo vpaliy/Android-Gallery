@@ -15,7 +15,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,6 +47,7 @@ public class GalleryFragment extends Fragment {
     private static final String TAG=GalleryFragment.class.getSimpleName();
 
     private static final String KEY=TAG+"util:enabled";
+    private static final String UPDATED=TAG+"data:updated";
 
     public static GalleryFragment newInstance(@NonNull Bundle args) {
         GalleryFragment fragment=new GalleryFragment();
@@ -64,8 +64,10 @@ public class GalleryFragment extends Fragment {
     private GalleryAdapter adapter;
     private MediaFolder mediaFolder;
 
+    private ArrayList<MediaFolder> updatedData;
     private FolderUtilAdapter utilAdapter;
     private ArrayList<DummyFolder> dummyFolders;
+    private boolean changed=false;
 
     private Unbinder unbinder;
 
@@ -221,6 +223,7 @@ public class GalleryFragment extends Fragment {
     }
 
     private void deleteInBackground(final List<MediaFile> mediaFileList, final boolean finish) {
+        changed=true;
         new AsyncTask<Void,Void,Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -232,7 +235,7 @@ public class GalleryFragment extends Fragment {
             protected void onPostExecute(Void aVoid) {
                 super.onPostExecute(aVoid);
                 if(finish) {
-                    EventBusProvider.defaultBus().post(new ExitEvent(new Intent()));
+                    finish();
                 }
             }
         }.execute();
@@ -269,6 +272,21 @@ public class GalleryFragment extends Fragment {
         }
     }
 
+    private void finish() {
+        if(changed || updatedData!=null) {
+            Intent data = new Intent();
+            if(updatedData!=null) {
+                data.putExtra(ProjectUtils.MEDIA_DATA,updatedData);
+            }
+            if(changed) {
+                data.putExtra(ProjectUtils.MEDIA_FOLDER, mediaFolder);
+            }
+            EventBusProvider.defaultBus().post(new ExitEvent(data));
+        }else {
+            EventBusProvider.defaultBus().post(new ExitEvent(null));
+        }
+    }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -280,9 +298,13 @@ public class GalleryFragment extends Fragment {
         if(adapter!=null) {
             adapter.saveState(outState);
         }
+        outState.putBoolean(ProjectUtils.DELETED,changed);
         outState.putBoolean(KEY,false);
         outState.putParcelable(ProjectUtils.MEDIA_FOLDER,mediaFolder);
         outState.putParcelableArrayList(ProjectUtils.ALL_MEDIA,dummyFolders);
+        if(updatedData!=null) {
+            outState.putParcelableArrayList(UPDATED, updatedData);
+        }
         if(utilAdapter!=null) {
             utilAdapter.saveState(outState);
             outState.putBoolean(KEY, true);
@@ -319,10 +341,11 @@ public class GalleryFragment extends Fragment {
                     .setMenu(R.menu.gallery_menu, callback)
                     .build();
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3, GridLayoutManager.VERTICAL, false));
-
             //determine and set the adapter
             RecyclerView.Adapter tempAdapter;
             if(savedInstanceState!=null) {
+                changed=savedInstanceState.getBoolean(ProjectUtils.DELETED);
+                updatedData=savedInstanceState.getParcelableArrayList(UPDATED);
                 if(!savedInstanceState.getBoolean(KEY,false)) {
                     tempAdapter=adapter = new GalleryAdapter(getContext(), mode, mediaFolder.getMediaFileList(), savedInstanceState);
                 }else {
@@ -351,68 +374,95 @@ public class GalleryFragment extends Fragment {
     }
 
 
-    public boolean onBackPressed() {
+    public void onBackPressed() {
         if(adapter.isMultiModeActivated()) {
             onNavigationIconClick.onClick(null);
-            return true;
+        }else {
+            finish();
         }
-        return false;
     }
 
     @Subscribe
     public void onChange(@NonNull final MoveEvent event) {
-        Log.d(TAG,"onChange");
         utilAdapter=null;
         recyclerView.setAdapter(adapter);
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
-                View root = getView();
-                if (root!= null) {
-                    final ArrayList<MediaFile> delete=new ArrayList<>(event.checked.length);
-                    final ArrayList<MediaFile> original=new ArrayList<>(mediaFolder.getMediaFileList());
-                    if(event.move) {
-                        for(int index=0, itemShift=0;index<event.checked.length;index++,itemShift++) {
-                            int jIndex=event.checked[index]-itemShift;
-                            delete.add(adapter.getData().get(jIndex));
-                            adapter.removeAt(jIndex);
-                        }
-                    }
-                    hideActionButton();
-                    Snackbar.make(root,
-                            //TODO support for languages here
-                            Integer.toString(event.checked.length) + " have been moved to "+event.folderName, 7000)
-                            .setAction("UNDO", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    showActionButton();
-                                    if(event.move) {
-                                        mediaFolder.setMediaFileList(original);
-                                        adapter.setData(original);
-                                    }
-                                }
-                            })
-                            .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                                @Override
-                                public void onDismissed(Snackbar transientBottomBar, int eve) {
-                                    super.onDismissed(transientBottomBar, eve);
-                                    switch (eve) {
-                                        case DISMISS_EVENT_SWIPE:
-                                        case DISMISS_EVENT_TIMEOUT:
-                                            //if size == full --> finish activity
-                                            showActionButton();
-                                            //copy/move the data
-                                            //                           FileUtils.copyFileList(getContext(),delete,new File(event.folderName),event.move);
-                                            break;
-                                    }
-                                }
-                            })
-                            .show();
-                }
+              moveData(event);
             }
         });
     }
 
+
+    private void moveData(@NonNull final MoveEvent event) {
+        View root = getView();
+        if (root!= null) {
+            final ArrayList<MediaFile> delete = new ArrayList<>(event.checked.length);
+            final ArrayList<MediaFile> original = new ArrayList<>(mediaFolder.getMediaFileList());
+
+            for (int index = 0, itemShift = 0; index < event.checked.length; index++) {
+                int jIndex = event.checked[index] - itemShift;
+                delete.add(adapter.getData().get(jIndex));
+                if(event.move) {
+                    adapter.removeAt(jIndex);
+                    itemShift++;
+                }
+            }
+
+            hideActionButton();
+            Snackbar.make(root,
+                    //TODO support for languages here
+                    Integer.toString(event.checked.length) + " have been moved to " + event.folderName, 7000)
+                    .setAction("UNDO", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            showActionButton();
+                            if (event.move) {
+                                mediaFolder.setMediaFileList(original);
+                                adapter.setData(original);
+                            }
+                        }
+                    })
+                    .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                        @Override
+                        public void onDismissed(Snackbar transientBottomBar, int eve) {
+                            super.onDismissed(transientBottomBar, eve);
+                            switch (eve) {
+                                case DISMISS_EVENT_SWIPE:
+                                case DISMISS_EVENT_TIMEOUT:
+                                    changed = event.move || changed;
+                                    updateWith(event.folderName,delete);
+                                    if (event.move) {
+                                        if (delete.size() == original.size()) {
+                                            finish();
+                                            return;
+                                        }
+                                    }
+                                    showActionButton();
+                                    break;
+                            }
+                        }
+                    }).show();
+        }
+
+    }
+
+
+    private void updateWith(String folder,ArrayList<MediaFile> data) {
+        if(updatedData==null) {
+            updatedData=new ArrayList<>();
+        }
+
+        MediaFolder mediaFolder=new MediaFolder(folder,data);
+        int index=updatedData.indexOf(mediaFolder);
+        if(index<0) {
+            updatedData.add(mediaFolder);
+        }else {
+            MediaFolder current=updatedData.get(index);
+            current.updateWith(mediaFolder);
+        }
+    }
 
     private void change(boolean move) {
         int[] checked=adapter.getAllChecked(true);
