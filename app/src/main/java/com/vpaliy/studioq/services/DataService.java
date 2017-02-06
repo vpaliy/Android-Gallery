@@ -9,14 +9,20 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -43,7 +49,7 @@ public class DataService extends Service {
     private NotificationManager notificationManager;
 
     private ConcurrentLinkedQueue<MediaFile> deleteContainer=new ConcurrentLinkedQueue<>();
-    private ConcurrentHashMap<String,List<MediaFile>> copyMoveContainer=new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String,ArrayList<MediaFile>> copyMoveContainer=new ConcurrentHashMap<>();
 
     private int lastId;
 
@@ -75,7 +81,7 @@ public class DataService extends Service {
                     }
                     case ACTION_COPY: {
                         if (message.obj != null) {
-                            copyMoveContainer.putAll((Map<String, List<MediaFile>>) message.obj);
+                            copyMoveContainer.putAll((Map<String, ArrayList<MediaFile>>) message.obj);
                         }
                         copy();
                         break;
@@ -157,7 +163,7 @@ public class DataService extends Service {
         sendDummyMessage(ACTION_DELETE);
     }
 
-    public void copyMoveAction(@NonNull Map<String,List<MediaFile>> map) {
+    public void copyMoveAction(@NonNull Map<String,ArrayList<MediaFile>> map) {
         copyMoveContainer.putAll(map);
         sendDummyMessage(ACTION_COPY);
     }
@@ -171,5 +177,84 @@ public class DataService extends Service {
     public void onDestroy() {
         serviceLooper.quit();
         stopForeground(true);
+    }
+
+
+    public static class DataWrapper implements Parcelable {
+
+        @NonNull
+        private Set<Map.Entry<String,ArrayList<MediaFile>>> data;
+
+        private DataWrapper(@NonNull Set<Map.Entry<String,ArrayList<MediaFile>>> data) {
+            this.data=data;
+        }
+
+        private DataWrapper(Parcel in) {
+            int size=in.readInt();
+            data=new LinkedHashSet<>(size);
+            for(int index=0;index<size;index++) {
+                ArrayList<MediaFile> temp=new ArrayList<>();
+                in.readTypedList(temp,MediaFile.CREATOR);
+                data.add(new Entry<>(in.readString(),temp));
+            }
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeInt(data.size());
+            for(Map.Entry<String,ArrayList<MediaFile>> entry:data) {
+                out.writeTypedList(entry.getValue());
+                out.writeString(entry.getKey());
+            }
+        }
+
+        public final static Parcelable.Creator<DataWrapper> CREATOR=new Creator<DataWrapper>() {
+            @Override
+            public DataWrapper createFromParcel(Parcel source) {
+                return new DataWrapper(source);
+            }
+
+            @Override
+            public DataWrapper[] newArray(int size) {
+                return new DataWrapper[size];
+            }
+        };
+
+        private class Entry<K,V> implements Map.Entry<K,V> {
+
+            private K key;
+            private V value;
+
+            Entry(K key, V value) {
+                this.key=key;
+                this.value=value;
+            }
+
+            @Override
+            public K getKey() {
+                return key;
+            }
+
+            @Override
+            public V getValue() {
+                return value;
+            }
+
+            @Override
+            public V setValue(V value) {
+                V last=this.value;
+                this.value = value;
+                return last;
+            }
+        }
+
+        public static DataWrapper wrap(@NonNull Set<Map.Entry<String,ArrayList<MediaFile>>> data) {
+            return new DataWrapper(data);
+        }
     }
 }
