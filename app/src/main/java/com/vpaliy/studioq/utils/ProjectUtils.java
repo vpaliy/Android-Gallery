@@ -20,6 +20,8 @@ public final class ProjectUtils {
 
     public static final String INIT="init";
 
+    public static final String ACTION=":action";
+
     public static final String MEDIA_DATA="mediaData";
 
     public static final String BITMAP="bitmap";
@@ -53,10 +55,5 @@ public final class ProjectUtils {
     public static String TRANSITION_NAME(int position) {
         return "data:" + Integer.toString(position);
     }
-
-
-
-
-
 
 }

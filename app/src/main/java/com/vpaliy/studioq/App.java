@@ -25,8 +25,9 @@ public final class App extends Application {
     public void onTerminate() {
         super.onTerminate();
         instance=null;
-        unbindService(connection);
+
     }
+
 
     public static App appInstance() {
         return instance;
@@ -35,8 +36,8 @@ public final class App extends Application {
     private final ServiceConnection connection=new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
-            DataService.DataBinder binder=(DataService.DataBinder)(iBinder);
-            service=binder.dataService();
+            DataService.DataServiceBinder binder=(DataService.DataServiceBinder)(iBinder);
+            service=binder.provideService();
         }
 
         @Override
@@ -45,8 +46,4 @@ public final class App extends Application {
         }
     };
 
-    @Nullable
-    public DataService dataService() {
-        return service;
-    }
 }

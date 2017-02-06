@@ -22,10 +22,17 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     private Context context;
     private ContentResolver contentResolver;
 
-    public DataProvider(Context context) {
+
+
+    DataProvider(Context context) {
         this.context=context;
         this.contentResolver =context.getContentResolver();
         execute(null,null);
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
     }
 
     @Override
@@ -81,7 +88,6 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
                 cursor.close();
             }
         }
-
         return new ArrayList<>(folderMap.values());
     }
 

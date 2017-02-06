@@ -8,9 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
-import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.services.DataService;
 import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
@@ -45,19 +43,14 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void makeQuery() {
-        DataService service= App.appInstance().dataService();
-        if(service!=null) {
-            //fetch out the data of the service
-        }else {
-            new DataProvider(this) {
-                @Override
-                public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.putExtra(INIT, true);
-                    intent.putExtra(MEDIA_DATA, mediaFolders);
-                    startActivity(intent);
-                }
-            };
-        }
+        new DataProvider(this) {
+            @Override
+            public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.putExtra(INIT, true);
+                intent.putExtra(MEDIA_DATA, mediaFolders);
+                startActivity(intent);
+            }
+        };
     }
 }
