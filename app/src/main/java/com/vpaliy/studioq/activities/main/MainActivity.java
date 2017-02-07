@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
+
+import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
 import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
@@ -34,6 +36,7 @@ import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import android.support.annotation.NonNull;
@@ -316,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onPerform() {
                                 showButton();
-                                deleteInBackground(deleteFolderList, adapter.getAdapterMode());
+                                deleteData(deleteFolderList, adapter.getAdapterMode());
                             }
                         }).show();
 
@@ -324,29 +327,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void deleteInBackground(final ArrayList<MediaFolder> deleteFolderList, final FolderAdapter.Mode mode) {
-        new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                if(deleteFolderList!=null) {
-                    for(MediaFolder folder:deleteFolderList) {
-                        List<? extends MediaFile> result;
-                        //TODO find a better way of doing this determination
-                        if(mode== FolderAdapter.Mode.IMAGE) {
-                            result = folder.getImageFileList();
-                        }else if(mode== FolderAdapter.Mode.VIDEO) {
-                            result=folder.getVideoFileList();
-                        }else {
-                            result = folder.getMediaFileList();
-                        }
-                        FileUtils.deleteFileList(MainActivity.this,result);
-                    }
+    private void deleteData(ArrayList<MediaFolder> deleteFolderList, FolderAdapter.Mode mode) {
+        if(deleteFolderList!=null) {
+            List<MediaFile> tempList = new LinkedList<>();
+            for(MediaFolder folder:deleteFolderList) {
+                if(mode== FolderAdapter.Mode.IMAGE) {
+                    tempList.addAll(folder.getImageFileList());
+                }else if(mode== FolderAdapter.Mode.VIDEO) {
+                    tempList.addAll(folder.getVideoFileList());
+                }else {
+                    tempList.addAll(folder.getMediaFileList());
                 }
-                return null;
             }
-        }.execute();
-    }
 
+            if(!tempList.isEmpty()) {
+                App.appInstance().delete(new ArrayList<>(tempList));
+            }
+
+        }
+    }
 
 
     @Override

@@ -1,12 +1,13 @@
 package com.vpaliy.studioq.utils.snackbarUtils;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
+
 import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import com.drew.lang.annotations.NotNull;
 
 //This class is for my particular needs
@@ -76,7 +77,12 @@ public class SnackbarWrapper {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
-                    actionCallback.onPerform();
+                    switch (event) {
+                        case DISMISS_EVENT_TIMEOUT:
+                        case DISMISS_EVENT_SWIPE:
+                            actionCallback.onPerform();
+                            break;
+                    }
                 }
             });
         }

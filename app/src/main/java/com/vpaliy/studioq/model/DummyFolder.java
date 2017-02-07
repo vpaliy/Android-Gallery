@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import java.io.File;
+
 public class DummyFolder implements Parcelable {
 
     private MediaFile cover;

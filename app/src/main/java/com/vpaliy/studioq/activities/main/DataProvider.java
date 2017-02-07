@@ -6,6 +6,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
+import android.util.Log;
+
+import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.model.ImageFile;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
@@ -14,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> {
 
@@ -22,6 +27,11 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     private Context context;
     private ContentResolver contentResolver;
 
+    @Nullable
+    private Set<File> staleData;
+
+    @Nullable
+    private Map<String, ArrayList<MediaFile>> freshData;
 
 
     DataProvider(Context context) {
@@ -33,6 +43,14 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        staleData=App.appInstance().provideStaleData();
+        freshData=App.appInstance().provideFreshData();
+        if(staleData!=null) {
+            Log.d(TAG, "Size of data:" + Integer.toString(staleData.size()));
+        }else {
+            Log.d(TAG, "NULL");
+        }
+
     }
 
     @Override
@@ -60,13 +78,18 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
             try {
                 if(cursor.moveToFirst()) {
                     do {
+                        String pathTo=cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+                        File file=new File(pathTo);
+                        if(staleData!=null) {
+                            if (staleData.contains(file)) {
+                                continue;
+                            }
+                        }
                         String folder=cursor.getString(cursor.
                             getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
                         String mimeType=cursor.getString(cursor.
                             getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE));
 
-                        File file=new File(cursor.getString(cursor.getColumnIndex
-                            (MediaStore.Files.FileColumns.DATA)));
                         //check if the folder already has been created
                         String pathToFolder=file.getParentFile().getAbsolutePath();
                         if(folderMap.get(pathToFolder)==null) {

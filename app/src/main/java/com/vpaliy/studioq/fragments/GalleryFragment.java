@@ -3,7 +3,6 @@ package com.vpaliy.studioq.fragments;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -13,13 +12,20 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.squareup.otto.Subscribe;
+import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
@@ -31,7 +37,6 @@ import com.vpaliy.studioq.model.DummyFolder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
 import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
@@ -212,23 +217,12 @@ public class GalleryFragment extends Fragment {
         }
     }
 
-    private void deleteInBackground(final List<MediaFile> mediaFileList, final boolean finish) {
+    private void deleteInBackground(final ArrayList<MediaFile> mediaFileList, final boolean finish) {
         changed=true;
-        new AsyncTask<Void,Void,Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                FileUtils.deleteFileList(getContext(),mediaFileList);
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                if(finish) {
-                    finish();
-                }
-            }
-        }.execute();
+        App.appInstance().delete(mediaFileList);
+        if(finish) {
+            finish();
+        }
     }
 
     private void share() {
@@ -401,10 +395,9 @@ public class GalleryFragment extends Fragment {
             }
 
             hideActionButton();
-
             SnackbarWrapper.start(root,
                     Integer.toString(event.checked.length) +
-                     " have been moved to " + event.folderName, R.integer.snackbarLength)
+                     " have been moved to " + event.moveFolder.getName(), R.integer.snackbarLength)
                     .callback(new ActionCallback("UNDO") {
                         @Override
                         public void onCancel() {
@@ -418,7 +411,14 @@ public class GalleryFragment extends Fragment {
                         @Override
                         public void onPerform() {
                             changed = event.move || changed;
-                            updateWith(event.folderName, delete);
+                            updateWith(event.moveFolder.getName(), delete);
+
+                            //make the operation here
+                            Map<String,ArrayList<MediaFile>> mapData=new HashMap<>();
+                            mapData.put(event.moveFolder.getAbsolutePath(),delete);
+                            App.appInstance().copy(mapData);
+
+                            //cancel if needed
                             if (event.move) {
                                 if (delete.size() == original.size()) {
                                     finish();
@@ -427,7 +427,7 @@ public class GalleryFragment extends Fragment {
                             }
                             showActionButton();
                         }
-                    });
+                    }).show();
         }
 
     }
@@ -470,12 +470,12 @@ public class GalleryFragment extends Fragment {
         int[] checked;
 
         @NonNull
-        String folderName;
+        File moveFolder;
 
         boolean move;
 
-        public MoveEvent(@NonNull String folderName,@NonNull int[] checked,boolean move) {
-            this.folderName=folderName;
+        public MoveEvent(@NonNull File moveFolder,@NonNull int[] checked,boolean move) {
+            this.moveFolder=moveFolder;
             this.checked=checked;
             this.move=move;
         }

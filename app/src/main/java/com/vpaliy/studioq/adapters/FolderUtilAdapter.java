@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +69,9 @@ public class FolderUtilAdapter extends RecyclerView.Adapter<FolderUtilAdapter.Fo
         @Override
         public void onClick(View view) {
             int position=getAdapterPosition();
-            String folderName=data.get(position).name();
-            EventBusProvider.defaultBus().post(new GalleryFragment.MoveEvent(folderName,checked,move));
+            File moveFolder=data.get(position).cover().mediaFile().getParentFile();
+            Log.d(TAG,moveFolder.toString());
+            EventBusProvider.defaultBus().post(new GalleryFragment.MoveEvent(moveFolder,checked,move));
         }
 
 

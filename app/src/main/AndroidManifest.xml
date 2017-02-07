@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.vpaliy.studioq">
 
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
@@ -63,7 +64,10 @@
         </activity>
 
         <service
-            android:name=".services.DataService">
+            android:name=".services.DataService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false">
         </service>
 
     </application>

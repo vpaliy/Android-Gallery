@@ -79,9 +79,6 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
                 @Override
                 protected void onPreExecute() {
                     super.onPreExecute();
-                    progress.setVisibility(View.VISIBLE);
-                    progress.setProgress(0);
-                    progress.setMax(exitEvent.intent.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA).size());
                 }
 
                 @Override
@@ -97,7 +94,7 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
                             return Boolean.FALSE;
                         }
                         ArrayList<MediaFile> result = new ArrayList<>(FileUtils.copyFileList(MediaUtilCreatorScreen.this,
-                                 contentList, mediaFolder, moveTo,callback));
+                                 contentList, mediaFolder, moveTo));
                         exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, new MediaFolder(folderName, result));
                         return Boolean.TRUE;
                     }
@@ -106,7 +103,6 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
 
                 @Override
                 protected void onPostExecute(Boolean result) {
-                    progress.setVisibility(View.INVISIBLE);
                     if (result == Boolean.TRUE) {
                         setResult(RESULT_OK, exitEvent.intent);
                     }

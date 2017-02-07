@@ -5,11 +5,15 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.services.DataService;
 import com.vpaliy.studioq.utils.ProjectUtils;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -35,6 +39,22 @@ public final class App extends Application {
 
     }
 
+    @Nullable
+    public Set<File> provideStaleData() {
+        if(service!=null) {
+            return service.staleData();
+        }
+        return null;
+    }
+
+    @Nullable
+    public Map<String, ArrayList<MediaFile>> provideFreshData() {
+        if(service!=null) {
+            return service.freshData();
+        }
+        return null;
+    }
+
     public void delete(@NonNull ArrayList<MediaFile> mediaFileList) {
         if(service!=null) {
             service.deleteAction(mediaFileList);
@@ -52,7 +72,7 @@ public final class App extends Application {
         }else {
             Intent intent=new Intent(this,DataService.class);
             intent.putExtra(ProjectUtils.ACTION,DataService.ACTION_COPY);
-            intent.putExtra(ProjectUtils.MEDIA_DATA, DataService.DataWrapper.wrap(copyMap.entrySet()));
+            intent.putExtra(ProjectUtils.MEDIA_DATA, DataService.DataWrapper.wrap(copyMap));
             startDataService(intent);
         }
     }
@@ -68,6 +88,13 @@ public final class App extends Application {
         startService(intent);
         bindService(intent,connection,BIND_AUTO_CREATE);
     }
+
+
+    public void unbindService() {
+        unbindService(connection);
+        service=null;
+    }
+
 
     public static App appInstance() {
         return instance;

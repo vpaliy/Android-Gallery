@@ -12,13 +12,18 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
+
+import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +35,12 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 
 public class DataService extends Service {
 
     private static final String TAG=DataService.class.getSimpleName();
-    private static final int NOTIFICATION_ID=0;
+    private static final int NOTIFICATION_ID=1;
 
     public static final int ACTION_DELETE=1;
     public static final int ACTION_COPY=2;
@@ -44,6 +50,7 @@ public class DataService extends Service {
 
     private volatile Looper serviceLooper;
     private volatile Handler handler;
+    private volatile int request=0;
 
     private NotificationCompat.Builder notificationBuilder;
     private NotificationManager notificationManager;
@@ -52,6 +59,7 @@ public class DataService extends Service {
     private ConcurrentHashMap<String,ArrayList<MediaFile>> copyMoveContainer=new ConcurrentHashMap<>();
 
     private int lastId;
+
 
     public class DataServiceBinder extends Binder {
         public DataService provideService() {
@@ -64,6 +72,7 @@ public class DataService extends Service {
     public void onCreate() {
         super.onCreate();
         initNotification();
+
         HandlerThread handlerThread=new HandlerThread("DataServiceThread");
         handlerThread.start();
 
@@ -71,23 +80,31 @@ public class DataService extends Service {
         handler=new Handler(serviceLooper) {
             @Override
             public void handleMessage(@NonNull Message message) {
+                Log.d(TAG,"Got a message");
                 switch (message.arg2) {
                     case ACTION_DELETE: {
                         if (message.obj != null) {
                             deleteContainer.addAll((Collection<? extends MediaFile>) message.obj);
                         }
+                        Log.d(TAG,"About to delete the data");
                         delete();
                         break;
                     }
                     case ACTION_COPY: {
                         if (message.obj != null) {
-                            copyMoveContainer.putAll((Map<String, ArrayList<MediaFile>>) message.obj);
+                            copyMoveContainer.putAll(DataWrapper.convertToMap(message.obj));
                         }
                         copy();
                         break;
                     }
                 }
-                stopSelf(message.arg1);
+                request--;
+                if(request==0) {
+                    synchronized(DataService.this) {
+                        App.appInstance().unbindService();
+                        stopSelf();
+                    }
+                }
             }
         };
 
@@ -120,37 +137,79 @@ public class DataService extends Service {
 
     @WorkerThread
     private void delete() {
-        for(MediaFile mediaFile:deleteContainer) {
-            FileUtils.deleteFile(this,mediaFile);
-            deleteContainer.remove();
+        Log.d(TAG,"In delete method");
+        Log.d(TAG,"It has to delete:"+Integer.toString(deleteContainer.size()));
+
+        updateNotification("Delete",0,0);
+        while(!deleteContainer.isEmpty()){
+            FileUtils.deleteFile(this,deleteContainer.peek());
+            deleteContainer.poll();
         }
+        Log.d(TAG,"It's done with the data");
     }
 
 
     @WorkerThread
     private void copy() {
-        //TODO implement
+        updateNotification("Delete",0,0);
+        for(String key:copyMoveContainer.keySet()) {
+            FileUtils.copyFileList(this,copyMoveContainer.get(key),new File(key),false);
+        }
+    }
+
+    public  Set<File> staleData() {
+        Log.d(TAG,"In staleData method()");
+        if(deleteContainer==null) {
+            return null;
+        }
+        Log.d(TAG,"Current size of data is:"+Integer.toString(deleteContainer.size()));
+        Set<File> resultSet=new LinkedHashSet<>(deleteContainer.size());
+        for(MediaFile file:deleteContainer) {
+            resultSet.add(file.mediaFile());
+        }
+       return resultSet;
+    }
+
+
+    public Map<String, ArrayList<MediaFile>> freshData() {
+        if(copyMoveContainer==null) {
+            return null;
+        }
+        return new HashMap<>(copyMoveContainer);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG,"onStartCommand() is called");
         lastId=startId;
         if(intent!=null) {
             determineAction(intent,startId);
         }
-        return START_NOT_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     private void determineAction(@NonNull Intent intent, int startId) {
+        request++;
         Message message=new Message();
         message.arg1=startId;
         message.arg2=intent.getIntExtra(ProjectUtils.ACTION,ACTION_DELETE);
-        message.obj=intent.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
+        supplyWithData(message,intent);
         handler.sendMessage(message);
     }
 
+    private void supplyWithData(@NonNull Message message, @NonNull Intent intent) {
+        switch (message.arg2) {
+            case ACTION_DELETE:
+                message.obj=intent.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
+                break;
+            case ACTION_COPY:
+                message.obj=intent.getParcelableExtra(ProjectUtils.MEDIA_DATA);
+                break;
+        }
+    }
 
     private void sendDummyMessage(@IntRange(from = ACTION_DELETE,to = ACTION_COPY)int action) {
+        request++;
         Message message=new Message();
         message.arg1=lastId;
         message.arg2=action;
@@ -170,32 +229,41 @@ public class DataService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        Log.d(TAG,"onTaskRemoved()");
         super.onTaskRemoved(rootIntent);
     }
 
     @Override
     public void onDestroy() {
+        Log.d(TAG,"onDestroy()");
         serviceLooper.quit();
         stopForeground(true);
     }
 
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        Log.d(TAG,"onLowMemory()");
+    }
 
+
+    //This class helps to pass a map as a Parcelable
     public static class DataWrapper implements Parcelable {
 
         @NonNull
-        private Set<Map.Entry<String,ArrayList<MediaFile>>> data;
+        private Map<String,ArrayList<MediaFile>> dataMap;
 
-        private DataWrapper(@NonNull Set<Map.Entry<String,ArrayList<MediaFile>>> data) {
-            this.data=data;
+        private DataWrapper(@NonNull Map<String,ArrayList<MediaFile>> dataMap) {
+            this.dataMap=dataMap;
         }
 
         private DataWrapper(Parcel in) {
             int size=in.readInt();
-            data=new LinkedHashSet<>(size);
+            dataMap=new LinkedHashMap<>();
             for(int index=0;index<size;index++) {
                 ArrayList<MediaFile> temp=new ArrayList<>();
                 in.readTypedList(temp,MediaFile.CREATOR);
-                data.add(new Entry<>(in.readString(),temp));
+                dataMap.put(in.readString(),temp);
             }
         }
 
@@ -206,8 +274,8 @@ public class DataService extends Service {
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
-            out.writeInt(data.size());
-            for(Map.Entry<String,ArrayList<MediaFile>> entry:data) {
+            out.writeInt(dataMap.size());
+            for(Map.Entry<String,ArrayList<MediaFile>> entry:dataMap.entrySet()) {
                 out.writeTypedList(entry.getValue());
                 out.writeString(entry.getKey());
             }
@@ -225,36 +293,16 @@ public class DataService extends Service {
             }
         };
 
-        private class Entry<K,V> implements Map.Entry<K,V> {
 
-            private K key;
-            private V value;
-
-            Entry(K key, V value) {
-                this.key=key;
-                this.value=value;
-            }
-
-            @Override
-            public K getKey() {
-                return key;
-            }
-
-            @Override
-            public V getValue() {
-                return value;
-            }
-
-            @Override
-            public V setValue(V value) {
-                V last=this.value;
-                this.value = value;
-                return last;
-            }
+        public static DataWrapper wrap(@NonNull Map<String,ArrayList<MediaFile>> dataMap) {
+            return new DataWrapper(dataMap);
         }
 
-        public static DataWrapper wrap(@NonNull Set<Map.Entry<String,ArrayList<MediaFile>>> data) {
-            return new DataWrapper(data);
+        //helpful method
+        private static Map<String, ArrayList<MediaFile>> convertToMap(@NonNull Object obj) {
+            if(!(obj instanceof DataWrapper))
+                return null;
+           return DataWrapper.class.cast(obj).dataMap;
         }
     }
 }
