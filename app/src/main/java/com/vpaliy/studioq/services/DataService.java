@@ -68,7 +68,6 @@ public class DataService extends Service {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void onCreate() {
         super.onCreate();
         initNotification();
