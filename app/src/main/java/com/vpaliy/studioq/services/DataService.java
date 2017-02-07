@@ -56,7 +56,7 @@ public class DataService extends Service {
     private NotificationManager notificationManager;
 
     private ConcurrentLinkedQueue<MediaFile> deleteContainer=new ConcurrentLinkedQueue<>();
-    private ConcurrentHashMap<String,ArrayList<MediaFile>> copyMoveContainer=new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String,ArrayList<MediaFile>> copyContainer=new ConcurrentHashMap<>();
 
     private int lastId;
 
@@ -68,6 +68,7 @@ public class DataService extends Service {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onCreate() {
         super.onCreate();
         initNotification();
@@ -79,19 +80,17 @@ public class DataService extends Service {
         handler=new Handler(serviceLooper) {
             @Override
             public void handleMessage(@NonNull Message message) {
-                Log.d(TAG,"Got a message");
                 switch (message.arg2) {
                     case ACTION_DELETE: {
                         if (message.obj != null) {
-                            deleteContainer.addAll((Collection<? extends MediaFile>) message.obj);
+                            deleteContainer.addAll(Collection.class.cast(message.obj));
                         }
-                        Log.d(TAG,"About to delete the data");
                         delete();
                         break;
                     }
                     case ACTION_COPY: {
                         if (message.obj != null) {
-                            copyMoveContainer.putAll(DataWrapper.convertToMap(message.obj));
+                            copyContainer.putAll(DataWrapper.convertToMap(message.obj));
                         }
                         copy();
                         break;
@@ -136,32 +135,26 @@ public class DataService extends Service {
 
     @WorkerThread
     private void delete() {
-        Log.d(TAG,"In delete method");
-        Log.d(TAG,"It has to delete:"+Integer.toString(deleteContainer.size()));
-
-        updateNotification("Delete",0,0);
+        updateNotification("Deleting data",0,0);
         while(!deleteContainer.isEmpty()){
             FileUtils.deleteFile(this,deleteContainer.peek());
             deleteContainer.poll();
         }
-        Log.d(TAG,"It's done with the data");
     }
 
 
     @WorkerThread
     private void copy() {
-        updateNotification("Delete",0,0);
-        for(String key:copyMoveContainer.keySet()) {
-            FileUtils.copyFileList(this,copyMoveContainer.get(key),new File(key),false);
+        updateNotification("Copying data",0,0);
+        for(String key:copyContainer.keySet()) {
+            FileUtils.copyFileList(this,copyContainer.get(key),new File(key),false);
         }
     }
 
     public  Set<File> staleData() {
-        Log.d(TAG,"In staleData method()");
         if(deleteContainer==null) {
             return null;
         }
-        Log.d(TAG,"Current size of data is:"+Integer.toString(deleteContainer.size()));
         Set<File> resultSet=new LinkedHashSet<>(deleteContainer.size());
         for(MediaFile file:deleteContainer) {
             resultSet.add(file.mediaFile());
@@ -171,15 +164,14 @@ public class DataService extends Service {
 
 
     public Map<String, ArrayList<MediaFile>> freshData() {
-        if(copyMoveContainer==null) {
+        if(copyContainer==null) {
             return null;
         }
-        return new HashMap<>(copyMoveContainer);
+        return new HashMap<>(copyContainer);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG,"onStartCommand() is called");
         lastId=startId;
         if(intent!=null) {
             determineAction(intent,startId);
@@ -222,19 +214,14 @@ public class DataService extends Service {
     }
 
     public void copyMoveAction(@NonNull Map<String,ArrayList<MediaFile>> map) {
-        copyMoveContainer.putAll(map);
+        copyContainer.putAll(map);
         sendDummyMessage(ACTION_COPY);
     }
 
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        Log.d(TAG,"onTaskRemoved()");
-        super.onTaskRemoved(rootIntent);
-    }
 
     @Override
     public void onDestroy() {
-        Log.d(TAG,"onDestroy()");
+        super.onDestroy();
         serviceLooper.quit();
         stopForeground(true);
     }
@@ -242,9 +229,9 @@ public class DataService extends Service {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        Log.d(TAG,"onLowMemory()");
+        serviceLooper.quit();
+        stopForeground(true);
     }
-
 
     //This class helps to pass a map as a Parcelable
     public static class DataWrapper implements Parcelable {

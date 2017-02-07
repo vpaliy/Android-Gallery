@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -56,6 +57,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     @Override
     protected ArrayList<MediaFolder> doInBackground(Void... voids) {
         Map<String,MediaFolder> folderMap=new LinkedHashMap<>();
+        useFreshData(folderMap);
         String[] projection = {
                 MediaStore.Files.FileColumns._ID,
                 MediaStore.Files.FileColumns.DATA,
@@ -113,6 +115,17 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
         }
         return new ArrayList<>(folderMap.values());
     }
+
+    private void useFreshData(@NonNull Map<String,MediaFolder> map) {
+        if(freshData!=null) {
+            for(Map.Entry<String,ArrayList<MediaFile>> entry:freshData.entrySet()) {
+                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator));
+                map.put(entry.getKey(),new MediaFolder(folder));
+                map.get(entry.getKey()).addAll(entry.getValue());
+            }
+        }
+    }
+
 
     @Override
     public abstract void onPostExecute(ArrayList<MediaFolder> mediaFolders);
