@@ -70,7 +70,7 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
 
             if (folderName != null) {
 
-                String pathTo = Environment.getExternalStorageDirectory() + File.separator + folderName;
+                String pathTo = Environment.getExternalStorageDirectory() + File.separator + folderName+File.separator;
                 File mediaFolder = new File(pathTo);
                 if (!mediaFolder.mkdir()) {
                     Toast.makeText(MediaUtilCreatorScreen.this, "Failed to create a folder", Toast.LENGTH_SHORT).show();

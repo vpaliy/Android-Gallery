@@ -12,9 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.LinkedList;
+import java.nio.channels.FileChannel;
 import java.util.List;
 import com.vpaliy.studioq.model.MediaFile;
 
@@ -26,23 +24,20 @@ public final class FileUtils {
         throw new UnsupportedOperationException();
     }
 
+
     private static void makeFileCopy(File source, File dest) throws IOException {
-        InputStream is = null;
-        OutputStream os = null;
+        FileChannel inputChannel = null;
+        FileChannel outputChannel = null;
         try {
-            is = new FileInputStream(source);
-            os = new FileOutputStream(dest);
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = is.read(buffer)) > 0) {
-                os.write(buffer, 0, length);
-            }
-        }finally {
+            inputChannel = new FileInputStream(source).getChannel();
+            outputChannel = new FileOutputStream(dest).getChannel();
+            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+        } finally {
             try {
-                if (is != null)
-                    is.close();
-                if (os != null)
-                    os.close();
+                if (inputChannel != null)
+                    inputChannel.close();
+                if (outputChannel != null)
+                    outputChannel.close();
             }catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -52,6 +47,7 @@ public final class FileUtils {
     public static void deleteFile(Context context, MediaFile mediaFile) {
         if(!mediaFile.mediaFile().delete()) {
             Log.e(TAG, "Cannot delete file "+ mediaFile.mediaFile().getAbsoluteFile());
+            return;
         }
         String[] projection = { MediaStore.Images.Media._ID };
 
@@ -79,51 +75,28 @@ public final class FileUtils {
 
     }
 
-    public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo) {
+    public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder) {
         if (contentList != null) {
-            int size=0;
-            int missed=0;
             ContentValues values=new ContentValues();
+            int size=0;
             for (int index=0;index<contentList.size();index++) {
                 MediaFile mediaFile=contentList.get(index);
                 File file = new File(mediaFolder, mediaFile.mediaFile().getName());
                 boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
                 if (!file.exists()) {
                     try {
-                        if (!file.createNewFile()) {
-                            //showing only path here
-                            Log.e(TAG, "Cannot create a file here " + mediaFile.mediaFile().getName());
-                            //No need to copy the file any more
-                            continue;
-                        }
-
                         FileUtils.makeFileCopy(mediaFile.mediaFile().getAbsoluteFile(), file);
-
-
                     } catch (IOException ex) {
-                        Log.d(TAG,"Exception on:"+mediaFile.mediaFile());
                         ex.printStackTrace();
-                        Log.e(TAG, ex.toString(), ex);
                         continue;
                     }
 
 
-                    if (isVideo) {
-                        values.put(MediaStore.Video.VideoColumns.DATA, file.getAbsolutePath());
-                        context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
-                    } else {
-                        values.put(MediaStore.Images.ImageColumns.DATA, file.getAbsolutePath());
-                        context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-                    }
+                    values.clear();
                     size++;
-                    Log.d(TAG,"Number of files:"+Integer.toString(size));
-                }else {
-                    missed++;
                 }
+                Log.d(TAG,"Copied files:"+ Integer.toString(size));
             }
-            Log.d(TAG,"Total number of files:"+Integer.toString(contentList.size()));
-            Log.d(TAG,"Total number of copied files:"+Integer.toString(size));
-            Log.d(TAG,"Total number of missed files:"+Integer.toString(missed));
         }
     }
 

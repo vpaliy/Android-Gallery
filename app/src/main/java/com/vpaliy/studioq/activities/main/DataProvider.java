@@ -111,7 +111,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     private void useFreshData(@NonNull Map<String,MediaFolder> map) {
         if(freshData!=null) {
             for(Map.Entry<String,ArrayList<MediaFile>> entry:freshData.entrySet()) {
-                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator));
+                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator)-1);
                 map.put(entry.getKey(),new MediaFolder(folder));
                 map.get(entry.getKey()).addAll(entry.getValue());
             }

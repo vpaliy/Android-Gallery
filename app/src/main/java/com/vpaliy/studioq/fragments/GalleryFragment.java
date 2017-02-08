@@ -397,12 +397,7 @@ public class GalleryFragment extends Fragment {
                 hideActionButton();
                actionSnackbarWith(event,root,original,delete);
             }else {
-                if(event.move) {
-                    Dialog dialog=new Dialog(getContext());
-
-                }else {
-                    Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
             }
         }
 

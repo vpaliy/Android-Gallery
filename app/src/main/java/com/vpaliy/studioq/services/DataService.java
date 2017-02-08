@@ -146,7 +146,7 @@ public class DataService extends Service {
     private void copy() {
         updateNotification("Copying data",0,0);
         for(String key:copyContainer.keySet()) {
-            FileUtils.copyFileList(this,copyContainer.get(key),new File(key),false);
+            FileUtils.copyFileList(this,copyContainer.get(key),new File(key));
         }
     }
 
