@@ -52,13 +52,7 @@ public final class FileUtils {
         String pathTo=mediaFile.mediaFile().getAbsolutePath();
 
         if(!mediaFile.mediaFile().delete()) {
-            Log.e(TAG, "Cannot delete file "+ mediaFile.mediaFile().getAbsoluteFile());
-            File anotherTry=new File(Environment.getExternalStorageDirectory()+mediaFile.mediaFile().getAbsolutePath());
-            if(!anotherTry.delete()) {
-                Log.d(TAG,"Second Try didn't work either");
-                return;
-            }
-            pathTo=anotherTry.getAbsolutePath();
+           return;
         }
 
         if(mediaFile.getType()== MediaFile.Type.VIDEO) {
