@@ -1,6 +1,6 @@
 package com.vpaliy.studioq.fragments;
 
-import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -392,12 +393,33 @@ public class GalleryFragment extends Fragment {
                 }
             }
 
+            final ArrayList<MediaFile> temp=new ArrayList<>(delete);
             updateWith(event.moveFolder.getName(),delete);
             if(!delete.isEmpty()) {
                 hideActionButton();
                actionSnackbarWith(event,root,original,delete);
             }else {
-                Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
+                if(event.move) {
+                    AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+                    builder.setMessage(R.string.copyDuplicate)
+                            .setPositiveButton(R.string.Okay,new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    mediaFolder.setMediaFileList(original);
+                                    adapter.setData(original);
+                                }
+                            })
+                            .setNegativeButton(R.string.Cancel,new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int index) {
+                                    App.appInstance().delete(temp);
+                                    dialogInterface.cancel();
+                                }
+                            })
+                            .create().show();
+                }else {
+                    Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
+                }
             }
         }
 

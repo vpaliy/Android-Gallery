@@ -117,9 +117,7 @@ public final class FileUtils {
 
     public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder) {
         if (contentList != null) {
-
             ContentValues values=new ContentValues();
-
             for (int index=0;index<contentList.size();index++) {
                 MediaFile mediaFile=contentList.get(index);
                 String fileName=mediaFile.mediaFile().getName();

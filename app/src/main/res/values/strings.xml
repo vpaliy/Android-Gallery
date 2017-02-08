@@ -9,6 +9,7 @@
     <string name="Okay">Okay</string>
     <string name="enterTheTitle">Untitled</string>
     <string name="doYouWantToDelete">Do you want to delete last file?</string>
+    <string name="copyDuplicate">You have already copied the data to the chosen folder, do you want to restore files in this folder</string>
 
     <!-- Common for menus !-->
     <string name="add">Add</string>
