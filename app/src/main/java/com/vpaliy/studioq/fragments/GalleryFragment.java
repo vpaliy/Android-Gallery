@@ -449,15 +449,17 @@ public class GalleryFragment extends Fragment {
                         //make the operation here
                         Map<String, ArrayList<MediaFile>> mapData = new HashMap<>();
                         mapData.put(event.moveFolder.getAbsolutePath(), delete);
-                        App.appInstance().copy(mapData);
 
-                        //cancel if needed
-                        if (event.move) {
+                        if(event.move) {
+                            App.appInstance().move(mapData);
                             if (delete.size() == original.size()) {
                                 finish();
                                 return;
                             }
+                        }else {
+                            App.appInstance().copy(mapData);
                         }
+
                         showActionButton();
                     }
                 }).show();

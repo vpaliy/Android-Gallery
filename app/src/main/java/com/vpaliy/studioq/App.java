@@ -78,10 +78,10 @@ public final class App extends Application {
     }
 
     public void move(@NonNull Map<String, ArrayList<MediaFile>> moveMap) {
+        copy(moveMap);
         for(Map.Entry<String,ArrayList<MediaFile>> entry:moveMap.entrySet()) {
             delete(entry.getValue());
         }
-        copy(moveMap);
     }
 
     private void startDataService(@NonNull Intent intent) {

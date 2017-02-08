@@ -3,7 +3,7 @@ package com.vpaliy.studioq.utils;
 import com.bumptech.glide.signature.StringSignature;
 import com.vpaliy.studioq.model.MediaFile;
 
-public class MediaSignature extends StringSignature {
+class MediaSignature extends StringSignature {
 
     private MediaSignature(String path, long lastModified) {
         super(path + lastModified);

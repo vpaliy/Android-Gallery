@@ -1,12 +1,9 @@
 package com.vpaliy.studioq.fragments;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -15,24 +12,18 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.MemoryCategory;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
-import com.vpaliy.studioq.model.DynamicImageView;
+import com.vpaliy.studioq.adapters.UtilReviewAdapter;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
-import com.vpaliy.studioq.activities.utils.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.utils.ProjectUtils;
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
+import android.support.annotation.Nullable;
 import static butterknife.ButterKnife.findById;
 
 public class MediaUtilReviewFragment extends Fragment
@@ -41,7 +32,7 @@ public class MediaUtilReviewFragment extends Fragment
     private final static String TAG=MediaUtilReviewFragment.class.getSimpleName();
 
     private ArrayList<MediaFile> reviewMediaFileList;
-    private MediaAdapter adapter;
+    private UtilReviewAdapter adapter;
 
 
     public static MediaUtilReviewFragment newInstance(ArrayList<MediaFile> mediaFileList) {
@@ -86,7 +77,7 @@ public class MediaUtilReviewFragment extends Fragment
             });
             mediaRecyclerView.setLayoutManager(manager);
             mediaRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mediaRecyclerView.setAdapter(adapter=new MediaAdapter(getContext(),reviewMediaFileList));
+            mediaRecyclerView.setAdapter(adapter=new UtilReviewAdapter(getContext(),reviewMediaFileList));
             ImageButton proceedButton=findById(root,R.id.proceed);
             proceedButton.setOnClickListener(this);
 
@@ -156,132 +147,4 @@ public class MediaUtilReviewFragment extends Fragment
         }
     }
 
-
-    public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.AbstractMediaItem> {
-
-        private List<MediaFile> mediaFileList;
-        private LayoutInflater inflater;
-        private final Glide glideInstance;
-        private CaptionItem captionItem;
-
-        private final static int HEADER_TYPE=0;
-
-        private final static int CONTENT_TYPE=1;
-
-         MediaAdapter(Context context, ArrayList<MediaFile> mDataModel) {
-            this.inflater=LayoutInflater.from(context);
-            this.mediaFileList=mDataModel;
-            this.glideInstance=Glide.get(context);
-            glideInstance.setMemoryCategory(MemoryCategory.HIGH);
-        }
-
-
-        public abstract class AbstractMediaItem extends RecyclerView.ViewHolder {
-
-
-            public AbstractMediaItem(View itemView) {
-                super(itemView);
-            }
-
-            public abstract void onBindData(int position);
-
-        }
-
-
-        public class ContentItem extends AbstractMediaItem {
-
-            @BindView(R.id.image) DynamicImageView image;
-            @BindView(R.id.deleteAction) FloatingActionButton deleteButton;
-
-            public ContentItem(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this,itemView);
-                deleteButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        int position=getAdapterPosition()-1;
-                        MediaFile mediaFile=mediaFileList.get(position);
-                        EventBusProvider.defaultBus().post(new ReviewStateTrigger(mediaFile));
-                        mediaFileList.remove(position);
-                        if(mediaFileList.size()==0) {
-                            getActivity().getSupportFragmentManager().popBackStack();
-                        }
-                        notifyItemRemoved(position+1);
-                    }
-                });
-
-            }
-
-            @Override
-            public void onBindData(int position) {
-                Glide.with(itemView.getContext())
-                        .load(mediaFileList.get(position).mediaFile())
-                        .asBitmap()
-                        .centerCrop()
-                        .into(image);
-            }
-
-        }
-
-        class CaptionItem extends AbstractMediaItem {
-
-            @BindView(R.id.caption) EditText captionText;
-
-            CaptionItem(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this,itemView);
-            }
-
-            @Override
-            public void onBindData(int position) {
-
-            }
-
-        }
-
-
-
-        @Override
-        public int getItemViewType(int position) {
-            if(position==0)
-                return HEADER_TYPE;
-            return CONTENT_TYPE;
-        }
-
-        @Override
-        public int getItemCount() {
-            return mediaFileList.size()+1;
-        }
-
-
-        @Override
-        public AbstractMediaItem onCreateViewHolder(ViewGroup parentGroup, int viewType) {
-            View root;
-            switch (viewType) {
-                case HEADER_TYPE:
-                    root=inflater.inflate(R.layout.caption_layout_item,parentGroup,false);
-                    if(captionItem==null)
-                        captionItem=new CaptionItem(root);
-                    return captionItem;
-                default:
-                    root=inflater.inflate(R.layout.media_review_item,parentGroup,false);
-                    return new ContentItem(root);
-            }
-        }
-
-        public String getTitle() {
-            return captionItem.captionText.getText().toString();
-        }
-
-        @Override
-        public void onBindViewHolder(AbstractMediaItem holder, int position) {
-            if(position!=0)
-                position--;
-            holder.onBindData(position);
-        }
-
-        public List<MediaFile> getSelectedMediaFiles() {
-            return mediaFileList;
-        }
-    }
 }
