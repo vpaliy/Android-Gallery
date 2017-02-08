@@ -1,30 +1,26 @@
 package com.vpaliy.studioq.fragments;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.squareup.otto.Subscribe;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
@@ -40,10 +36,15 @@ import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
 import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import static butterknife.ButterKnife.findById;
+import android.widget.Toast;
+
+import butterknife.OnClick;
+import android.support.annotation.NonNull;
+import com.squareup.otto.Subscribe;
+import butterknife.BindView;
 
 //TODO when snack is enabled and the activity finishes
 
@@ -308,9 +309,6 @@ public class GalleryFragment extends Fragment {
         return root;
     }
 
-    public GalleryAdapter getGalleryAdapter() {
-        return adapter;
-    }
 
     @Override
     public void onViewCreated(View root, Bundle savedInstanceState) {
@@ -394,45 +392,62 @@ public class GalleryFragment extends Fragment {
                 }
             }
 
-            hideActionButton();
-            SnackbarWrapper.start(root,
-                    Integer.toString(event.checked.length) +
-                     " have been moved to " + event.moveFolder.getName(), R.integer.snackbarLength)
-                    .callback(new ActionCallback("UNDO") {
-                        @Override
-                        public void onCancel() {
-                            showActionButton();
-                            if (event.move) {
-                                mediaFolder.setMediaFileList(original);
-                                adapter.setData(original);
-                            }
-                        }
+            updateWith(event.moveFolder.getName(),delete);
+            if(!delete.isEmpty()) {
+                hideActionButton();
+               actionSnackbarWith(event,root,original,delete);
+            }else {
+                if(event.move) {
+                    Dialog dialog=new Dialog(getContext());
 
-                        @Override
-                        public void onPerform() {
-                            changed = event.move || changed;
-                            updateWith(event.moveFolder.getName(), delete);
-
-                            //make the operation here
-                            Map<String,ArrayList<MediaFile>> mapData=new HashMap<>();
-                            mapData.put(event.moveFolder.getAbsolutePath(),delete);
-                            App.appInstance().copy(mapData);
-
-                            //cancel if needed
-                            if (event.move) {
-                                if (delete.size() == original.size()) {
-                                    finish();
-                                    return;
-                                }
-                            }
-                            showActionButton();
-                        }
-                    }).show();
+                }else {
+                    Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
+                }
+            }
         }
 
     }
 
 
+
+    private void actionSnackbarWith(@NonNull final MoveEvent event, @NonNull View root,
+                            final ArrayList<MediaFile> original, final ArrayList<MediaFile> delete) {
+        SnackbarWrapper.start(root,
+                Integer.toString(event.checked.length) +
+                        " have been moved to " + event.moveFolder.getName(), R.integer.snackbarLength)
+                .callback(new ActionCallback("UNDO") {
+                    @Override
+                    public void onCancel() {
+                        showActionButton();
+                        if (event.move) {
+                            mediaFolder.setMediaFileList(original);
+                            adapter.setData(original);
+                        }
+                    }
+
+                    @Override
+                    public void onPerform() {
+                        changed = event.move || changed;
+
+                        //make the operation here
+                        Map<String, ArrayList<MediaFile>> mapData = new HashMap<>();
+                        mapData.put(event.moveFolder.getAbsolutePath(), delete);
+                        App.appInstance().copy(mapData);
+
+                        //cancel if needed
+                        if (event.move) {
+                            if (delete.size() == original.size()) {
+                                finish();
+                                return;
+                            }
+                        }
+                        showActionButton();
+                    }
+                }).show();
+    }
+
+
+    //update the date that will be sent back to the Activity
     private void updateWith(String folder,ArrayList<MediaFile> data) {
         if(updatedData==null) {
             updatedData=new ArrayList<>();
@@ -444,10 +459,17 @@ public class GalleryFragment extends Fragment {
             updatedData.add(mediaFolder);
         }else {
             MediaFolder current=updatedData.get(index);
+
+            //remove the data that has been copied more than once
+            data.removeAll(current.getMediaFileList());
+
+            //update
             current.updateWith(mediaFolder);
         }
     }
 
+
+    //this method changes the adapter in order to provide users with the UI for selecting a folder
     private void change(boolean move) {
         int[] checked=adapter.getAllChecked(true);
         utilAdapter=new FolderUtilAdapter(getContext(),dummyFolders,checked,move);
@@ -461,10 +483,15 @@ public class GalleryFragment extends Fragment {
         Registrator.unregister(this);
     }
 
+    @OnClick(R.id.cameraButton)
     public void openCamera(View view) {
         startActivity(new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA));
     }
 
+    /**
+     * This nested class is used as a wrapper
+     * When a user has selected a folder where to copy/move selected items
+     */
     public static class MoveEvent{
         @NonNull
         int[] checked;

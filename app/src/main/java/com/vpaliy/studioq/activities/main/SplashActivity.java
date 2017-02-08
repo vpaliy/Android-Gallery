@@ -4,14 +4,15 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import static com.vpaliy.studioq.utils.ProjectUtils.INIT;
 import static com.vpaliy.studioq.utils.ProjectUtils.MEDIA_DATA;
 

@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
-
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
@@ -37,13 +36,13 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import android.support.annotation.NonNull;
-import com.squareup.otto.Subscribe;
 import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
 import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
-
-import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import android.support.annotation.NonNull;
+import com.squareup.otto.Subscribe;
+import butterknife.BindView;
 import static butterknife.ButterKnife.findById;
 
 

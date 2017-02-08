@@ -6,10 +6,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.util.Log;
-
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.model.ImageFile;
 import com.vpaliy.studioq.model.MediaFile;
@@ -21,11 +17,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> {
 
     private final static String  TAG=DataProvider.class.getSimpleName();
 
-    private Context context;
     private ContentResolver contentResolver;
 
     @Nullable
@@ -36,7 +34,6 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
 
 
     DataProvider(Context context) {
-        this.context=context;
         this.contentResolver =context.getContentResolver();
         execute(null,null);
     }
@@ -46,11 +43,6 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
         super.onPreExecute();
         staleData=App.appInstance().provideStaleData();
         freshData=App.appInstance().provideFreshData();
-        if(staleData!=null) {
-            Log.d(TAG, "Size of data:" + Integer.toString(staleData.size()));
-        }else {
-            Log.d(TAG, "NULL");
-        }
 
     }
 
@@ -100,7 +92,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
                         if(mimeType.contains("video")) {
                             folderMap.get(pathToFolder).addVideoFile(new VideoFile(cursor));
 
-                        }else {
+                        }else if(!mimeType.contains("mp3")) {
                             MediaFile.Type type= MediaFile.Type.IMAGE;
                             if(mimeType.contains("gif")) {
                                 type= MediaFile.Type.GIF;

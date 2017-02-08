@@ -9,12 +9,4 @@
         android:layout_height="match_parent"
         xmlns:android="http://schemas.android.com/apk/res/android"/>
 
-    <ProgressBar
-        android:id="@+id/progress"
-        android:visibility="invisible"
-        android:layout_centerInParent="true"
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="10dp" />
-
 </RelativeLayout>

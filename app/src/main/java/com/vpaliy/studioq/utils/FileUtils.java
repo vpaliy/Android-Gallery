@@ -17,7 +17,6 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import com.vpaliy.studioq.model.MediaFile;
-import com.vpaliy.studioq.model.VideoFile;
 
 public final class FileUtils {
 
@@ -80,13 +79,10 @@ public final class FileUtils {
 
     }
 
-    public static List<MediaFile> copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo) {
-       return copyFileList(context,contentList,mediaFolder,moveTo,null);
-    }
-
-    public static List<MediaFile> copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo, UpdateCallback callback) {
-        List<MediaFile> result=new LinkedList<>();
+    public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder, boolean moveTo) {
         if (contentList != null) {
+            int size=0;
+            int missed=0;
             ContentValues values=new ContentValues();
             for (int index=0;index<contentList.size();index++) {
                 MediaFile mediaFile=contentList.get(index);
@@ -101,28 +97,17 @@ public final class FileUtils {
                             continue;
                         }
 
-                        //copying file byte by byte
                         FileUtils.makeFileCopy(mediaFile.mediaFile().getAbsoluteFile(), file);
 
-                        //if user's selected "move" option, you need to delete the file
-                        if (moveTo) {
-                            if (!mediaFile.mediaFile().delete()) {
-                                Log.e(TAG, "Cannot delete file " + mediaFile.mediaFile().getAbsoluteFile());
-                            }
 
-                            if(isVideo) {
-                                context.getContentResolver().delete(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                                        MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.mediaFile().getAbsolutePath()});
-                            }else {
-                                context.getContentResolver().delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                                        MediaStore.MediaColumns.DATA + "=?", new String[]{mediaFile.mediaFile().getAbsolutePath()});
-                            }
-                        }
                     } catch (IOException ex) {
+                        Log.d(TAG,"Exception on:"+mediaFile.mediaFile());
                         ex.printStackTrace();
                         Log.e(TAG, ex.toString(), ex);
                         continue;
                     }
+
+
                     if (isVideo) {
                         values.put(MediaStore.Video.VideoColumns.DATA, file.getAbsolutePath());
                         context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
@@ -130,14 +115,16 @@ public final class FileUtils {
                         values.put(MediaStore.Images.ImageColumns.DATA, file.getAbsolutePath());
                         context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                     }
-                    result.add(convertToCopy(file,mediaFile));
-                    if(callback!=null) {
-                        callback.onUpdate(index,contentList.size());
-                    }
+                    size++;
+                    Log.d(TAG,"Number of files:"+Integer.toString(size));
+                }else {
+                    missed++;
                 }
             }
+            Log.d(TAG,"Total number of files:"+Integer.toString(contentList.size()));
+            Log.d(TAG,"Total number of copied files:"+Integer.toString(size));
+            Log.d(TAG,"Total number of missed files:"+Integer.toString(missed));
         }
-        return result;
     }
 
 
@@ -146,8 +133,5 @@ public final class FileUtils {
     }
 
 
-    public interface UpdateCallback {
-        void onUpdate(int index, int max);
-    }
 
 }
