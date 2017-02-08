@@ -117,15 +117,16 @@ public final class FileUtils {
 
     public static void copyFileList(Context context, List<MediaFile> contentList, File mediaFolder) {
         if (contentList != null) {
+
             ContentValues values=new ContentValues();
-            Uri queryUri = MediaStore.Files.getContentUri("external");
-            int size=0;
+
             for (int index=0;index<contentList.size();index++) {
                 MediaFile mediaFile=contentList.get(index);
                 String fileName=mediaFile.mediaFile().getName();
+
                 boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
                 File file = new File(mediaFolder, fileName);
-
+                //let a user to decide whether to create a copy of already existing files
                 if(!file.exists()) {
                     file=new File(mediaFolder,uniqueNameFor(fileName));
                 }
@@ -149,10 +150,7 @@ public final class FileUtils {
                     }
 
                 }
-
                 values.clear();
-                size++;
-                Log.d(TAG,"Copied files:"+ Integer.toString(size));
             }
         }
     }
