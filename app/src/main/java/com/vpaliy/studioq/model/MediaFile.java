@@ -94,6 +94,9 @@ public class MediaFile implements Parcelable{
         }
     };
 
+    public String getMimeType() {
+        return mimeType;
+    }
 
     public static class MediaListConverter
             implements ParcelConverter<List<MediaFile>> {

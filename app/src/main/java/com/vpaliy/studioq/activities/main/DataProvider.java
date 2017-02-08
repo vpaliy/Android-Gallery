@@ -84,6 +84,8 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
                         String mimeType=cursor.getString(cursor.
                             getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE));
 
+                        if(folder==null||mimeType==null)
+                            continue;
                         //check if the folder already has been created
                         String pathToFolder=file.getParentFile().getAbsolutePath();
                         if(folderMap.get(pathToFolder)==null) {
@@ -111,7 +113,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     private void useFreshData(@NonNull Map<String,MediaFolder> map) {
         if(freshData!=null) {
             for(Map.Entry<String,ArrayList<MediaFile>> entry:freshData.entrySet()) {
-                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator)-1);
+                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator)+1);
                 map.put(entry.getKey(),new MediaFolder(folder));
                 map.get(entry.getKey()).addAll(entry.getValue());
             }
