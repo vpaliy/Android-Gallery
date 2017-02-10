@@ -12,13 +12,11 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
-
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;

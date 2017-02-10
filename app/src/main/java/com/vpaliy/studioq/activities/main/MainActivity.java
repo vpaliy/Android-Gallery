@@ -43,6 +43,8 @@ import butterknife.ButterKnife;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
 import butterknife.BindView;
+import butterknife.OnClick;
+
 import static butterknife.ButterKnife.findById;
 
 
@@ -389,6 +391,7 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    @OnClick(R.id.addFloatingActionButton)
     public void onClickFloatingButton(View view) {
         addMediaFolder();
     }
