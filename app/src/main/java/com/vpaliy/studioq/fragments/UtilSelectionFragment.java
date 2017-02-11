@@ -22,7 +22,6 @@ import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
-import java.util.List;
 import com.squareup.otto.Subscribe;
 import android.support.annotation.Nullable;
 
@@ -42,7 +41,7 @@ public class UtilSelectionFragment extends Fragment {
     }
 
 
-    private List<MediaFile> mediaFileList;
+    private ArrayList<MediaFile> mediaFileList;
     private UtilSelectionAdapter adapter;
 
     private MultiMode.Callback callback=new MultiMode.Callback() {
@@ -109,7 +108,6 @@ public class UtilSelectionFragment extends Fragment {
             }
 
             adapter.turnOn();
-
             RecyclerView recyclerView=findById(root,R.id.mediaRecyclerView);
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(),4,GridLayoutManager.VERTICAL,false));
             recyclerView.setHasFixedSize(true);
@@ -138,6 +136,7 @@ public class UtilSelectionFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         adapter.saveState(outState);
+        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaFileList);
         super.onSaveInstanceState(outState);
     }
 

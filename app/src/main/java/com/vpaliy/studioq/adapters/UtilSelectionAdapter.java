@@ -1,16 +1,18 @@
 package com.vpaliy.studioq.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
 import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.views.MediaView;
 import java.util.ArrayList;
 import java.util.List;
 import butterknife.ButterKnife;
@@ -37,7 +39,7 @@ public class UtilSelectionAdapter extends BaseAdapter {
 
     @Override
     public BaseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MediaHolder(inflater.inflate(R.layout.gallery_item,parent,false));
+        return new MediaHolder(inflater.inflate(R.layout.adapter_gallery_item,parent,false));
     }
 
     @Override
@@ -48,7 +50,7 @@ public class UtilSelectionAdapter extends BaseAdapter {
     public class MediaHolder extends BaseAdapter.BaseViewHolder {
 
         @BindView(R.id.galleryItem)
-        ImageView thumbImage;
+        MediaView media;
 
          MediaHolder(View itemView) {
             super(itemView);
@@ -64,8 +66,24 @@ public class UtilSelectionAdapter extends BaseAdapter {
                     .load(mediaFileList.get(getAdapterPosition()).mediaFile())
                     .asBitmap()
                     .centerCrop()
-                    .into(thumbImage);
+                    .into(new ImageViewTarget<Bitmap>(media.getMainContent()) {
+                        @Override
+                        protected void setResource(Bitmap resource) {
+                            media.getMainContent().setImageBitmap(resource);
+                            determineDescription();
+                        }
+                    });
+
             determineState();
+        }
+
+        private void determineDescription() {
+            MediaFile mediaFile=mediaFileList.get(getAdapterPosition());
+            if(mediaFile.getType()== MediaFile.Type.VIDEO) {
+                media.setDescriptionIcon(R.drawable.ic_play_circle_filled_white_24dp);
+            }else {
+                media.setDescriptionIcon(null);
+            }
         }
 
         @Override

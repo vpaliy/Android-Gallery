@@ -1,5 +1,5 @@
-
 <resources>
+
     <declare-styleable name="CloseableImage">
         <attr name="close_size" format="dimension"/>
         <attr name="close_margin" format="dimension"/>
@@ -7,5 +7,32 @@
         <attr name="corner_radius" format="dimension"/>
         <attr name="image_margin" format="dimension"/>
         <attr name="close_icon" format="reference"/>
+    </declare-styleable>
+
+    <declare-styleable name="MediaView">
+        <attr name="radius" format="dimension"/>
+        <attr name="description_gravity">
+            <flag name="top" value="0x30" />
+            <flag name="bottom" value="0x50" />
+            <flag name="start" value="0x03" />
+            <flag name="end" value="0x05" />
+            <flag name="center_vertical" value="0x10" />
+            <flag name="center_horizontal" value="0x01" />
+            <flag name="center" value="0x11" />
+        </attr>
+
+        <attr name="description_margin" format="dimension"/>
+        <attr name="description_margin_left" format="dimension"/>
+        <attr name="description_margin_top" format="dimension"/>
+        <attr name="description_margin_bottom" format="dimension"/>
+        <attr name="description_margin_right" format="dimension"/>
+
+        <attr name="content_margin" format="dimension"/>
+        <attr name="content_margin_left" format="dimension"/>
+        <attr name="content_margin_top" format="dimension"/>
+        <attr name="content_margin_bottom" format="dimension"/>
+        <attr name="content_margin_right" format="dimension"/>
+
+        <attr name="description_icon" format="reference"/>
     </declare-styleable>
 </resources>

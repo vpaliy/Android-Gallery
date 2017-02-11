@@ -107,7 +107,7 @@ public class MediaUtilReviewFragment extends Fragment {
         actionBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                getActivity().onBackPressed();
             }
         });
 

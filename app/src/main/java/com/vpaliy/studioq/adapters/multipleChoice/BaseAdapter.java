@@ -214,8 +214,10 @@ public abstract class BaseAdapter
 
     public void turnOn() {
         turnOn = true;
-        mode.turnOn();
-        mode.update(tracker.getCheckedItemCount());
+        if(!mode.isActivated()) {
+            mode.turnOn();
+            mode.update(tracker.getCheckedItemCount());
+        }
     }
 
     public void turnOff() {
