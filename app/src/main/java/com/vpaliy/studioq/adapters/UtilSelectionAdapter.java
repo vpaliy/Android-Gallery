@@ -70,19 +70,19 @@ public class UtilSelectionAdapter extends BaseAdapter {
                         @Override
                         protected void setResource(Bitmap resource) {
                             media.getMainContent().setImageBitmap(resource);
-                            determineDescription();
                         }
                     });
-
+            determineDescription();
             determineState();
         }
 
         private void determineDescription() {
             MediaFile mediaFile=mediaFileList.get(getAdapterPosition());
+            media.setDescriptionIcon(null);
             if(mediaFile.getType()== MediaFile.Type.VIDEO) {
                 media.setDescriptionIcon(R.drawable.ic_play_circle_filled_white_24dp);
-            }else {
-                media.setDescriptionIcon(null);
+            }else if(mediaFile.getType()== MediaFile.Type.GIF){
+                media.setDescriptionIcon(R.drawable.ic_gif_white_24dp);
             }
         }
 

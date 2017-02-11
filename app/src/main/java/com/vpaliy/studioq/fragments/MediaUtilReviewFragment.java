@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
+import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.UtilReviewAdapter;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
@@ -174,5 +175,17 @@ public class MediaUtilReviewFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         adapter.saveState(outState);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Registrator.unregister(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Registrator.register(this);
     }
 }

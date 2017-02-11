@@ -11,8 +11,10 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -31,10 +33,6 @@ public class MediaView extends RelativeLayout {
     private int descriptionMarginLeft;
     private int descriptionMarginRight;
 
-    private int contentMarginTop;
-    private int contentMarginBottom;
-    private int contentMarginLeft;
-    private int contentMarginRight;
 
     @DrawableRes
     private int icon=-1;
@@ -67,44 +65,29 @@ public class MediaView extends RelativeLayout {
         for(int index=0;index<size;index++) {
             switch (array.getIndex(index)) {
                 case R.styleable.MediaView_radius:
-                    setCornerRadius(array.getDimension(index,7f*density));
+                    setCornerRadius(array.getDimension(array.getIndex(index),7f*density));
                     break;
                 case R.styleable.MediaView_description_gravity:
-                    setDescriptionGravity(array.getInteger(index,Gravity.TOP|Gravity.END));
+                    setDescriptionGravity(array.getInteger(array.getIndex(index),Gravity.TOP|Gravity.END));
                     break;
                 case R.styleable.MediaView_description_margin:
-                    setDescriptionMargin(array.getInteger(index,0));
+                    setDescriptionMargin((int)array.getDimension(array.getIndex(index),-1));
                     break;
                 case R.styleable.MediaView_description_margin_left:
-                    setDescriptionMarginLeft(array.getInteger(index,descriptionMarginLeft));
+                    setDescriptionMarginLeft((int)array.getDimension(array.getIndex(index),descriptionMarginLeft));
                     break;
                 case R.styleable.MediaView_description_margin_right:
-                    setDescriptionMarginRight(array.getInteger(index,descriptionMarginRight));
+                    setDescriptionMarginRight((int)array.getDimension(array.getIndex(index),descriptionMarginRight));
                     break;
                 case R.styleable.MediaView_description_margin_top:
-                    setDescriptionMarginTop(array.getInteger(index,descriptionMarginTop));
+                    setDescriptionMarginTop((int)array.getDimension(array.getIndex(index),descriptionMarginTop));
                     break;
                 case R.styleable.MediaView_description_margin_bottom:
-                    setDescriptionMarginBottom(array.getInteger(index,descriptionMarginBottom));
+                    setDescriptionMarginBottom((int)array.getDimension(array.getIndex(index),descriptionMarginBottom));
                     break;
                 //
-                case R.styleable.MediaView_content_margin:
-                    setContentMargin(array.getInteger(index,0));
-                    break;
-                case R.styleable.MediaView_content_margin_left:
-                    setContentMarginLeft(array.getInteger(index,contentMarginLeft));
-                    break;
-                case R.styleable.MediaView_content_margin_right:
-                    setContentMarginRight(array.getInteger(index,contentMarginRight));
-                    break;
-                case R.styleable.MediaView_content_margin_top:
-                    setContentMarginTop(array.getInteger(index,contentMarginTop));
-                    break;
-                case R.styleable.MediaView_content_margin_bottom:
-                    setContentMarginBottom(array.getInteger(index,contentMarginBottom));
-                    break;
                 case R.styleable.MediaView_description_icon:
-                    setDescriptionIcon(array.getResourceId(index,icon));
+                    setDescriptionIcon(array.getResourceId(array.getIndex(index),icon));
             }
         }
         array.recycle();
@@ -113,6 +96,7 @@ public class MediaView extends RelativeLayout {
     private void initUI() {
         //install the icon
         descriptionIcon=new ImageView(getContext());
+        setDescriptionIcon(icon);
         RelativeLayout.LayoutParams descriptionParams= new RelativeLayout.
             LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         descriptionParams.leftMargin=descriptionMarginLeft;
@@ -121,17 +105,11 @@ public class MediaView extends RelativeLayout {
         descriptionParams.topMargin=descriptionMarginTop;
         descriptionIcon.setLayoutParams(descriptionParams);
         setDescriptionGravity(descriptionGravity);
-        setDescriptionIcon(icon);
 
         //
-
         mainContent=new SquareImage(getContext());
         RelativeLayout.LayoutParams contentParams=new RelativeLayout.
             LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        contentParams.leftMargin=contentMarginLeft;
-        contentParams.rightMargin=contentMarginRight;
-        contentParams.bottomMargin=contentMarginBottom;
-        contentParams.topMargin=contentMarginTop;
         mainContent.setLayoutParams(contentParams);
 
         addView(mainContent);
@@ -194,7 +172,7 @@ public class MediaView extends RelativeLayout {
                     rules[CENTER_IN_PARENT]=RelativeLayout.TRUE;
                     break;
             }
-            descriptionIcon.invalidate();
+            descriptionIcon.setLayoutParams(params);
         }
     }
 
@@ -249,10 +227,12 @@ public class MediaView extends RelativeLayout {
     }
 
     public void setDescriptionMargin(int margin) {
-        setDescriptionMarginBottom(margin);
-        setDescriptionMarginLeft(margin);
-        setDescriptionMarginRight(margin);
-        setDescriptionMarginTop(margin);
+        if(margin!=-1) {
+            setDescriptionMarginBottom(margin);
+            setDescriptionMarginLeft(margin);
+            setDescriptionMarginRight(margin);
+            setDescriptionMarginTop(margin);
+        }
     }
 
     public void setDescriptionIcon(Drawable icon) {
@@ -266,48 +246,8 @@ public class MediaView extends RelativeLayout {
         }
     }
 
-
-    public void setContentMarginTop(int marginTop) {
-        this.contentMarginTop=marginTop;
-        RelativeLayout.LayoutParams params=fetchContentParams();
-        if(params!=null) {
-            params.topMargin=marginTop;
-            mainContent.setLayoutParams(params);
-        }
-    }
-
-    public void setContentMarginBottom(int marginBottom) {
-        this.contentMarginBottom=marginBottom;
-        RelativeLayout.LayoutParams params=fetchContentParams();
-        if(params!=null) {
-            params.bottomMargin=marginBottom;
-            mainContent.setLayoutParams(params);
-        }
-    }
-
-    public void setContentMarginLeft(int marginLeft) {
-        this.contentMarginLeft=marginLeft;
-        RelativeLayout.LayoutParams params=fetchContentParams();
-        if(params!=null) {
-            params.leftMargin=marginLeft;
-            mainContent.setLayoutParams(params);
-        }
-    }
-
-    public void setContentMarginRight(int marginRight) {
-        this.contentMarginRight=marginRight;
-        RelativeLayout.LayoutParams params=fetchContentParams();
-        if(params!=null) {
-            params.rightMargin=marginRight;
-            mainContent.setLayoutParams(params);
-        }
-    }
-
-    public void setContentMargin(int margin) {
-        setContentMarginBottom(margin);
-        setContentMarginLeft(margin);
-        setContentMarginTop(margin);
-        setContentMarginRight(margin);
+    public void setMainContent(@NonNull Drawable drawable) {
+        mainContent.setImageDrawable(drawable);
     }
 
     public ImageView getMainContent() {

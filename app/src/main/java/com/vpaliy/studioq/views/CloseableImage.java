@@ -61,22 +61,22 @@ public class CloseableImage extends RelativeLayout{
         for(int index=0;index<N;index++) {
             switch (array.getIndex(index)) {
                 case R.styleable.CloseableImage_close_color:
-                    setCloseButtonColor(array.getColor(index,0xffffb57));
+                    setCloseButtonColor(array.getColor(array.getIndex(index),0xffffb57));
                     break;
                 case R.styleable.CloseableImage_close_size:
-                    setCloseButtonSize(array.getDimension(index, 32f*density));
+                    setCloseButtonSize(array.getDimension(array.getIndex(index), 32f*density));
                     break;
                 case R.styleable.CloseableImage_close_margin:
-                    setCloseButtonMargin(array.getDimension(index,5f*density));
+                    setCloseButtonMargin(array.getDimension(array.getIndex(index),5f*density));
                     break;
                 case R.styleable.CloseableImage_corner_radius:
-                    setCornerRadius(array.getDimension(index,7f*density));
+                    setCornerRadius(array.getDimension(array.getIndex(index),7f*density));
                     break;
                 case R.styleable.CloseableImage_close_icon:
-                    setCloseButtonIcon(array.getResourceId(index,R.drawable.ic_cancel_black_24dp));
+                    setCloseButtonIcon(array.getResourceId(array.getIndex(index),R.drawable.ic_cancel_black_24dp));
                     break;
                 case R.styleable.CloseableImage_image_margin:
-                    setTopLeftMargin(array.getDimension(index,10f* density));
+                    setTopLeftMargin(array.getDimension(array.getIndex(index),10f* density));
                     break;
             }
         }

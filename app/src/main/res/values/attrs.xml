@@ -27,11 +27,6 @@
         <attr name="description_margin_bottom" format="dimension"/>
         <attr name="description_margin_right" format="dimension"/>
 
-        <attr name="content_margin" format="dimension"/>
-        <attr name="content_margin_left" format="dimension"/>
-        <attr name="content_margin_top" format="dimension"/>
-        <attr name="content_margin_bottom" format="dimension"/>
-        <attr name="content_margin_right" format="dimension"/>
 
         <attr name="description_icon" format="reference"/>
     </declare-styleable>

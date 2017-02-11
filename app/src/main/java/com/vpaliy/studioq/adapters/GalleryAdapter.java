@@ -3,6 +3,7 @@ package com.vpaliy.studioq.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -118,7 +119,7 @@ public class GalleryAdapter extends BaseAdapter {
                     .into(new ImageViewTarget<GlideDrawable>(media.getMainContent()) {
                         @Override
                         protected void setResource(GlideDrawable resource) {
-                            media.getMainContent().setImageDrawable(resource);
+                            media.setMainContent(resource);
                         }
                     });
             determineDescription();
@@ -129,7 +130,9 @@ public class GalleryAdapter extends BaseAdapter {
             final MediaFile file = mediaFileList.get(getAdapterPosition());
             if (file.getType() == MediaFile.Type.VIDEO) {
                 media.setDescriptionIcon(R.drawable.ic_play_circle_filled_white_24dp);
-            } else {
+            }else if(file.getType()== MediaFile.Type.GIF) {
+                media.setDescriptionIcon(R.drawable.ic_gif_white_24dp);
+            }else {
                 media.setDescriptionIcon(null);
             }
         }

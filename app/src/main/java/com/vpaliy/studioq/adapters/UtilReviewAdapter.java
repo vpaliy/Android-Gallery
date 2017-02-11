@@ -187,8 +187,6 @@ public class UtilReviewAdapter
 
     }
 
-
-
     @Override
     public int getItemViewType(int position) {
         if(position==0)
