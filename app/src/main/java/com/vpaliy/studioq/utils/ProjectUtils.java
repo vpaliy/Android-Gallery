@@ -1,5 +1,7 @@
 package com.vpaliy.studioq.utils;
 
+import android.support.annotation.NonNull;
+
 public final class ProjectUtils {
 
     private ProjectUtils() {
@@ -54,6 +56,14 @@ public final class ProjectUtils {
 
     public static String TRANSITION_NAME(int position) {
         return "data:" + Integer.toString(position);
+    }
+
+    public static String TAG(@NonNull Class<?> clazz) {
+        return clazz.getSimpleName();
+    }
+
+    public static String KEY(@NonNull Class<?> clazz) {
+        return clazz.getSimpleName()+":data";
     }
 
 }

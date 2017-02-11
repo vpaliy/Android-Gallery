@@ -3,7 +3,6 @@ package com.vpaliy.studioq.adapters;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,7 +68,7 @@ public class FolderAdapter extends BaseAdapter {
 
     @Override
     public FolderViewHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {
-        View root=inflater.inflate(R.layout.media_folder_adapter_item,parentGroup,false);
+        View root=inflater.inflate(R.layout.adapter_folder_item,parentGroup,false);
         return new FolderViewHolder(root);
     }
 

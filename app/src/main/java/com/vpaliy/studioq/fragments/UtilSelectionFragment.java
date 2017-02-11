@@ -96,6 +96,7 @@ public class UtilSelectionFragment extends Fragment {
                     }
                 }
             });
+            //
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())
                     .setBackgroundColor(Color.WHITE)
                     .setMenu(R.menu.selection_util_menu, callback)
@@ -117,6 +118,7 @@ public class UtilSelectionFragment extends Fragment {
         }
     }
 
+
     @Subscribe
     public void onRemoved(ReviewStateTrigger stateTrigger) {
         if(adapter!=null) {
@@ -131,6 +133,12 @@ public class UtilSelectionFragment extends Fragment {
             adapter.onResume();
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        adapter.saveState(outState);
+        super.onSaveInstanceState(outState);
     }
 
     @Override

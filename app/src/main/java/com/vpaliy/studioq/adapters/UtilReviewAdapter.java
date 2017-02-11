@@ -4,11 +4,16 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.ImageViewTarget;
@@ -16,45 +21,65 @@ import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.model.MediaFile;
+import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.views.CloseableImage;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.support.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.AbstractMediaItem> {
 
-    private List<MediaFile> mediaFileList;
+public class UtilReviewAdapter
+        extends RecyclerView.Adapter<UtilReviewAdapter.AbstractHolder>
+        implements SavableAdapter {
+
+    private static final String KEY="util:review:adapter:title";
+    private static final String TAG=UtilReviewAdapter.class.getSimpleName();
+
+    private static final int HEADER_TYPE=0;
+    private static final int CONTENT_TYPE=1;
+
+
+    private ArrayList<MediaFile> mediaFileList;
     private LayoutInflater inflater;
-    private CaptionItem captionItem;
-
-    private final static int HEADER_TYPE=0;
-    private final static int CONTENT_TYPE=1;
+    private String titleText;
 
     private volatile boolean animationFinished=true;
 
-    public UtilReviewAdapter(Context context, ArrayList<MediaFile> mDataModel) {
+    private UtilReviewAdapter(@NonNull Context context) {
         this.inflater=LayoutInflater.from(context);
+    }
+
+    public UtilReviewAdapter(@NonNull Context context, @NonNull ArrayList<MediaFile> mDataModel) {
+        this(context);
         this.mediaFileList=mDataModel;
     }
 
+    public UtilReviewAdapter(@NonNull Context context, @NonNull Bundle state) {
+        this(context);
+        restoreState(state);
+    }
 
-    abstract class AbstractMediaItem extends RecyclerView.ViewHolder {
-        AbstractMediaItem(View itemView) {
+    abstract class AbstractHolder extends RecyclerView.ViewHolder {
+        AbstractHolder(View itemView) {
             super(itemView);
         }
-        public abstract void onBindData(int position);
+        public void onBindData(int position){}
     }
 
 
     @SuppressWarnings("all")
-    public class ContentItem extends AbstractMediaItem {
+    public class ContentHolder extends AbstractHolder {
 
         @BindView(R.id.image)
         CloseableImage image;
 
-        ContentItem(View itemView) {
+        @BindView(R.id.description)
+        ImageView description;
+
+        ContentHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             if(animationFinished) {
@@ -91,11 +116,14 @@ public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.Ab
 
         @Override
         public void onBindData(int position) {
-            //set in normal state
+            //set in the normal state
+            position--;
             if(itemView.getScaleX()<1.f) {
                 itemView.setScaleX(1f);
                 itemView.setScaleY(1f);
             }
+
+            determineIcon(position);
 
             Glide.with(itemView.getContext())
                     .load(mediaFileList.get(position).mediaFile())
@@ -110,21 +138,52 @@ public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.Ab
                     });
 
         }
+
+        private void determineIcon(int position) {
+            MediaFile mediaFile=mediaFileList.get(position);
+            description.setImageDrawable(null);
+            if(mediaFile.getType()== MediaFile.Type.VIDEO) {
+                Drawable drawable=itemView.getContext().
+                        getDrawable(R.drawable.ic_play_circle_filled_white_24dp);
+                description.setImageDrawable(drawable);
+            }else if(mediaFile.getType()== MediaFile.Type.GIF) {
+
+            }
+        }
     }
 
+
+
     @SuppressWarnings("all")
-    public class CaptionItem extends AbstractMediaItem {
+    public class CaptionHolder extends AbstractHolder
+            implements TextWatcher {
 
         @BindView(R.id.caption)
         EditText captionText;
 
-        CaptionItem(View itemView) {
+        CaptionHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
+            captionText.addTextChangedListener(this);
         }
 
         @Override
-        public void onBindData(int position) {}
+        public void onBindData(int position) {
+            captionText.setText(titleText);
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count){}
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if(s!=null) {
+                titleText = s.toString();
+            }
+        }
 
     }
 
@@ -144,32 +203,39 @@ public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.Ab
 
 
     @Override
-    public AbstractMediaItem onCreateViewHolder(ViewGroup parentGroup, int viewType) {
+    public AbstractHolder onCreateViewHolder(ViewGroup parentGroup, int viewType) {
         View root;
         switch (viewType) {
             case HEADER_TYPE:
-                root=inflater.inflate(R.layout.caption_layout_item,parentGroup,false);
-                if(captionItem==null)
-                    captionItem=new CaptionItem(root);
-                return captionItem;
+                root=inflater.inflate(R.layout.adapter_caption_item,parentGroup,false);
+                return new CaptionHolder(root);
             default:
-                root=inflater.inflate(R.layout.media_review_item,parentGroup,false);
-                return new ContentItem(root);
+                root=inflater.inflate(R.layout.adapter_review_item,parentGroup,false);
+                return new ContentHolder(root);
         }
     }
 
     public String getTitle() {
-        return captionItem.captionText.getText().toString();
+        return titleText;
     }
 
     @Override
-    public void onBindViewHolder(AbstractMediaItem holder, int position) {
-        if(position!=0)
-            position--;
+    public void onBindViewHolder(AbstractHolder holder, int position) {
         holder.onBindData(position);
     }
 
     public List<MediaFile> getSelectedMediaFiles() {
         return mediaFileList;
+    }
+
+    public void saveState(@NonNull Bundle outState) {
+        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaFileList);
+        outState.putString(KEY,titleText);
+    }
+
+    @Override
+    public void restoreState(@NonNull Bundle savedInstanceState) {
+        titleText=savedInstanceState.getString(KEY);
+        mediaFileList=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
     }
 }

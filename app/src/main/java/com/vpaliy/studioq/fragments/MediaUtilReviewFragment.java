@@ -9,10 +9,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
@@ -23,15 +24,15 @@ import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.utils.ProjectUtils;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import static butterknife.ButterKnife.findById;
 
-public class MediaUtilReviewFragment extends Fragment
-        implements View.OnClickListener{
+public class MediaUtilReviewFragment extends Fragment {
 
     private final static String TAG=MediaUtilReviewFragment.class.getSimpleName();
 
-    private ArrayList<MediaFile> reviewMediaFileList;
+
     private UtilReviewAdapter adapter;
 
 
@@ -48,9 +49,13 @@ public class MediaUtilReviewFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        if(savedInstanceState==null)
-            savedInstanceState=getArguments();
-        reviewMediaFileList=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+        if(savedInstanceState==null) {
+            savedInstanceState = getArguments();
+            ArrayList<MediaFile> temp=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+            adapter = new UtilReviewAdapter(getContext(), temp);
+        }else {
+            adapter=new UtilReviewAdapter(getContext(),savedInstanceState);
+        }
     }
 
 
@@ -64,7 +69,10 @@ public class MediaUtilReviewFragment extends Fragment
     @Override
     public void onViewCreated(final View root, @Nullable Bundle savedInstanceState) {
         if(root!=null) {
-            final RecyclerView mediaRecyclerView=findById(root,R.id.mediaRecyclerView);
+            Toolbar actionBar=findById(root,R.id.actionBar);
+            initToolbar(actionBar);
+            //
+            RecyclerView mediaRecyclerView = findById(root, R.id.mediaRecyclerView);
             //TODO xml representation
             GridLayoutManager manager=new GridLayoutManager(getContext(),2, GridLayoutManager.VERTICAL,false);
             manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -77,11 +85,32 @@ public class MediaUtilReviewFragment extends Fragment
             });
             mediaRecyclerView.setLayoutManager(manager);
             mediaRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mediaRecyclerView.setAdapter(adapter=new UtilReviewAdapter(getContext(),reviewMediaFileList));
-            ImageButton proceedButton=findById(root,R.id.proceed);
-            proceedButton.setOnClickListener(this);
+            mediaRecyclerView.setAdapter(adapter);
 
         }
+    }
+
+    private void initToolbar(@NonNull Toolbar actionBar) {
+        actionBar.inflateMenu(R.menu.review_menu);
+        actionBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.create:
+                        showDialog();
+                        return true;
+                }
+                return false;
+            }
+        });
+        actionBar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        actionBar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
     }
 
     private boolean isTitleCorrect(String title) {
@@ -102,49 +131,48 @@ public class MediaUtilReviewFragment extends Fragment
         return true;
     }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.cancel:
-                break;
-            case R.id.proceed:
-                if(!isTitleCorrect(adapter.getTitle()))
-                    return;
-                AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
-                builder.setTitle(R.string.CopyOrMove)
-                        .setItems(R.array.selectItem, new DialogInterface.OnClickListener() {
 
-                            private final int COPY_ITEM=0;
-                            private final int MOVE_ITEM=1;
+    private void showDialog() {
+        if(!isTitleCorrect(adapter.getTitle()))
+            return;
+        AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
+        builder.setTitle(R.string.CopyOrMove)
+                .setItems(R.array.selectItem, new DialogInterface.OnClickListener() {
 
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int itemIndex) {
-                                Intent data = new Intent();
-                                data.putExtra(ProjectUtils.MEDIA_DATA,
-                                        (ArrayList<MediaFile>)(adapter.getSelectedMediaFiles()));
-                                data.putExtra(ProjectUtils.MEDIA_TITLE,adapter.getTitle());
-                                switch (itemIndex) {
-                                    case COPY_ITEM:
-                                        data.putExtra(ProjectUtils.MOVE_FILE_TO,false);
-                                        EventBusProvider.defaultBus().post(new ExitEvent(data));
-                                        break;
-                                    case MOVE_ITEM:
-                                        data.putExtra(ProjectUtils.MOVE_FILE_TO,true);
-                                        EventBusProvider.defaultBus().post(new ExitEvent(data));
-                                        break;
-                                }
+                    private final int COPY_ITEM=0;
+                    private final int MOVE_ITEM=1;
 
-                            }
-                        })
-                        .setNegativeButton(R.string.Cancel,new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int index) {
-                                dialogInterface.cancel();
-                            }
-                        })
-                        .create().show();
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int itemIndex) {
+                        Intent data = new Intent();
+                        data.putExtra(ProjectUtils.MEDIA_DATA,
+                                (ArrayList<MediaFile>)(adapter.getSelectedMediaFiles()));
+                        data.putExtra(ProjectUtils.MEDIA_TITLE,adapter.getTitle());
+                        switch (itemIndex) {
+                            case COPY_ITEM:
+                                data.putExtra(ProjectUtils.MOVE_FILE_TO,false);
+                                EventBusProvider.defaultBus().post(new ExitEvent(data));
+                                break;
+                            case MOVE_ITEM:
+                                data.putExtra(ProjectUtils.MOVE_FILE_TO,true);
+                                EventBusProvider.defaultBus().post(new ExitEvent(data));
+                                break;
+                        }
 
-        }
+                    }
+                })
+                .setNegativeButton(R.string.Cancel,new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int index) {
+                        dialogInterface.cancel();
+                    }
+                })
+                .create().show();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        adapter.saveState(outState);
+        super.onSaveInstanceState(outState);
+    }
 }

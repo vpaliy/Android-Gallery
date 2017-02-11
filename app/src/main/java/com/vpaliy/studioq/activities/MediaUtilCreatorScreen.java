@@ -33,18 +33,20 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_util);
         ButterKnife.bind(this,MediaUtilCreatorScreen.this);
-        initUI();
+        initUI(savedInstanceState);
     }
 
-    private void initUI() {
-        Bundle intentData=getIntent().getExtras();
-        ArrayList<MediaFile> mediaFileList= intentData.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
-        final FragmentManager manager=getSupportFragmentManager();
-        final FragmentTransaction transaction=manager.beginTransaction();
-        transaction.replace(R.id.fragmentPlaceHolder,
-                UtilSelectionFragment.newInstance(mediaFileList),
-                ProjectUtils.SELECTION_FRAGMENT)
-                .commit();
+    private void initUI(Bundle outState) {
+        if(outState==null) {
+            Bundle intentData = getIntent().getExtras();
+            ArrayList<MediaFile> mediaFileList = intentData.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+            final FragmentManager manager = getSupportFragmentManager();
+            final FragmentTransaction transaction = manager.beginTransaction();
+            transaction.replace(R.id.fragmentPlaceHolder,
+                    UtilSelectionFragment.newInstance(mediaFileList),
+                    ProjectUtils.SELECTION_FRAGMENT)
+                    .commit();
+        }
 
     }
 
@@ -73,7 +75,7 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
                 String pathTo = Environment.getExternalStorageDirectory() + File.separator + folderName+File.separator;
                 File mediaFolder = new File(pathTo);
                 if (!mediaFolder.mkdir()) {
-                    Toast.makeText(MediaUtilCreatorScreen.this, "Failed to create a folder", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MediaUtilCreatorScreen.this, "Failed to create the folder", Toast.LENGTH_SHORT).show();
                     finish();
                 }
 

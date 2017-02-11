@@ -2,13 +2,15 @@ package com.vpaliy.studioq.adapters.multipleChoice;
 
 import android.os.Bundle;
 import android.support.annotation.CallSuper;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
-public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseViewHolder> {
+import com.vpaliy.studioq.adapters.SavableAdapter;
+
+public abstract class BaseAdapter
+     extends RecyclerView.Adapter<BaseAdapter.BaseViewHolder>
+        implements SavableAdapter {
 
     private static final String TAG=BaseAdapter.class.getSimpleName();
     private static final String KEY="baseAdapter:stateTracker";
@@ -16,7 +18,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
     protected static final float SCALE_F=0.85f;
 
     private MultiMode mode;
-    private final StateTracker tracker;
+    private StateTracker tracker;
 
     private boolean isOnResume=true;
     private boolean isScreenRotation=false;
@@ -37,7 +39,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         this.mode=mode;
         mode.setAdapter(this);
         this.isAnimationEnabled=isAnimationEnabled;
-        tracker=savedInstanceState.getParcelable(KEY);
+        restoreState(savedInstanceState);
         if(tracker==null) {
             throw new IllegalArgumentException("You didn't save the state of adapter");
         }
@@ -239,6 +241,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         mode.update(tracker.getCheckedItemCount());
     }
 
+    @Override
     public void saveState(@NonNull Bundle outState) {
         if(mode.isActivated()) {
             mode.turnOff();
@@ -246,4 +249,9 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseAdapter.BaseV
         tracker.saveState(KEY,outState);
     }
 
+    @Override
+    @CallSuper
+    public void restoreState(@NonNull Bundle savedInstanceState) {
+        tracker=savedInstanceState.getParcelable(KEY);
+    }
 }

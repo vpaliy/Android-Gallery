@@ -27,7 +27,9 @@ import java.util.Locale;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class FolderUtilAdapter extends RecyclerView.Adapter<FolderUtilAdapter.FolderViewHolder> {
+public class FolderUtilAdapter
+    extends RecyclerView.Adapter<FolderUtilAdapter.FolderViewHolder>
+            implements SavableAdapter{
 
     private static final String TAG=FolderUtilAdapter.class.getSimpleName();
     private static final String DATA="util:adapter:data";
@@ -48,8 +50,7 @@ public class FolderUtilAdapter extends RecyclerView.Adapter<FolderUtilAdapter.Fo
     public FolderUtilAdapter(Context context, ArrayList<DummyFolder> data, @NonNull Bundle state) {
         this.inflater=LayoutInflater.from(context);
         this.data=data;
-        this.move=state.getBoolean(MOVE,false);
-        this.checked=state.getIntArray(DATA);
+        restoreState(state);
     }
 
 
@@ -111,12 +112,18 @@ public class FolderUtilAdapter extends RecyclerView.Adapter<FolderUtilAdapter.Fo
 
     @Override
     public FolderViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new FolderViewHolder(inflater.inflate(R.layout.dummy_item,parent,false));
+        return new FolderViewHolder(inflater.inflate(R.layout.adapter_dummy_item,parent,false));
     }
 
-    public void saveState(Bundle outState) {
+    public void saveState(@NonNull Bundle outState) {
         outState.putIntArray(DATA,checked);
         outState.putBoolean(MOVE,move);
+    }
+
+    @Override
+    public void restoreState(@NonNull Bundle state) {
+        this.move=state.getBoolean(MOVE,false);
+        this.checked=state.getIntArray(DATA);
     }
 
     @Override
