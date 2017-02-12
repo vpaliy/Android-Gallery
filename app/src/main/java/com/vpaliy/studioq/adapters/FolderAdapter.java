@@ -2,20 +2,16 @@ package com.vpaliy.studioq.adapters;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.animation.DrawableCrossFadeFactory;
-import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
 import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
@@ -25,12 +21,13 @@ import com.vpaliy.studioq.model.DummyFolder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.utils.ProjectUtils;
-import java.io.File;
+import com.vpaliy.studioq.views.MediaView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import android.support.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -85,15 +82,14 @@ public class FolderAdapter extends BaseAdapter {
 
     class FolderViewHolder extends BaseAdapter.BaseViewHolder {
 
-        @BindView(R.id.icon) ImageView icon;
-        @BindView(R.id.mainImage) ImageView mMainImage;
+        @BindView(R.id.mainContent) MediaView mainImage;
         @BindView(R.id.folderName) TextView mFolderName;
         @BindView(R.id.imageCount) TextView mImageCount;
-        @BindView(R.id.cardBody) RelativeLayout bodyLayout;
 
         FolderViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
+            mainImage.setDescriptionGravity(Gravity.CENTER);
         }
 
         @Override
@@ -160,40 +156,31 @@ public class FolderAdapter extends BaseAdapter {
             MediaFile mediaFile=loaderCover(position);
             Glide.with(itemView.getContext())
                     .load(mediaFile.mediaFile())
-                    .listener(new RequestListener<File, GlideDrawable>() {
-                        @Override
-                        public boolean onException(Exception e, File model, com.bumptech.glide.request.target.Target<GlideDrawable> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(GlideDrawable resource, File model, com.bumptech.glide.request.target.Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                            if (isFirstResource) {
-                                return new DrawableCrossFadeFactory<>()
-                                        .build(false, false)
-                                        .animate(resource, (GlideAnimation.ViewAdapter) target);
-                            }
-                            return false;
-                        }
-                    })
                     .centerCrop()
                     .priority(Priority.HIGH)
                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
                     .thumbnail(0.5f)
                     .placeholder(R.drawable.placeholder)
                     .animate(R.anim.fade_in)
-                    .into(mMainImage);
+                    .into(new ImageViewTarget<GlideDrawable>(mainImage.getMainContent()) {
+                        @Override
+                        protected void setResource(GlideDrawable resource) {
+                            mainImage.setMainContent(resource);
+                        }
+                    });
 
-            icon.setVisibility(mediaFile.getType()== MediaFile.Type.VIDEO?View.VISIBLE:View.INVISIBLE);
 
             mFolderName.setText(currentFolderList.get(position).getFolderName());
             mImageCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).getFileCount()));
-
+            determineDescription();
             determineState();
         }
 
-    }
+        private void determineDescription() {
+            mainImage.setDescriptionIcon(R.drawable.ic_play_circle_filled_white_24dp);
+        }
 
+    }
 
 
     public void setAdapterMode(Mode mode) {

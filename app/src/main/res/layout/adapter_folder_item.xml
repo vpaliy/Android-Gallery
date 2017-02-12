@@ -10,35 +10,19 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
-        
-        <RelativeLayout
-            android:id="@+id/topContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <com.vpaliy.studioq.views.SquareImage
-                android:id="@+id/mainImage"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="@android:string/no"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
 
-            <ImageView
-                android:id="@+id/icon"
-                android:visibility="invisible"
-                android:src="@drawable/ic_play_circle_outline_white_48dp"
-                android:layout_centerInParent="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        </RelativeLayout>
-
+        <include
+            android:id="@+id/mainContent"
+            layout="@layout/adapter_gallery_item">
+        </include>
 
         <RelativeLayout
             android:id="@+id/cardBody"
             android:layout_alignParentBottom="true"
-            android:layout_alignLeft="@+id/topContainer"
-            android:layout_alignStart="@+id/topContainer"
-            android:layout_alignRight="@+id/topContainer"
-            android:layout_alignEnd="@+id/topContainer"
+            android:layout_alignLeft="@+id/mainContent"
+            android:layout_alignStart="@+id/mainContent"
+            android:layout_alignRight="@+id/mainContent"
+            android:layout_alignEnd="@+id/mainContent"
             android:layout_width="wrap_content"
             android:layout_height="50dp">
 
