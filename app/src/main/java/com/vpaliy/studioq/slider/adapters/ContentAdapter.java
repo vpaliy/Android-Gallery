@@ -34,16 +34,9 @@ public class ContentAdapter extends PagerAdapter {
     private Bitmap currentBitmap=null;
     private List<MediaFile> mediaFileList;
     private int startPosition;
-    // private LoaderCallback.Callback callback;
     private OnSliderEventListener sliderEventListener;
     private volatile boolean hasAnimated=false;
 
-    /*public ContentAdapter(@NonNull List<MediaFile> mediaFileList, @NonNull LoaderCallback.Callback callback,
-                    int startPosition) {
-        this.mediaFileList=mediaFileList;
-        this.callback=callback;
-        this.startPosition=startPosition;
-    }*/
 
     public ContentAdapter(Context context,@NonNull List<MediaFile> mediaFileList, int startPosition,
                           @NonNull OnSliderEventListener listener) {
@@ -90,7 +83,6 @@ public class ContentAdapter extends PagerAdapter {
                         image.setImageBitmap(resource);
                     }
                 });
-
         PhotoViewAttacher attacher=PhotoViewAttacher.class.cast(image.getIPhotoViewImplementation());
         image.setOnDoubleTapListener(new SliderOnDoubleTapListener(attacher) {
             @Override

@@ -16,7 +16,6 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 public class SliderImageView extends
         ImageView implements IPhotoView {
 
-    private static final String TAG=SliderImageView.class.getSimpleName();
 
     private PhotoViewAttacher mAttacher;
 
@@ -58,14 +57,6 @@ public class SliderImageView extends
     }
 
     @Override
-    protected boolean setFrame(int l, int t, int r, int b) {
-        if (null != mAttacher) {
-            mAttacher.update();
-        }
-        return super.setFrame(l, t, r, b);
-    }
-
-    @Override
     public boolean canZoom() {
         return mAttacher.canZoom();
     }
@@ -79,7 +70,6 @@ public class SliderImageView extends
     public void getDisplayMatrix(Matrix matrix) {
         mAttacher.getDisplayMatrix(matrix);
     }
-
 
     @Override
     public boolean setDisplayMatrix(Matrix finalRectangle) {
@@ -108,8 +98,6 @@ public class SliderImageView extends
 
     @Override
     public ScaleType getScaleType() {
-        if(mAttacher==null)
-            return super.getScaleType();
         return mAttacher.getScaleType();
     }
 
@@ -168,7 +156,14 @@ public class SliderImageView extends
         }
     }
 
-    //TODO I've removed setFrame method, be cautioned
+    @Override
+    protected boolean setFrame(int l, int t, int r, int b) {
+        boolean changed = super.setFrame(l, t, r, b);
+        if (changed && null != mAttacher) {
+            mAttacher.update();
+        }
+        return changed;
+    }
 
     @Override
     public void setOnMatrixChangeListener(PhotoViewAttacher.OnMatrixChangedListener listener) {
