@@ -263,7 +263,7 @@ public class MediaSliderActivity extends AppCompatActivity
             case R.id.filter: {
                 Intent dataIntent=new Intent(this,FilterActivity.class);
                 dataIntent.putExtra(ProjectUtils.MEDIA_DATA,mediaData.get(mediaSlider.getCurrentItem()));
-            //    dataIntent.putExtra(ProjectUtils.BITMAP,contentAdapter.getCurrentBitmap());
+                //    dataIntent.putExtra(ProjectUtils.BITMAP,contentAdapter.getCurrentBitmap());
                 startActivity(dataIntent);
                 break;
             }
@@ -302,7 +302,7 @@ public class MediaSliderActivity extends AppCompatActivity
             hideNavigationContentList();
         }
 
-        public void turnOn() {
+        void turnOn() {
             isTurnedOff = false;
         }
 

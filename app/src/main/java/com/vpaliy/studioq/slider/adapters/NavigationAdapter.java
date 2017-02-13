@@ -65,7 +65,7 @@ public class NavigationAdapter extends
 
     @Override
     public NavigationItem onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new NavigationItem(inflater.inflate(R.layout.navigation_slider_item,parent,false));
+        return new NavigationItem(inflater.inflate(R.layout.adapter_navigation_item,parent,false));
     }
 
     @Override

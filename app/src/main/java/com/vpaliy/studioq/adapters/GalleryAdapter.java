@@ -1,19 +1,15 @@
 package com.vpaliy.studioq.adapters;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.List;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
@@ -44,7 +40,7 @@ public class GalleryAdapter extends BaseAdapter {
     }
 
     public GalleryAdapter(Context context, MultiMode mode,
-            @NonNull List<MediaFile> mDataModel,@NonNull Bundle savedInstanceState) {
+                          @NonNull List<MediaFile> mDataModel,@NonNull Bundle savedInstanceState) {
         super(mode,true,savedInstanceState);
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mDataModel;
@@ -52,10 +48,10 @@ public class GalleryAdapter extends BaseAdapter {
 
 
 
-     class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
+    class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
-         @BindView(R.id.galleryItem)
-         MediaView media;
+        @BindView(R.id.galleryItem)
+        MediaView media;
 
         GalleryViewHolder(View itemView) {
             super(itemView);
@@ -67,7 +63,8 @@ public class GalleryAdapter extends BaseAdapter {
             if(!isMultiModeActivated()) {
                 if(hasFocus) {
                     hasFocus = false;
-                    EventBusProvider.defaultBus().post(new Launcher<>(mediaFileList, null, getAdapterPosition()));
+                    EventBusProvider.defaultBus().
+                            post(new Launcher<>(mediaFileList, media.getMainContent(), getAdapterPosition()));
                 }
             }
             super.onClick(view);
@@ -77,9 +74,9 @@ public class GalleryAdapter extends BaseAdapter {
         public void enterState() {
             super.enterState();
             itemView.animate()
-                .scaleX(SCALE_F)
-                .scaleY(SCALE_F)
-                .setDuration(180).start();
+                    .scaleX(SCALE_F)
+                    .scaleY(SCALE_F)
+                    .setDuration(180).start();
         }
 
         @Override
@@ -110,7 +107,6 @@ public class GalleryAdapter extends BaseAdapter {
         public void onBindData() {
             Glide.with(itemView.getContext())
                     .load(mediaFileList.get(getAdapterPosition()).mediaFile())
-                    // .signature(MediaSignature.sign(file))
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.RESULT)
                     .thumbnail(0.5f)
@@ -146,28 +142,6 @@ public class GalleryAdapter extends BaseAdapter {
         super.onResume();
         hasFocus=true;
     }
-
-    private static class Target extends GlideDrawableImageViewTarget {
-
-        public Target(ImageView image) {
-            super(image);
-        }
-
-        @Override
-        public void onLoadStarted(Drawable placeholder) {
-            if (placeholder != null) {
-                super.onLoadStarted(placeholder);
-            }
-        }
-
-        @Override
-        public void onLoadCleared(Drawable placeholder) {
-            if (placeholder != null) {
-                super.onLoadCleared(placeholder);
-            }
-        }
-    }
-
 
     public List<MediaFile> getData() {
         return mediaFileList;

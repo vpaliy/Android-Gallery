@@ -2,6 +2,7 @@ package com.vpaliy.studioq.adapters;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -83,8 +84,8 @@ public class FolderAdapter extends BaseAdapter {
     class FolderViewHolder extends BaseAdapter.BaseViewHolder {
 
         @BindView(R.id.mainContent) MediaView mainImage;
-        @BindView(R.id.folderName) TextView mFolderName;
-        @BindView(R.id.imageCount) TextView mImageCount;
+        @BindView(R.id.folderName) TextView folderName;
+        @BindView(R.id.imageCount) TextView mediaCount;
 
         FolderViewHolder(View itemView) {
             super(itemView);
@@ -170,14 +171,18 @@ public class FolderAdapter extends BaseAdapter {
                     });
 
 
-            mFolderName.setText(currentFolderList.get(position).getFolderName());
-            mImageCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).getFileCount()));
-            determineDescription();
+            folderName.setText(currentFolderList.get(position).getFolderName());
+            mediaCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).getFileCount()));
+            determineDescription(mediaFile.getType());
             determineState();
         }
 
-        private void determineDescription() {
-            mainImage.setDescriptionIcon(R.drawable.ic_play_circle_filled_white_24dp);
+        private void determineDescription(MediaFile.Type type) {
+            if(type== MediaFile.Type.GIF) {
+                mainImage.setDescriptionIcon(R.drawable.ic_gif_white_24dp);
+            }else if(type== MediaFile.Type.VIDEO) {
+                mainImage.setDescriptionIcon(R.drawable.ic_play_circle_outline_white_48dp);
+            }
         }
 
     }

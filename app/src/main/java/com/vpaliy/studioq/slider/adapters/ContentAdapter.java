@@ -5,23 +5,24 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 import com.vpaliy.studioq.slider.screens.PlayerActivity;
+import com.vpaliy.studioq.slider.utils.SliderImageView;
+import com.vpaliy.studioq.slider.utils.SliderOnDoubleTapListener;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.List;
+
+import uk.co.senab.photoview.PhotoViewAttacher;
 
 import static butterknife.ButterKnife.findById;
 
@@ -67,27 +68,35 @@ public class ContentAdapter extends PagerAdapter {
         }else if(fileType== MediaFile.Type.GIF) {
             return createGif(position, container);
         }
-        final SubsamplingScaleImageView image=new SubsamplingScaleImageView(container.getContext());
-        container.addView(image);
-        image.setMinimumScaleType(SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE);
-        image.setDoubleTapZoomScale(3.f);
-        image.setMaxScale(5.f);
-        if(fileType== MediaFile.Type.IMAGE) {
-            Glide.with(image.getContext())
-                    .load(mediaFileList.get(position).mediaFile()).
-                    asBitmap().fitCenter().diskCacheStrategy(DiskCacheStrategy.RESULT).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                    image.setImage(ImageSource.bitmap(resource));
-                    currentBitmap=resource;
-                }
-            });
-        }
 
-        image.setOnClickListener(new View.OnClickListener() {
+        final SliderImageView image=new SliderImageView(container.getContext());
+        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        image.setAdjustViewBounds(true);
+                container.addView(image, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+
+        image.setMaximumScale(7.f);
+        image.setMediumScale(3.f);
+
+        Glide.with(container.getContext())
+                .load(mediaFileList.get(position).mediaFile())
+                .asBitmap()
+                .fitCenter()
+                .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(new ImageViewTarget<Bitmap>(image) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        image.setImageBitmap(resource);
+                    }
+                });
+
+        PhotoViewAttacher attacher=PhotoViewAttacher.class.cast(image.getIPhotoViewImplementation());
+        image.setOnDoubleTapListener(new SliderOnDoubleTapListener(attacher) {
             @Override
-            public void onClick(View view) {
+            public boolean onSingleTapConfirmed(MotionEvent e) {
                 sliderEventListener.onClick(position);
+                return super.onSingleTapConfirmed(e);
             }
         });
 
@@ -100,11 +109,11 @@ public class ContentAdapter extends PagerAdapter {
         container.addView(gifImage,new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         Glide.with(gifImage.getContext())
-            .load(mediaFileList.get(position).mediaFile())
-            .asGif()
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .fitCenter()
-            .into(gifImage);
+                .load(mediaFileList.get(position).mediaFile())
+                .asGif()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .fitCenter()
+                .into(gifImage);
 
         return gifImage;
     }

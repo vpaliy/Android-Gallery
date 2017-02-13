@@ -1,15 +1,12 @@
 package com.vpaliy.studioq.activities;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.transition.Explode;
-import android.transition.Fade;
 import android.transition.Transition;
 import android.view.Window;
 import java.util.ArrayList;
@@ -22,8 +19,11 @@ import com.vpaliy.studioq.slider.screens.MediaSliderActivity;
 import com.vpaliy.studioq.utils.Permissions;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.R;
-import com.squareup.otto.Subscribe;
 import butterknife.ButterKnife;
+
+import android.annotation.TargetApi;
+import android.support.annotation.NonNull;
+import com.squareup.otto.Subscribe;
 
 
 public class GalleryActivity extends AppCompatActivity {
@@ -31,6 +31,7 @@ public class GalleryActivity extends AppCompatActivity {
     private final static String TAG=GalleryActivity.class.getSimpleName();
 
     private GalleryFragment fragment;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,7 +88,7 @@ public class GalleryActivity extends AppCompatActivity {
         Intent intent=new Intent(this, MediaSliderActivity.class);
         intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
         intent.putExtra(ProjectUtils.POSITION,launcher.position);
-        startActivityForResult(intent,ProjectUtils.LAUNCH_SLIDER);
+        startActivityForResult(intent, ProjectUtils.LAUNCH_SLIDER);
     }
 
     @Subscribe
@@ -128,8 +129,8 @@ public class GalleryActivity extends AppCompatActivity {
         enterTransition.excludeTarget(R.id.cameraButton,true);
         enterTransition.setDuration(200);
         getWindow().setEnterTransition(enterTransition);
-        getWindow().setReturnTransition(new Fade());
-        getWindow().setSharedElementsUseOverlay(true);
+        getWindow().setSharedElementsUseOverlay(false);
         postponeEnterTransition();
+
     }
 }

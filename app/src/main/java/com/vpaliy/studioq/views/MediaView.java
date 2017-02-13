@@ -3,6 +3,7 @@ package com.vpaliy.studioq.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -246,6 +247,10 @@ public class MediaView extends RelativeLayout {
 
     public void setMainContent(@NonNull Drawable drawable) {
         mainContent.setImageDrawable(drawable);
+    }
+
+    public void setMainContent(@NonNull Bitmap bitmap) {
+        mainContent.setImageBitmap(bitmap);
     }
 
     public ImageView getMainContent() {
