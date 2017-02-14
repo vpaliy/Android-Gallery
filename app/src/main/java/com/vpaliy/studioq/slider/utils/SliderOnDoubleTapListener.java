@@ -1,9 +1,7 @@
 package com.vpaliy.studioq.slider.utils;
 
-import android.graphics.RectF;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.widget.ImageView;
 
 import uk.co.senab.photoview.PhotoViewAttacher;
 
@@ -18,7 +16,7 @@ public class SliderOnDoubleTapListener implements GestureDetector.OnDoubleTapLis
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
-        return true;
+        return false;
     }
 
     @Override

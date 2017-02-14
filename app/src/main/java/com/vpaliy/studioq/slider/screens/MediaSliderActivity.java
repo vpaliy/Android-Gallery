@@ -2,13 +2,11 @@ package com.vpaliy.studioq.slider.screens;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,7 +25,6 @@ import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 import com.vpaliy.studioq.slider.tranformations.ZoomIn;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
 import com.vpaliy.studioq.slider.utils.detailsProvider.DetailsProvider;
-import com.vpaliy.studioq.utils.FileUtils;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import java.util.ArrayList;
 
@@ -71,18 +68,16 @@ public class MediaSliderActivity extends AppCompatActivity
         getWindow().getDecorView().setBackgroundColor(Color.BLACK);
 
         actionBar.setVisibility(View.INVISIBLE);
-        // mActionBar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+        actionBar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
         actionBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
             }
         });
-        //TODO don't forget about different sizes of icon
-        //TODO consider screen rotation here
+
         if(getSupportActionBar()==null) {
-            //TODO consider something about this action bar
-            actionBar.setTitle("");
+            actionBar.setTitle(null);
             setSupportActionBar(actionBar);
         }
 
@@ -92,8 +87,13 @@ public class MediaSliderActivity extends AppCompatActivity
         mediaData=args.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
         startPosition=args.getInt(ProjectUtils.POSITION);
         hasDeletionOccurred=args.getBoolean(ProjectUtils.DELETED);
-        mediaSlider.setAdapter((contentAdapter=new ContentAdapter(this,mediaData,startPosition,this)));
-        mediaSlider.setCurrentItem(startPosition);
+        mediaSlider.setAdapter((contentAdapter=new ContentAdapter(this,mediaData,this)));
+        mediaSlider.post(new Runnable() {
+            @Override
+            public void run() {
+                mediaSlider.setCurrentItem(startPosition);
+            }
+        });
 
         initTransformation();
 
@@ -117,7 +117,6 @@ public class MediaSliderActivity extends AppCompatActivity
     private void initTransformation() {
         mediaSlider.setPageTransformer(false,new ZoomIn());
     }
-
 
     @Override
     public void onClick(int position) {
@@ -166,7 +165,6 @@ public class MediaSliderActivity extends AppCompatActivity
     }
 
 
-    //TODO take care of hiding and showing status bar or make it transparent
     @Override
     public void onWindowFocusChanged(final boolean hasFocus) {
         int flags=0;
@@ -209,38 +207,23 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
 
             case R.id.deleteItem: {
-                final MediaFile mediaFile = mediaData.get(mediaSlider.getCurrentItem());
-                //TODO consider languages here
-                new AlertDialog.Builder(this)
-                        .setTitle("Are you sure that you want to delete " + mediaFile.mediaFile().getName())
-                        .setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                final boolean moveForward=mediaSlider.getCurrentItem()!=(mediaData.size()-1);
+                final View victim=mediaSlider.findViewWithTag(mediaSlider.getCurrentItem());
+                victim.animate()
+                        .scaleY(0.0f)
+                        .scaleX(0.0f)
+                        .setDuration(200)
+                        .setListener(new AnimatorListenerAdapter() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //EMPTY block
+                            public void onAnimationEnd(Animator animation) {
+                                super.onAnimationEnd(animation);
+                                int currentItem=mediaSlider.getCurrentItem();
+                                mediaSlider.setScrollDurationFactor(4);
+                                mediaSlider.setCurrentItem(!moveForward ? (currentItem - 1) : currentItem + 1);
+                                mediaSlider.setScrollDurationFactor(1);
+
                             }
-                        })
-                        .setPositiveButton(R.string.Okay, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                int index = mediaSlider.getCurrentItem();
-                                hasDeletionOccurred = true;
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        FileUtils.deleteFile(MediaSliderActivity.this, mediaFile);
-                                    }
-                                }).start();
-                                if (mediaData.size() == 1) {
-                                    mediaData.remove(index);
-                                    onBackPressed();
-                                } else {
-                                    mediaData.remove(index);
-                                    mediaSlider.getAdapter().notifyDataSetChanged();
-                                    mediaNavigator.getAdapter().notifyItemRemoved(index);
-                                }
-                            }
-                        })
-                        .show();
+                        }).start();
                 return true;
             }
             case R.id.shareItem:
@@ -273,8 +256,10 @@ public class MediaSliderActivity extends AppCompatActivity
     }
 
 
+    private void deleteOption() {
 
-    //TODO before release consider replacement with orientation|keyboard|andStuff
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);

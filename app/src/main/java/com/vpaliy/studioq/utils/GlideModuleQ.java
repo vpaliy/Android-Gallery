@@ -8,6 +8,8 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
 import com.bumptech.glide.load.engine.cache.LruResourceCache;
 import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
 import com.bumptech.glide.module.GlideModule;
+import com.bumptech.glide.request.target.ViewTarget;
+import com.vpaliy.studioq.R;
 
 public class GlideModuleQ implements GlideModule {
 
@@ -31,6 +33,7 @@ public class GlideModuleQ implements GlideModule {
         builder.setDiskCache(
                 new InternalCacheDiskCacheFactory(context, cacheSize100MegaBytes)
         );
+        ViewTarget.setTagId(R.id.glideRequest);
     }
 
     @Override

@@ -1,10 +1,13 @@
 package com.vpaliy.studioq.slider.adapters;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
+import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,61 +20,164 @@ import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 import com.vpaliy.studioq.slider.screens.PlayerActivity;
+import com.vpaliy.studioq.slider.utils.RecyclingPagerAdapter;
 import com.vpaliy.studioq.slider.utils.SliderImageView;
 import com.vpaliy.studioq.slider.utils.SliderOnDoubleTapListener;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.views.MediaView;
+
 import java.util.List;
-
 import uk.co.senab.photoview.PhotoViewAttacher;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import static butterknife.ButterKnife.findById;
-
-public class ContentAdapter extends PagerAdapter {
+public class ContentAdapter extends RecyclingPagerAdapter {
 
     private static final String TAG=ContentAdapter.class.getSimpleName();
 
+    private static final int TYPE_VIDEO=0;
+    private static final int TYPE_IMAGE=1;
+    private static final int TYPE_GIF=2;
     private LayoutInflater inflater;
     private Bitmap currentBitmap=null;
     private List<MediaFile> mediaFileList;
-    private int startPosition;
     private OnSliderEventListener sliderEventListener;
-    private volatile boolean hasAnimated=false;
 
 
-    public ContentAdapter(Context context,@NonNull List<MediaFile> mediaFileList, int startPosition,
+    public ContentAdapter(Context context, @NonNull List<MediaFile> mediaFileList,
                           @NonNull OnSliderEventListener listener) {
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mediaFileList;
-        this.startPosition=startPosition;
         this.sliderEventListener=listener;
-
-    }
-
-
-    @Override
-    public boolean isViewFromObject(View view, Object object) {
-        return view == object;
     }
 
     @Override
-    public View instantiateItem(ViewGroup container, final int position) {
-        MediaFile.Type fileType=mediaFileList.get(position).getType();
-        if(fileType== MediaFile.Type.VIDEO) {
-            return createVideo(position, container);
-        }else if(fileType== MediaFile.Type.GIF) {
-            return createGif(position, container);
+    public View getView(final int position, View convertView, ViewGroup container) {
+
+        switch (getItemViewType(position)) {
+            case TYPE_VIDEO:
+                return createVideo(convertView,position);
+            case TYPE_GIF:
+                return createGif(convertView,position);
+            default:
+                return createImage(convertView,position);
+        }
+    }
+
+    private View createGif(@Nullable View view, int position) {
+        ImageView gifImage;
+        if(view!=null) {
+            gifImage=ImageView.class.cast(view);
+        }else {
+            gifImage=new ImageView(inflater.getContext());
+            gifImage.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+        Glide.with(gifImage.getContext())
+                .load(mediaFileList.get(position).mediaFile())
+                .asGif()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .fitCenter()
+                .into(gifImage);
+        return gifImage;
+    }
+
+    private View createVideo(@Nullable View view, final int position) {
+        final MediaView videoView;
+        if(view!=null) {
+            videoView = MediaView.class.cast(view);
+        }else {
+            videoView=new MediaView(inflater.getContext());
+            videoView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            videoView.setDescriptionGravity(Gravity.CENTER);
+            videoView.setDescriptionIcon(R.drawable.ic_play_circle_outline_white_48dp);
+
+            videoView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    GestureDetector gestureDetector=new GestureDetector(inflater.getContext(),
+                            new GestureDetector.SimpleOnGestureListener() {
+
+                                @Override
+                                public boolean onDown(MotionEvent e) {
+                                    return true;
+                                }
+                                @Override
+                                public boolean onSingleTapConfirmed(MotionEvent e) {
+                                    sliderEventListener.onClick(position);
+                                    return true;
+                                }
+
+                                @Override
+                                public boolean onDoubleTapEvent(MotionEvent e) {
+                                    Context context = inflater.getContext();
+                                    Intent intent = new Intent(context, PlayerActivity.class);
+                                    intent.putExtra(ProjectUtils.MEDIA_DATA, mediaFileList.get(position).mediaFile().getAbsolutePath());
+                                    context.startActivity(intent);
+                                    return true;
+                                }
+                            });
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
+
+            videoView.setOnIconClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Context context = inflater.getContext();
+                    Intent intent = new Intent(context, PlayerActivity.class);
+                    intent.putExtra(ProjectUtils.MEDIA_DATA, mediaFileList.get(position).mediaFile().getAbsolutePath());
+                    context.startActivity(intent);
+                }
+            });
         }
 
-        final SliderImageView image=new SliderImageView(container.getContext());
-        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        image.setAdjustViewBounds(true);
-                container.addView(image, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT));
+        Glide.with(inflater.getContext())
+                .load(mediaFileList.get(position).mediaFile())
+                .asBitmap()
+                .centerCrop()
+                .into(new ImageViewTarget<Bitmap>(videoView.getMainContent()) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        videoView.setMainContent(resource);
+                    }
+                });
 
-        image.setMaximumScale(7.f);
-        image.setMediumScale(3.f);
 
-        Glide.with(container.getContext())
+        return videoView;
+    }
+
+    private View createImage(@Nullable View view, final int position) {
+        final SliderImageView image;
+        if(view!=null) {
+            image = SliderImageView.class.cast(view);
+        }else {
+            image = new SliderImageView(inflater.getContext());
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            image.setAdjustViewBounds(true);
+            image.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+
+        }
+
+        image.post(new Runnable() {
+            @Override
+            public void run() {
+                image.setMaximumScale(7.f);
+                image.setMediumScale(3.f);
+                PhotoViewAttacher attacher=PhotoViewAttacher.class.cast(image.getIPhotoViewImplementation());
+                image.setOnDoubleTapListener(new SliderOnDoubleTapListener(attacher) {
+                    @Override
+                    public boolean onSingleTapConfirmed(MotionEvent e) {
+                        sliderEventListener.onClick(position);
+                        return super.onSingleTapConfirmed(e);
+                    }
+                });
+            }
+        });
+
+        Glide.with(inflater.getContext())
                 .load(mediaFileList.get(position).mediaFile())
                 .asBitmap()
                 .fitCenter()
@@ -83,70 +189,7 @@ public class ContentAdapter extends PagerAdapter {
                         image.setImageBitmap(resource);
                     }
                 });
-        PhotoViewAttacher attacher=PhotoViewAttacher.class.cast(image.getIPhotoViewImplementation());
-        image.setOnDoubleTapListener(new SliderOnDoubleTapListener(attacher) {
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                sliderEventListener.onClick(position);
-                return super.onSingleTapConfirmed(e);
-            }
-        });
-
-
         return image;
-    }
-
-    private View createGif(final int position, final ViewGroup container) {
-        ImageView gifImage=new ImageView(container.getContext());
-        container.addView(gifImage,new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-        Glide.with(gifImage.getContext())
-                .load(mediaFileList.get(position).mediaFile())
-                .asGif()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .fitCenter()
-                .into(gifImage);
-
-        return gifImage;
-    }
-
-    private View createVideo(final int position, final ViewGroup container) {
-        View root=inflater.inflate(R.layout.video_item,container,false);
-        container.addView(root);
-
-        ImageView videoFrame=findById(root,R.id.videoItem);
-        ImageView icon=findById(root,R.id.icon);
-
-        Glide.with(container.getContext())
-                .load(mediaFileList.get(position).mediaFile())
-                .asBitmap()
-                .fitCenter().into(videoFrame);
-
-        videoFrame.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                sliderEventListener.onClick(position);
-            }
-        });
-        icon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Context context = container.getContext();
-                Intent intent = new Intent(context, PlayerActivity.class);
-                intent.putExtra(ProjectUtils.MEDIA_DATA, mediaFileList.get(position).mediaFile().getAbsolutePath());
-                context.startActivity(intent);
-            }
-        });
-        return root;
-    }
-
-    private boolean checkForTransition(int position) {
-        if(position==startPosition) {
-            if (!hasAnimated) {
-                return (hasAnimated = true);
-            }
-        }
-        return false;
     }
 
     public Bitmap getCurrentBitmap() {
@@ -158,15 +201,23 @@ public class ContentAdapter extends PagerAdapter {
         return PagerAdapter.POSITION_NONE;
     }
 
+    @Override
+    public int getViewTypeCount() {
+        return 3;
+    }
 
     @Override
-    public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView((View) object);
+    public int getItemViewType(int position) {
+        MediaFile mediaFile=mediaFileList.get(position);
+        if(mediaFile.getType()== MediaFile.Type.VIDEO)
+            return TYPE_VIDEO;
+        else if(mediaFile.getType()== MediaFile.Type.GIF)
+            return TYPE_GIF;
+        return TYPE_IMAGE;
     }
 
     @Override
     public int getCount() {
         return mediaFileList.size();
     }
-
 }

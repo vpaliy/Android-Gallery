@@ -12,6 +12,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -109,6 +110,7 @@ public class MediaView extends RelativeLayout {
         mainContent=new SquareImage(getContext());
         RelativeLayout.LayoutParams contentParams=new RelativeLayout.
             LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        contentParams.addRule(CENTER_IN_PARENT);
         mainContent.setLayoutParams(contentParams);
 
         addView(mainContent);
@@ -234,6 +236,11 @@ public class MediaView extends RelativeLayout {
         }
     }
 
+
+    public void setOnIconClickListener(@NonNull OnClickListener clickListener) {
+        descriptionIcon.setOnClickListener(clickListener);
+    }
+
     public void setDescriptionIcon(Drawable icon) {
         descriptionIcon.setImageDrawable(icon);
     }
@@ -252,6 +259,7 @@ public class MediaView extends RelativeLayout {
     public void setMainContent(@NonNull Bitmap bitmap) {
         mainContent.setImageBitmap(bitmap);
     }
+
 
     public ImageView getMainContent() {
         return mainContent;
