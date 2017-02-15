@@ -2,4 +2,6 @@
 <resources>
     <integer name="duration">200</integer>
     <integer name="snackbarLength">7000</integer>
+    <integer name="navigationLength">200</integer>
+    <integer name="snapLength">100</integer>
 </resources>

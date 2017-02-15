@@ -49,6 +49,7 @@
             android:name=".slider.screens.FilterActivity">
         </activity>
 
+
         <activity
             android:name=".activities.main.SplashActivity"
             android:theme="@style/SplashTheme"

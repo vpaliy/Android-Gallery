@@ -41,11 +41,11 @@ public class ContentAdapter extends RecyclingPagerAdapter
 
     private LayoutInflater inflater;
     private Bitmap currentBitmap=null;
-    private List<MediaFile> mediaFileList;
+    private ArrayList<MediaFile> mediaFileList;
     private OnSliderEventListener sliderEventListener;
 
 
-    public ContentAdapter(Context context, @NonNull List<MediaFile> mediaFileList,
+    public ContentAdapter(Context context, @NonNull ArrayList<MediaFile> mediaFileList,
                           @NonNull OnSliderEventListener listener) {
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mediaFileList;
@@ -199,6 +199,14 @@ public class ContentAdapter extends RecyclingPagerAdapter
     public void setData(ArrayList<MediaFile> data) {
         this.mediaFileList=data;
         notifyDataSetChanged();
+    }
+
+    public ArrayList<MediaFile> getData() {
+        return mediaFileList;
+    }
+
+    public MediaFile dataAt(int index) {
+        return mediaFileList.get(index);
     }
 
     @Override
