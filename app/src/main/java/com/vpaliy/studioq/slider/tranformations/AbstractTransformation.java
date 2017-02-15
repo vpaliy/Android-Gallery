@@ -12,6 +12,7 @@ public abstract class AbstractTransformation
     private volatile boolean lockLeft;
     private volatile boolean lockRight;
 
+
     static final float MIN_SCALE=0.85f;
     static final float MIN_ALPHA=0.5f;
 
@@ -21,6 +22,12 @@ public abstract class AbstractTransformation
 
     @Override
     public void transformPage(View page, float position) {
+        //which means lock the swipe
+        if(lockLeft && lockRight) {
+            backToNormal(page);
+           // return;
+        }
+
         if(position<0) {
             if(!lockLeft) {
                 transformThePage(page,position);
@@ -31,12 +38,14 @@ public abstract class AbstractTransformation
             }
         }else {
             unLock();
-            transformThePage(page,position);
+            //transformThePage(page,position);
         }
 
     }
 
     public abstract void transformThePage(View thePage, float position);
+
+    public abstract void backToNormal(View page);
 
     @AnyThread
     public void lockLeft() {
@@ -51,6 +60,11 @@ public abstract class AbstractTransformation
     @AnyThread
     public void unLock() {
         lockLeft=lockRight=false;
+    }
+
+    @AnyThread
+    public void lockSwipe() {
+        lockLeft=lockRight=true;
     }
 
 }

@@ -214,7 +214,7 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
 
             case R.id.deleteItem: {
-                snapNavigation();
+              //  snapNavigation();
                 DeleteCase.startWith(this,mediaData)
                     .subscribeForChange(contentAdapter)
                     .subscribeForChange(navigationAdapter)

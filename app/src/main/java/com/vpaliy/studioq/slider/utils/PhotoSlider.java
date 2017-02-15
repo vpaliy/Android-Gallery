@@ -67,6 +67,18 @@ public class PhotoSlider extends ViewPager {
         }
     }
 
+    public void lockTransformation() {
+        if(transformer!=null) {
+            transformer.lockSwipe();
+        }
+    }
+
+    public void onLockTransformation() {
+        if(transformer!=null) {
+            transformer.unLock();
+        }
+    }
+
     //supposed to be called every time when a change of the data has occurred
     public void setPosition(int index) {
         try {

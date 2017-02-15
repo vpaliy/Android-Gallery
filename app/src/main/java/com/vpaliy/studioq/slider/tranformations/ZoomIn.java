@@ -9,6 +9,7 @@ public class ZoomIn extends AbstractTransformation {
         final int width=view.getWidth();
         final int height=view.getHeight();
 
+
         if(position<-1) {
             view.setAlpha(0.f);
         }else if(position<=1) {
@@ -29,7 +30,14 @@ public class ZoomIn extends AbstractTransformation {
                             (1 - MIN_SCALE) * (1 - MIN_ALPHA));
 
         }else {
-            view.setAlpha(0.f);
+            view.setAlpha(0f);
         }
+    }
+
+    @Override
+    public void backToNormal(View page) {
+        page.setScaleX(1.f);
+        page.setScaleX(1.f);
+        page.setAlpha(1f);
     }
 }

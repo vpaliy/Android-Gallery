@@ -91,15 +91,15 @@ public class DeleteCase {
                                     mediaSlider.setScrollDurationFactor(1);
                                     mediaSlider.unLockSwiping();
                                     mediaSlider.setPosition(index);
+                                    mediaSlider.lockTransformation();
                                     notifySubscribers(fakeData);
+                                    mediaSlider.unLockSwiping();
+
                                 }
                             },300);
-
-                            register();
-                            showSnackbar("Deleted","Cancel",7000);
-
-
                         }
+                        register();
+                        showSnackbar("Deleted","Cancel",7000);
 
                     }
                 }).start();

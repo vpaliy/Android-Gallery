@@ -34,7 +34,7 @@ public abstract class RecyclingPagerAdapter extends PagerAdapter {
         if (viewType != IGNORE_ITEM_VIEW_TYPE) {
             view = recycleBin.getScrapView(position, viewType);
         }
-        view = getView(position, view, container);
+        view = getView(position, null, container);
         container.addView(view);
         view.setTag(position);
         if(view.getScaleX()<1f) {
@@ -51,7 +51,7 @@ public abstract class RecyclingPagerAdapter extends PagerAdapter {
 
         int viewType = getItemViewType(position);
         if (viewType != IGNORE_ITEM_VIEW_TYPE) {
-            recycleBin.addScrapView(view, position, viewType);
+          //  recycleBin.addScrapView(view, position, viewType);
         }
     }
 

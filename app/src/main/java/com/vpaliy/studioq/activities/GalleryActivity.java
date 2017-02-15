@@ -80,6 +80,12 @@ public class GalleryActivity extends AppCompatActivity {
     public void onBackPressed() {
         if(fragment!=null) {
             fragment.onBackPressed();
+        }else {
+            fragment=GalleryFragment.class.cast(getSupportFragmentManager().
+                findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT));
+            if(fragment!=null) {
+                onBackPressed();
+            }
         }
     }
 
