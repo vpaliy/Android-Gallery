@@ -1,7 +1,5 @@
 package com.vpaliy.studioq.slider.adapters;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,18 +24,21 @@ import com.vpaliy.studioq.slider.utils.SliderOnDoubleTapListener;
 import com.vpaliy.studioq.utils.ProjectUtils;
 import com.vpaliy.studioq.views.MediaView;
 
+import java.util.ArrayList;
 import java.util.List;
 import uk.co.senab.photoview.PhotoViewAttacher;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-public class ContentAdapter extends RecyclingPagerAdapter {
+public class ContentAdapter extends RecyclingPagerAdapter
+        implements ChangeableAdapter<ArrayList<MediaFile>> {
 
     private static final String TAG=ContentAdapter.class.getSimpleName();
 
     private static final int TYPE_VIDEO=0;
     private static final int TYPE_IMAGE=1;
     private static final int TYPE_GIF=2;
+
     private LayoutInflater inflater;
     private Bitmap currentBitmap=null;
     private List<MediaFile> mediaFileList;
@@ -53,7 +54,6 @@ public class ContentAdapter extends RecyclingPagerAdapter {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup container) {
-
         switch (getItemViewType(position)) {
             case TYPE_VIDEO:
                 return createVideo(convertView,position);
@@ -66,12 +66,12 @@ public class ContentAdapter extends RecyclingPagerAdapter {
 
     private View createGif(@Nullable View view, int position) {
         ImageView gifImage;
-        if(view!=null) {
-            gifImage=ImageView.class.cast(view);
-        }else {
+        if(view==null||!(view instanceof ImageView)) {
             gifImage=new ImageView(inflater.getContext());
             gifImage.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
+        }else {
+            gifImage=ImageView.class.cast(view);
         }
         Glide.with(gifImage.getContext())
                 .load(mediaFileList.get(position).mediaFile())
@@ -84,9 +84,7 @@ public class ContentAdapter extends RecyclingPagerAdapter {
 
     private View createVideo(@Nullable View view, final int position) {
         final MediaView videoView;
-        if(view!=null) {
-            videoView = MediaView.class.cast(view);
-        }else {
+        if(view==null||!(view instanceof MediaView)) {
             videoView=new MediaView(inflater.getContext());
             videoView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -131,6 +129,8 @@ public class ContentAdapter extends RecyclingPagerAdapter {
                     context.startActivity(intent);
                 }
             });
+        }else {
+            videoView = MediaView.class.cast(view);
         }
 
         Glide.with(inflater.getContext())
@@ -150,15 +150,14 @@ public class ContentAdapter extends RecyclingPagerAdapter {
 
     private View createImage(@Nullable View view, final int position) {
         final SliderImageView image;
-        if(view!=null) {
-            image = SliderImageView.class.cast(view);
-        }else {
+        if(view==null||!(view instanceof SliderImageView)) {
             image = new SliderImageView(inflater.getContext());
             image.setScaleType(ImageView.ScaleType.FIT_CENTER);
             image.setAdjustViewBounds(true);
             image.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
-
+        }else {
+            image = SliderImageView.class.cast(view);
         }
 
         image.post(new Runnable() {
@@ -197,6 +196,12 @@ public class ContentAdapter extends RecyclingPagerAdapter {
     }
 
     @Override
+    public void setData(ArrayList<MediaFile> data) {
+        this.mediaFileList=data;
+        notifyDataSetChanged();
+    }
+
+    @Override
     public int getItemPosition(Object object) {
         return PagerAdapter.POSITION_NONE;
     }
@@ -208,6 +213,9 @@ public class ContentAdapter extends RecyclingPagerAdapter {
 
     @Override
     public int getItemViewType(int position) {
+        //it may happen sometimes
+        if(position>=mediaFileList.size())
+            position=mediaFileList.size()-1;
         MediaFile mediaFile=mediaFileList.get(position);
         if(mediaFile.getType()== MediaFile.Type.VIDEO)
             return TYPE_VIDEO;

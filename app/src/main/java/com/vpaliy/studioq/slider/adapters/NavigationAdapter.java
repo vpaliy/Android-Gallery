@@ -11,14 +11,17 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
+import java.util.ArrayList;
 import java.util.List;
 import butterknife.ButterKnife;
+
 import android.support.annotation.NonNull;
 import butterknife.BindView;
 
 
-public class NavigationAdapter extends
-        RecyclerView.Adapter<NavigationAdapter.NavigationItem>  {
+public class NavigationAdapter
+    extends RecyclerView.Adapter<NavigationAdapter.NavigationItem>
+        implements ChangeableAdapter<ArrayList<MediaFile>> {
 
     private List<MediaFile> mediaFileList;
     private LayoutInflater inflater;
@@ -61,6 +64,12 @@ public class NavigationAdapter extends
                 .thumbnail(0.2f).into(image);
         }
 
+    }
+
+    @Override
+    public void setData(ArrayList<MediaFile> data) {
+        this.mediaFileList=data;
+        notifyDataSetChanged();
     }
 
     @Override

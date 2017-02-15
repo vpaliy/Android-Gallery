@@ -63,8 +63,8 @@ public class GalleryAdapter extends BaseAdapter {
             if(!isMultiModeActivated()) {
                 if(hasFocus) {
                     hasFocus = false;
-                    EventBusProvider.defaultBus().
-                            post(new Launcher<>(mediaFileList, media.getMainContent(), getAdapterPosition()));
+                    EventBusProvider.defaultBus().post(
+                        new Launcher<>(mediaFileList, media.getMainContent(), getAdapterPosition()));
                 }
             }
             super.onClick(view);

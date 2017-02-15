@@ -7,15 +7,16 @@ import android.widget.AdapterView;
 
 public abstract class RecyclingPagerAdapter extends PagerAdapter {
 
-    static final int IGNORE_ITEM_VIEW_TYPE = AdapterView.ITEM_VIEW_TYPE_IGNORE;
+    private static final int IGNORE_ITEM_VIEW_TYPE = AdapterView.ITEM_VIEW_TYPE_IGNORE;
+    private static final String TAG=RecyclingPagerAdapter.class.getSimpleName();
 
-    private final RecycleBin recycleBin;
+    private RecycleBin recycleBin;
 
-    public RecyclingPagerAdapter() {
+    protected RecyclingPagerAdapter() {
         this(new RecycleBin());
     }
 
-    RecyclingPagerAdapter(RecycleBin recycleBin) {
+    private RecyclingPagerAdapter(RecycleBin recycleBin) {
         this.recycleBin = recycleBin;
         recycleBin.setViewTypeCount(getViewTypeCount());
     }
@@ -47,6 +48,7 @@ public abstract class RecyclingPagerAdapter extends PagerAdapter {
     public final void destroyItem(ViewGroup container, int position, Object object) {
         View view = (View) object;
         container.removeView(view);
+
         int viewType = getItemViewType(position);
         if (viewType != IGNORE_ITEM_VIEW_TYPE) {
             recycleBin.addScrapView(view, position, viewType);
@@ -62,7 +64,6 @@ public abstract class RecyclingPagerAdapter extends PagerAdapter {
         return 1;
     }
 
-    @SuppressWarnings("UnusedParameters") // Argument potentially used by subclasses.
     public int getItemViewType(int position) {
         return 0;
     }

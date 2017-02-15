@@ -23,11 +23,16 @@ import com.vpaliy.studioq.slider.adapters.NavigationAdapter;
 import com.vpaliy.studioq.slider.listeners.OnBarChangeStateListener;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 import com.vpaliy.studioq.slider.tranformations.ZoomIn;
+import com.vpaliy.studioq.slider.utils.DeleteCase;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
 import com.vpaliy.studioq.slider.utils.detailsProvider.DetailsProvider;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
+import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
+
 import java.util.ArrayList;
 
+import android.support.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -51,6 +56,8 @@ public class MediaSliderActivity extends AppCompatActivity
     private int startPosition;
 
     private ContentAdapter contentAdapter;
+    private NavigationAdapter navigationAdapter;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,7 +104,7 @@ public class MediaSliderActivity extends AppCompatActivity
 
         initTransformation();
 
-        mediaNavigator.setAdapter(new NavigationAdapter(MediaSliderActivity.this,mediaData,this));
+        mediaNavigator.setAdapter((navigationAdapter=new NavigationAdapter(MediaSliderActivity.this,mediaData,this)));
         mediaNavigator.setLayoutManager(new LinearLayoutManager(MediaSliderActivity.this, LinearLayoutManager.HORIZONTAL,false));
         mediaNavigator.setItemAnimator(new DefaultItemAnimator());
         mediaNavigator.setVisibility(View.INVISIBLE);
@@ -207,23 +214,11 @@ public class MediaSliderActivity extends AppCompatActivity
                 return true;
 
             case R.id.deleteItem: {
-                final boolean moveForward=mediaSlider.getCurrentItem()!=(mediaData.size()-1);
-                final View victim=mediaSlider.findViewWithTag(mediaSlider.getCurrentItem());
-                victim.animate()
-                        .scaleY(0.0f)
-                        .scaleX(0.0f)
-                        .setDuration(200)
-                        .setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                super.onAnimationEnd(animation);
-                                int currentItem=mediaSlider.getCurrentItem();
-                                mediaSlider.setScrollDurationFactor(4);
-                                mediaSlider.setCurrentItem(!moveForward ? (currentItem - 1) : currentItem + 1);
-                                mediaSlider.setScrollDurationFactor(1);
-
-                            }
-                        }).start();
+                snapNavigation();
+                DeleteCase.startWith(this,mediaData)
+                    .subscribeForChange(contentAdapter)
+                    .subscribeForChange(navigationAdapter)
+                    .startUIChain();
                 return true;
             }
             case R.id.shareItem:
@@ -257,7 +252,55 @@ public class MediaSliderActivity extends AppCompatActivity
 
 
     private void deleteOption() {
+        final View victim=mediaSlider.findViewWithTag(mediaSlider.getCurrentItem());
+        victim.animate()
+                .scaleY(0.0f)
+                .scaleX(0.0f)
+                .setDuration(200)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        int currentIndex=mediaSlider.getCurrentItem();
+                        if(mediaData.size()>1) {
+                            mediaSlider.setScrollDurationFactor(3);
+                            //move forward in this case
+                            if(currentIndex!=(mediaData.size()-1)) {
+                                mediaSlider.setCurrentItem(currentIndex+1);
+                                mediaSlider.lockLeftOnTransform();
+                            }else {
+                                //or move back in this case
+                                mediaSlider.setCurrentItem(currentIndex-1);
+                                mediaSlider.lockRightOnTransform();
+                            }
+                            mediaSlider.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mediaSlider.setScrollDurationFactor(1);
+                                    mediaSlider.unLockSwiping();
+                                }
+                            },300);
+                        }
+                        performDelete(mediaData.get(currentIndex));
 
+                    }
+                }).start();
+    }
+
+    private void performDelete(@NonNull MediaFile deleteFile) {
+        SnackbarWrapper.start(ButterKnife.findById(this,R.id.rootView),
+            "File:"+deleteFile.mediaFile().getName()+" has been moved to trash",7000)
+        .callback(new ActionCallback("UNDO") {
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onPerform() {
+
+            }
+        }).show();
     }
 
     @Override
@@ -295,6 +338,20 @@ public class MediaSliderActivity extends AppCompatActivity
     }
 
 
+    private void snapNavigation() {
+        mediaNavigator.animate()
+                .translationY(mediaNavigator.getHeight())
+                .setDuration(50)
+                .alpha(1.0f)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        mediaNavigator.setVisibility(View.INVISIBLE);
+                    }
+                });
+    }
+
     private void hideNavigationContentList() {
         mediaNavigator.animate()
                 .translationY(mediaNavigator.getHeight())
@@ -306,16 +363,13 @@ public class MediaSliderActivity extends AppCompatActivity
                         mediaNavigator.setVisibility(View.INVISIBLE);
                     }
                 });
-        onWindowFocusChanged(false);
         onSwitchActionBarOff();
     }
 
     private void showNavigationContentList() {
         mediaNavigator.setVisibility(View.VISIBLE);
-        mediaNavigator.setAlpha(0.f);
         mediaNavigator.animate()
                 .translationY(0)
-                .alpha(1.0f)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {

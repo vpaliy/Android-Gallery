@@ -89,4 +89,9 @@ public class SnackbarWrapper {
         snackbar.show();
     }
 
+    public Snackbar showAndGet() {
+        show();
+        return snackbar;
+    }
+
 }

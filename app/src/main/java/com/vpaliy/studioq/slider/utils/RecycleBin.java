@@ -23,7 +23,7 @@ public class RecycleBin {
         //noinspection unchecked
         SparseArray<View>[] scrapViews = new SparseArray[viewTypeCount];
         for (int i = 0; i < viewTypeCount; i++) {
-            scrapViews[i] = new SparseArray<View>();
+            scrapViews[i] = new SparseArray<>();
         }
         this.viewTypeCount = viewTypeCount;
         currentScrapViews = scrapViews[0];
@@ -53,6 +53,17 @@ public class RecycleBin {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             scrap.setAccessibilityDelegate(null);
         }
+    }
+
+    void notifyDataChanged(int viewTypeCount) {
+        for(int index=0;index<activeViewTypes.length;index++) {
+            activeViews[index]=null;
+        }
+        activeViews=null;
+
+        activeViews = new View[0];
+        activeViewTypes = new int[0];
+        setViewTypeCount(viewTypeCount);
     }
 
     void scrapActiveViews() {

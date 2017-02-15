@@ -1,19 +1,22 @@
 package com.vpaliy.studioq.slider.utils;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.animation.Interpolator;
 import android.widget.Scroller;
-
+import com.vpaliy.studioq.slider.tranformations.AbstractTransformation;
 import java.lang.reflect.Field;
+
+import android.annotation.SuppressLint;
 
 public class PhotoSlider extends ViewPager {
 
-    private PageTransformer transformer;
+    private static final String TAG=PhotoSlider.class.getSimpleName();
 
+    private AbstractTransformation transformer;
+    private boolean lockSwiping=false;
 
     public PhotoSlider(Context context) {
         this(context,null);
@@ -24,28 +27,9 @@ public class PhotoSlider extends ViewPager {
         postInitViewPager();
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        try {
-            return super.onInterceptTouchEvent(ev);
-        } catch (IllegalArgumentException e) {
-            //uncomment if you really want to see these errors
-            //e.printStackTrace();
-            return false;
-        }
-    }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event);
-    }
+    private ScrollController mScroller = null;
 
-    private ScrollerCustomDuration mScroller = null;
-
-    /**
-     * Override the Scroller instance with our own class so we can change the
-     * duration
-     */
     private void postInitViewPager() {
         try {
             Field scroller = ViewPager.class.getDeclaredField("mScroller");
@@ -53,7 +37,7 @@ public class PhotoSlider extends ViewPager {
             Field interpolator = ViewPager.class.getDeclaredField("sInterpolator");
             interpolator.setAccessible(true);
 
-            mScroller = new ScrollerCustomDuration(getContext(),
+            mScroller = new ScrollController(getContext(),
                     (Interpolator) interpolator.get(null));
             scroller.set(this, mScroller);
         } catch (Exception ex) {
@@ -65,27 +49,72 @@ public class PhotoSlider extends ViewPager {
         mScroller.setScrollDurationFactor(scrollFactor);
     }
 
+    public void unLockSwiping() {
+        lockSwiping=false;
+    }
 
-    @Override
-    public void setPageTransformer(boolean reverseDrawingOrder, PageTransformer transformer) {
+    public void lockLeftOnTransform() {
+        lockSwiping=true;
+        if(transformer!=null) {
+            transformer.lockLeft();
+        }
+    }
+
+    public void lockRightOnTransform() {
+        lockSwiping=true;
+        if(transformer!=null) {
+            transformer.lockRight();
+        }
+    }
+
+    //supposed to be called every time when a change of the data has occurred
+    public void setPosition(int index) {
+        try {
+            Field item = ViewPager.class.getDeclaredField("mCurItem");
+            item.setAccessible(true);
+            item.setInt(this,index);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void setPageTransformer(boolean reverseDrawingOrder, AbstractTransformation transformer) {
         super.setPageTransformer(reverseDrawingOrder, transformer);
         this.transformer=transformer;
     }
 
-    private static  class ScrollerCustomDuration extends Scroller {
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        try {
+            return super.onInterceptTouchEvent(ev) && !lockSwiping;
+        } catch (IllegalArgumentException e) {
+            //uncomment if you really want to see these errors
+            //e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event) && !lockSwiping;
+    }
+
+
+    private static  class ScrollController extends Scroller {
 
         private double mScrollFactor = 1;
 
-        public ScrollerCustomDuration(Context context) {
+        public ScrollController(Context context) {
             super(context);
         }
 
-        ScrollerCustomDuration(Context context, Interpolator interpolator) {
+        ScrollController(Context context, Interpolator interpolator) {
             super(context, interpolator);
         }
 
         @SuppressLint("NewApi")
-        public ScrollerCustomDuration(Context context, Interpolator interpolator, boolean flywheel) {
+        public ScrollController(Context context, Interpolator interpolator, boolean flywheel) {
             super(context, interpolator, flywheel);
         }
 
@@ -98,8 +127,6 @@ public class PhotoSlider extends ViewPager {
         public void startScroll(int startX, int startY, int dx, int dy, int duration) {
             super.startScroll(startX, startY, dx, dy, (int) (duration * mScrollFactor));
         }
-
-
     }
 
 }
