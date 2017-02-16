@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import com.drew.lang.annotations.NotNull;
+import com.vpaliy.studioq.R;
 
 //This class is for my particular needs
 
@@ -21,16 +22,20 @@ public class SnackbarWrapper {
     @Nullable
     private ActionCallback actionCallback;
 
+    private int color;
+
     private SnackbarWrapper(@NonNull View root, int duration) {
         this(root,"",duration);
     }
 
     private SnackbarWrapper(@NonNull View root, @StringRes int resId, int duration) {
         this.snackbar=Snackbar.make(root,resId,duration);
+        color=root.getResources().getColor(R.color.colorAccent);
     }
 
     private SnackbarWrapper(@NonNull View root, String text, int duration) {
         this.snackbar=Snackbar.make(root,text,duration);
+        color=root.getResources().getColor(R.color.colorAccent);
     }
 
     public static SnackbarWrapper start(@NonNull View root, int duration) {
@@ -65,6 +70,11 @@ public class SnackbarWrapper {
         return this;
     }
 
+    public SnackbarWrapper color(int color) {
+        this.color=color;
+        return this;
+    }
+
     public void show() {
         if(actionCallback!=null) {
             snackbar.setAction(actionCallback.message, new View.OnClickListener() {
@@ -77,6 +87,7 @@ public class SnackbarWrapper {
                 @Override
                 public void onDismissed(Snackbar transientBottomBar, int event) {
                     super.onDismissed(transientBottomBar, event);
+                    actionCallback.onDismiss();
                     switch (event) {
                         case DISMISS_EVENT_TIMEOUT:
                         case DISMISS_EVENT_SWIPE:
@@ -86,6 +97,7 @@ public class SnackbarWrapper {
                 }
             });
         }
+        snackbar.setActionTextColor(color);
         snackbar.show();
     }
 

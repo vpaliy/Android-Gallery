@@ -4,6 +4,7 @@ package com.vpaliy.studioq.slider.screens.cases;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -21,6 +22,8 @@ import java.util.List;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.animation.DecelerateInterpolator;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -46,6 +49,9 @@ public class DeleteCase {
     @Nullable
     private ArrayList<MediaFile> fakeData;
 
+    @Nullable
+    private NavigationCase navigationCase;
+
     private final List<ChangeableAdapter<ArrayList<MediaFile>>> notifyList;
 
     private Snackbar messageSnackbar;
@@ -64,10 +70,14 @@ public class DeleteCase {
 
 
     public void startUIChain() {
+        if(navigationCase!=null) {
+            navigationCase.block();
+        }
         victim.animate()
                 .scaleY(0.0f)
                 .scaleX(0.0f)
                 .setDuration(200)
+                .setInterpolator(new DecelerateInterpolator())
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -121,13 +131,22 @@ public class DeleteCase {
         return this;
     }
 
+    public DeleteCase blockNavigation(@Nullable NavigationCase navigationCase) {
+        this.navigationCase=navigationCase;
+        return this;
+    }
+
 
     private void showSnackbar(@NonNull String message, @NonNull String dismissMessage, int duration) {
         messageSnackbar=SnackbarWrapper.start(rootView,message,duration)
+                .color(rootView.getResources().getColor(R.color.colorPrimaryDark))
                 .callback(new ActionCallback(dismissMessage) {
                     @Override
                     public void onCancel() {
                         //enable to show the current page
+                        if(navigationCase!=null) {
+                            navigationCase.block();
+                        }
                         mediaSlider.post(new Runnable() {
                             @Override
                             public void run() {
@@ -143,15 +162,33 @@ public class DeleteCase {
                                         .scaleX(1.f)
                                         .scaleY(1.f)
                                         .setDuration(300)
-                                        .setListener(null).start();
+                                        .setStartDelay(50)
+                                        .setInterpolator(new DecelerateInterpolator())
+                                        .setListener(new AnimatorListenerAdapter() {
+                                            @Override
+                                            public void onAnimationEnd(Animator animation) {
+                                                super.onAnimationEnd(animation);
+                                                if(navigationCase!=null) {
+                                                    navigationCase.unBlock();
+                                                }
+                                            }
+                                        }).start();
                             }
                         });
+                    }
+
+                    @Override
+                    public void onDismiss() {
+                        if(navigationCase!=null) {
+                            navigationCase.unBlock();
+                        }
                     }
 
                     @Override
                     public void onPerform() {
 
                     }
+
                 }).showAndGet();
     }
 

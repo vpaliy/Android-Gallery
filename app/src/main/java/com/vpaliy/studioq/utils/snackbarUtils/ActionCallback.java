@@ -20,4 +20,6 @@ public abstract class ActionCallback {
     public abstract void onCancel();
     public abstract void onPerform();
 
+    public void onDismiss() {}
+
 }

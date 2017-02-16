@@ -144,10 +144,10 @@ public class MediaSliderActivity extends AppCompatActivity
                 onBackPressed();
                 return true;
             case R.id.deleteItem:
-               // snapNavigation();
                 DeleteCase.startWith(this,contentAdapter.getData())
                         .subscribeForChange(contentAdapter)
                         .subscribeForChange(navigationAdapter)
+                        .blockNavigation(navigationCase)
                         .startUIChain();
                 return true;
             case R.id.shareItem:

@@ -1,27 +1,34 @@
-<RelativeLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:fitsSystemWindows="true"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
-    <com.vpaliy.studioq.slider.utils.PhotoSlider
-        android:id="@+id/mediaSlider"
-        android:clickable="true"
-        android:layout_centerInParent="true"
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/mediaNavigator"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:layout_alignParentBottom="true"/>
+        <com.vpaliy.studioq.slider.utils.PhotoSlider
+            android:id="@+id/mediaSlider"
+            android:clickable="true"
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/actionBar"
-        android:background="@android:color/transparent"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"/>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/mediaNavigator"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_alignParentBottom="true"/>
 
-</RelativeLayout>
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/actionBar"
+            android:background="@android:color/transparent"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"/>
+
+    </RelativeLayout>
+
+</android.support.design.widget.CoordinatorLayout>

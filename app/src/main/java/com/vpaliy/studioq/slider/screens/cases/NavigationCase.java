@@ -27,9 +27,12 @@ public class NavigationCase {
     @NonNull
     private View decorView;
 
+    private int showDuration=150;
+    private int hideDuration=150;
 
     private final VisibilityController visibilityController=new VisibilityController();
     private  Thread navigationThread=new Thread(visibilityController);
+
     private volatile boolean isBlocked=false;
 
     private NavigationCase(@NonNull Activity activity, @NonNull View decorView) {
@@ -44,19 +47,19 @@ public class NavigationCase {
                 public void run() {
                     navigationView.setVisibility(View.VISIBLE);
                     navigationView.animate()
+                            .setDuration(showDuration)
                             .translationY(0)
-                            //  .setDuration(R.integer.navigationLength)
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationStart(Animator animation) {
                                     super.onAnimationStart(animation);
+                                    onSwitchActionBarOn();
+                                    onWindowFocusChanged(true);
                                 }
 
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
                                     super.onAnimationEnd(animation);
-                                    onSwitchActionBarOn();
-                                    onWindowFocusChanged(true);
                                     if(navigationThread.getState()!=Thread.State.NEW)
                                         navigationThread=new Thread(visibilityController);
                                     navigationThread.start();
@@ -73,15 +76,22 @@ public class NavigationCase {
             public void run() {
                 navigationView.animate()
                         .translationY(navigationView.getHeight())
-                        .setDuration(100)
+                        .setDuration(hideDuration)
                         .setListener(new AnimatorListenerAdapter() {
+                            @Override
+                            public void onAnimationStart(Animator animation) {
+                                super.onAnimationStart(animation);
+                                onSwitchActionBarOff();
+                            }
+
                             @Override
                             public void onAnimationEnd(Animator animation) {
                                 super.onAnimationEnd(animation);
                                 navigationView.setVisibility(View.INVISIBLE);
+                                //it redraws, so the UI should be invisible by this time
+                                onWindowFocusChanged(false);
                             }
                         }).start();
-                onSwitchActionBarOff();
             }
         });
     }
@@ -99,7 +109,7 @@ public class NavigationCase {
         actionBar.setVisibility(View.VISIBLE);
         actionBar.animate()
                 .translationY(0.0f)
-                //     .setDuration(R.integer.navigationLength)
+                .setDuration(showDuration)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -114,7 +124,7 @@ public class NavigationCase {
                 .translationY(-actionBar.getHeight())
                 .setInterpolator(new DecelerateInterpolator(1.5f))
                 .alpha(1.0f)
-                //    .setDuration(R.integer.navigationLength)
+                .setDuration(hideDuration)
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -194,5 +204,4 @@ public class NavigationCase {
         }
 
     }
-
 }
