@@ -6,10 +6,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -145,6 +143,20 @@ public final class FileUtils {
                 values.clear();
             }
         }
+    }
+
+    public static void updateWithImage(@NonNull Context context, @NonNull File target, @NonNull String mimeType) {
+        ContentValues values=new ContentValues();
+        values.put(MediaStore.Images.ImageColumns.DATA,target.getAbsolutePath());
+        values.put(MediaStore.Images.ImageColumns.MIME_TYPE,mimeType);
+        context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+    }
+
+    public static void updateWithVideo(@NonNull Context context, @NonNull File target, @NonNull String mimeType) {
+        ContentValues values=new ContentValues();
+        values.put(MediaStore.Video.VideoColumns.DATA, target.getAbsolutePath());
+        values.put(MediaStore.Video.VideoColumns.MIME_TYPE,mimeType);
+        context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     private static String uniqueNameFor(@NonNull String fileName) {

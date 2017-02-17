@@ -12,6 +12,7 @@ import com.vpaliy.studioq.utils.ProjectUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,6 +65,14 @@ public final class App extends Application {
             intent.putExtra(ProjectUtils.MEDIA_DATA,mediaFileList);
             startDataService(intent);
         }
+    }
+
+    public void copy(@NonNull String dir, @NonNull MediaFile data) {
+        Map<String,ArrayList<MediaFile>> copyMap=new LinkedHashMap<>();
+        ArrayList<MediaFile> list=new ArrayList<>();
+        list.add(data);
+        copyMap.put(dir,list);
+        copy(copyMap);
     }
 
     public void copy(@NonNull Map<String,ArrayList<MediaFile>> copyMap) {

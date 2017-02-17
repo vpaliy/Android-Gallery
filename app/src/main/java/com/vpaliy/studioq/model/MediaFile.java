@@ -75,6 +75,9 @@ public class MediaFile implements Parcelable{
         return mediaFile;
     }
 
+    public String parentPath() {
+        return mediaFile().getParentFile().getAbsolutePath();
+    }
 
     public String getDate() {
         Date date=new Date(new File(mediaFile).lastModified());
@@ -159,6 +162,10 @@ public class MediaFile implements Parcelable{
                 .append(mediaFile,file.mediaFile)
                 .append(mimeType,file.mimeType)
                 .append(Id,file.Id).isEquals();
+    }
+
+    public static MediaFile createFrom(@NonNull Uri uri, @NonNull MediaFile copy) {
+        return new MediaFile(copy,new File(uri.getPath()));
     }
 
     public long getId() {

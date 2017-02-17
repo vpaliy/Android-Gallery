@@ -3,7 +3,6 @@ package com.vpaliy.studioq.slider.screens;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -19,10 +18,13 @@ import com.vpaliy.studioq.slider.adapters.ContentAdapter;
 import com.vpaliy.studioq.slider.adapters.NavigationAdapter;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
 import com.vpaliy.studioq.slider.screens.cases.DeleteCase;
+import com.vpaliy.studioq.slider.screens.cases.EditCase;
 import com.vpaliy.studioq.slider.screens.cases.NavigationCase;
 import com.vpaliy.studioq.slider.tranformations.ZoomIn;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
 import com.vpaliy.studioq.utils.ProjectUtils;
+import com.yalantis.ucrop.UCrop;
+
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -80,14 +82,11 @@ public class MediaSliderActivity extends AppCompatActivity
         //the data for adapters
         ArrayList<MediaFile> mediaData=args.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
 
-        //it can't be NULL, just annoying warning
-        if(mediaData!=null) {
-            navigationCase=NavigationCase.start(this,getWindow().getDecorView());
-            initMediaSlider(args, mediaData);
-            initTransformation();
-            initNavigator(mediaData);
-            initActionBar();
-        }
+        navigationCase=NavigationCase.start(this,getWindow().getDecorView());
+        initMediaSlider(args, mediaData);
+        initTransformation();
+        initNavigator(mediaData);
+        initActionBar();
 
     }
 
@@ -100,7 +99,7 @@ public class MediaSliderActivity extends AppCompatActivity
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                    navigationCase.carryOn();
+                navigationCase.carryOn();
             }
         });
         onClick(startPosition);
@@ -138,6 +137,7 @@ public class MediaSliderActivity extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        MediaFile mediaFile=contentAdapter.dataAt(mediaSlider.getCurrentItem());
 
         switch (item.getItemId()) {
             case R.id.home:
@@ -151,27 +151,13 @@ public class MediaSliderActivity extends AppCompatActivity
                         .startUIChain();
                 return true;
             case R.id.shareItem:
-                final MediaFile mediaFile=contentAdapter.dataAt(mediaSlider.getCurrentItem());
-                Intent intent=new Intent();
-                intent.setAction(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(mediaFile.mediaFile()));
-                if(mediaFile.getType()== MediaFile.Type.VIDEO) {
-                    intent.setType("video/*");
-                }else {
-                    intent.setType("image/*");
-                }
-                //TODO language here
-                startActivity(Intent.createChooser(intent,"Share via"));
                 return true;
-
             case R.id.showInfo:
-                //  DetailsProvider.provideFor(this,mediaData.get(mediaSlider.getCurrentItem()));
                 break;
-
-            case R.id.filter: {
-                Intent dataIntent=new Intent(this,FilterActivity.class);
-                break;
-            }
+            case R.id.filter:
+                EditCase.start(this,mediaFile)
+                        .execute();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -186,6 +172,20 @@ public class MediaSliderActivity extends AppCompatActivity
 
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==RESULT_OK) {
+            switch (requestCode) {
+                case UCrop.REQUEST_CROP:
+                    if(data!=null) {
+                        EditCase.handleResult(data);
+                    }
+            }
+
+        }
+    }
+
+    @Override
     public boolean isNavigationActivated() {
         return navigationCase.isActivated();
     }
@@ -194,7 +194,8 @@ public class MediaSliderActivity extends AppCompatActivity
     public void onBackPressed() {
         if(hasDeletionOccurred) {
             Intent data=new Intent();
-            // data.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaData);
+            data.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,
+                contentAdapter.getData());
             setResult(RESULT_OK,data);
         }
         super.onBackPressed();

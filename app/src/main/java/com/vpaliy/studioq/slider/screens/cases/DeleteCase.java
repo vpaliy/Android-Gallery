@@ -4,7 +4,6 @@ package com.vpaliy.studioq.slider.screens.cases;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.graphics.Color;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.view.View;
