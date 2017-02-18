@@ -7,7 +7,7 @@ import android.widget.MediaController;
 import android.widget.VideoView;
 
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 
 public class PlayerActivity extends AppCompatActivity {
 

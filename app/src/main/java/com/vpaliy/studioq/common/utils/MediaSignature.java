@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.utils;
+package com.vpaliy.studioq.common.utils;
 
 import com.bumptech.glide.signature.StringSignature;
 import com.vpaliy.studioq.model.MediaFile;

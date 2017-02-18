@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.utils;
+package com.vpaliy.studioq.common.dataUtils;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;

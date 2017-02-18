@@ -1,8 +1,8 @@
-package com.vpaliy.studioq.activities.utils.eventBus;
+package com.vpaliy.studioq.common.eventBus;
 
-import android.view.View;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.View;
 
 public class Launcher<T> {
 

@@ -1,27 +1,26 @@
-package com.vpaliy.studioq.slider.screens.cases;
+package com.vpaliy.studioq.slider.cases;
 
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ChangeableAdapter;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
-import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
-import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
+import com.vpaliy.studioq.common.snackbarUtils.ActionCallback;
+import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.view.animation.DecelerateInterpolator;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,7 +30,7 @@ import butterknife.ButterKnife;
  */
 
 @SuppressWarnings("all")
-public class DeleteCase {
+public class DeleteCase extends Case {
 
     @BindView(R.id.rootView)
     protected View rootView;
@@ -146,32 +145,39 @@ public class DeleteCase {
                         if(navigationCase!=null) {
                             navigationCase.block();
                         }
+
                         mediaSlider.post(new Runnable() {
                             @Override
                             public void run() {
                                 notifySubscribers(data);
-                                //also prevent showing the entire page
+                                boolean lastOne=deletedPosition==(data.size()-1);
+
+                                if(lastOne) {
+                                    mediaSlider.setScrollDurationFactor(4);
+                                }
+
                                 mediaSlider.setCurrentItem(deletedPosition);
-                                victim=mediaSlider.findViewWithTag(deletedPosition);
-
-                                victim.setScaleX(0.f);
-                                victim.setScaleY(0.f);
-
-                                victim.animate()
-                                        .scaleX(1.f)
-                                        .scaleY(1.f)
-                                        .setDuration(300)
-                                        .setStartDelay(50)
-                                        .setInterpolator(new DecelerateInterpolator())
-                                        .setListener(new AnimatorListenerAdapter() {
-                                            @Override
-                                            public void onAnimationEnd(Animator animation) {
-                                                super.onAnimationEnd(animation);
-                                                if(navigationCase!=null) {
-                                                    navigationCase.unBlock();
+                                if(!lastOne) {
+                                    victim = mediaSlider.findViewWithTag(deletedPosition);
+                                    victim.setScaleX(0.1f);
+                                    victim.setScaleY(0.1f);
+                                    victim.animate()
+                                            .scaleX(1.f)
+                                            .scaleY(1.f)
+                                            .setDuration(300)
+                                            .setStartDelay(50)
+                                            .setInterpolator(new DecelerateInterpolator())
+                                            .setListener(new AnimatorListenerAdapter() {
+                                                @Override
+                                                public void onAnimationEnd(Animator animation) {
+                                                    super.onAnimationEnd(animation);
+                                                    unBlock();
                                                 }
-                                            }
-                                        }).start();
+                                            }).start();
+                                }else {
+                                    mediaSlider.setScrollDurationFactor(1);
+                                    unBlock();
+                                }
                             }
                         });
                     }
@@ -191,6 +197,17 @@ public class DeleteCase {
                 }).showAndGet();
     }
 
+    private void block() {
+        if (navigationCase != null) {
+            navigationCase.block();
+        }
+    }
+
+    private void unBlock() {
+        if (navigationCase != null) {
+            navigationCase.unBlock();
+        }
+    }
 
     private void register() {
         mediaSlider.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -210,6 +227,11 @@ public class DeleteCase {
 
             }
         });
+    }
+
+    @Override
+    public void execute() {
+        startUIChain();
     }
 
     public static DeleteCase startWith(@NonNull Activity activity, @NonNull ArrayList<MediaFile> data) {

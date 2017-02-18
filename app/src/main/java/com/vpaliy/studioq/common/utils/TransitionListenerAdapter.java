@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.utils;
+package com.vpaliy.studioq.common.utils;
 
 import android.annotation.TargetApi;
 import android.transition.Transition;

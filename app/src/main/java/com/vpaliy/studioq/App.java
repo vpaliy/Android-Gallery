@@ -5,11 +5,10 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.services.DataService;
-import com.vpaliy.studioq.utils.ProjectUtils;
-
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -27,16 +26,22 @@ public final class App extends Application {
     @Nullable
     private DataService service;
 
+
+    private DataController dataController;
+
     @Override
     public void onCreate() {
         super.onCreate();
         instance=this;
+        setupData();
     }
 
     @Override
     public void onTerminate() {
         super.onTerminate();
         instance=null;
+        dataController.unSubsribeAll();
+        dataController=null;
 
     }
 
@@ -102,6 +107,17 @@ public final class App extends Application {
     public void unbindService() {
         unbindService(connection);
         service=null;
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        dataController.unSubsribeAll();
+        dataController=null;
+    }
+
+    private void setupData() {
+        //dataController= DataController.create(this);
     }
 
 

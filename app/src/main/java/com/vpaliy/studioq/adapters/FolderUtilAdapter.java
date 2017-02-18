@@ -18,7 +18,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.DrawableCrossFadeFactory;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
+import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.fragments.GalleryFragment;
 import com.vpaliy.studioq.model.DummyFolder;
 import java.io.File;

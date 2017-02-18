@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.activities.utils.eventBus;
+package com.vpaliy.studioq.common.eventBus;
 
 import android.content.Intent;
 import android.support.annotation.Nullable;

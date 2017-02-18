@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.utils.snackbarUtils;
+package com.vpaliy.studioq.common.snackbarUtils;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

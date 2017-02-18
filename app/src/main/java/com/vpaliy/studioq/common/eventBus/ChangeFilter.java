@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.activities.utils.eventBus;
+package com.vpaliy.studioq.common.eventBus;
 
 import com.zomato.photofilters.imageprocessors.Filter;
 

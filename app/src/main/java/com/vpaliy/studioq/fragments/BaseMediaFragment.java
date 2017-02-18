@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.vpaliy.studioq.R;
 import java.util.ArrayList;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 
 
 public abstract class BaseMediaFragment<T extends Parcelable> extends Fragment {

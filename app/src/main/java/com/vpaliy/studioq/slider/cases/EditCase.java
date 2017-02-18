@@ -1,18 +1,18 @@
-package com.vpaliy.studioq.slider.screens.cases;
+package com.vpaliy.studioq.slider.cases;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-
-import com.vpaliy.studioq.model.MediaFile;
-import com.yalantis.ucrop.UCrop;
-import java.io.File;
-
-import com.vpaliy.studioq.App;
 import android.support.annotation.NonNull;
 
-public class EditCase {
+import com.vpaliy.studioq.App;
+import com.vpaliy.studioq.model.MediaFile;
+import com.yalantis.ucrop.UCrop;
+
+import java.io.File;
+
+public class EditCase extends Case {
 
     @NonNull
     private MediaFile target;
@@ -47,12 +47,13 @@ public class EditCase {
         return options;
     }
 
+    @Override
     public void execute() {
         UCrop.of(target.uri(), Uri.fromFile(new File(activity.getCacheDir(),destinationName)))
             .start(activity);
     }
 
-    public static EditCase start(@NonNull Activity activity,@NonNull MediaFile target) {
+    public static EditCase start(@NonNull Activity activity, @NonNull MediaFile target) {
         synchronized (EditCase.class) {
             if(instance==null) {
                 instance=new EditCase(target,activity);
@@ -72,5 +73,4 @@ public class EditCase {
         }
         instance=null;
     }
-
 }

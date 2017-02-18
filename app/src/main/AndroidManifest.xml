@@ -16,7 +16,7 @@
         android:name=".App"
         android:theme="@style/AppTheme">
 
-        <meta-data android:name="com.vpaliy.studioq.utils.GlideModuleQ"
+        <meta-data android:name="com.vpaliy.studioq.common.utils.GlideModuleQ"
             android:value="GlideModule">
         </meta-data>
 
@@ -26,7 +26,7 @@
         </activity>
 
         <activity
-             android:name=".activities.main.MainActivity">
+             android:name=".activities.MainActivity">
         </activity>
 
         <activity
@@ -55,7 +55,7 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <activity
-            android:name=".activities.main.SplashActivity"
+            android:name=".welcome.SplashActivity"
             android:theme="@style/SplashTheme"
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>

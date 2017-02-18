@@ -16,13 +16,13 @@ import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ContentAdapter;
 import com.vpaliy.studioq.slider.adapters.NavigationAdapter;
+import com.vpaliy.studioq.slider.cases.EditCase;
 import com.vpaliy.studioq.slider.listeners.OnSliderEventListener;
-import com.vpaliy.studioq.slider.screens.cases.DeleteCase;
-import com.vpaliy.studioq.slider.screens.cases.EditCase;
-import com.vpaliy.studioq.slider.screens.cases.NavigationCase;
+import com.vpaliy.studioq.slider.cases.DeleteCase;
+import com.vpaliy.studioq.slider.cases.NavigationCase;
 import com.vpaliy.studioq.slider.tranformations.ZoomIn;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.yalantis.ucrop.UCrop;
 
 import java.util.ArrayList;
@@ -125,7 +125,7 @@ public class MediaSliderActivity extends AppCompatActivity
     public void onClick(int position) {
         mediaSlider.setCurrentItem(position);
         mediaNavigator.scrollToPosition(position);
-        navigationCase.makeAction();
+        navigationCase.execute();
 
     }
 
@@ -148,7 +148,7 @@ public class MediaSliderActivity extends AppCompatActivity
                         .subscribeForChange(contentAdapter)
                         .subscribeForChange(navigationAdapter)
                         .blockNavigation(navigationCase)
-                        .startUIChain();
+                        .execute();
                 return true;
             case R.id.shareItem:
                 return true;
@@ -167,6 +167,7 @@ public class MediaSliderActivity extends AppCompatActivity
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(ProjectUtils.POSITION,startPosition);
+        outState.putParcelableArrayList(ProjectUtils.MEDIA_DATA,contentAdapter.getData());
         outState.putBoolean(ProjectUtils.DELETED,hasDeletionOccurred);
     }
 

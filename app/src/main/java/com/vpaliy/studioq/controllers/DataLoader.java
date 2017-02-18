@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.activities.main;
+package com.vpaliy.studioq.controllers;
 
 import com.vpaliy.studioq.model.MediaFolder;
 

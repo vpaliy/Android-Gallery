@@ -1,22 +1,21 @@
-package com.vpaliy.studioq.slider.screens.cases;
+package com.vpaliy.studioq.slider.cases;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-
-import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.utils.Permissions;
-
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
-import android.support.annotation.NonNull;
+import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.utils.Permissions;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 @SuppressWarnings("All")
-public class NavigationCase {
+public class NavigationCase extends Case {
 
     @BindView(R.id.actionBar)
     protected Toolbar actionBar;
@@ -70,35 +69,41 @@ public class NavigationCase {
         }
     }
 
-    public void hide(){
-        navigationView.post(new Runnable() {
-            @Override
-            public void run() {
-                navigationView.animate()
-                        .translationY(navigationView.getHeight())
-                        .setDuration(hideDuration)
-                        .setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationStart(Animator animation) {
-                                super.onAnimationStart(animation);
-                                onSwitchActionBarOff();
-                            }
+    private void hide(final boolean hide) {
+        if(isActivated()) {
+            navigationView.post(new Runnable() {
+                @Override
+                public void run() {
+                    navigationView.animate()
+                            .translationY(navigationView.getHeight())
+                            .setDuration(hideDuration)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+                                    super.onAnimationStart(animation);
+                                    onSwitchActionBarOff();
+                                }
 
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                super.onAnimationEnd(animation);
-                                navigationView.setVisibility(View.INVISIBLE);
-                                //it redraws, so the UI should be invisible by this time
-                                onWindowFocusChanged(false);
-                            }
-                        }).start();
-            }
-        });
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    super.onAnimationEnd(animation);
+                                    navigationView.setVisibility(View.INVISIBLE);
+                                    //it redraws, so the UI should be invisible by this time
+                                    onWindowFocusChanged(hide);
+                                }
+                            }).start();
+                }
+            });
+        }
+    }
+
+    public void hide(){
+        hide(false);
     }
 
     public void block() {
         isBlocked=true;
-        hide();
+        hide(true);
     }
 
     public void unBlock() {
@@ -180,6 +185,11 @@ public class NavigationCase {
     }
 
 
+    @Override
+    public void execute() {
+        makeAction();
+    }
+
     private final class VisibilityController implements Runnable {
 
         private volatile  boolean isTurnedOff;
@@ -202,6 +212,5 @@ public class NavigationCase {
         void turnOn() {
             isTurnedOff = false;
         }
-
     }
 }

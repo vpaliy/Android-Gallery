@@ -17,7 +17,6 @@ public final class MediaFolder implements Parcelable {
 
     @ParcelPropertyConverter(MediaFile.MediaListConverter.class)
     private List<MediaFile> mediaFileList;
-
     private List<MediaFile> imageFileList;
     private List<MediaFile> videoFileList;
 
@@ -202,6 +201,23 @@ public final class MediaFolder implements Parcelable {
         MediaFolder videoFolder=new MediaFolder(folderName);
         videoFolder.addAll(videoFileList);
         return videoFolder;
+    }
+
+    //returns true if empty
+    public boolean removeAll(@NonNull List<MediaFile> data) {
+        mediaFileList.removeAll(data);
+        if(!mediaFileList.isEmpty()) {
+            imageFileList.removeAll(data);
+            videoFileList.removeAll(data);
+            return false;
+        }
+        imageFileList.clear();
+        videoFileList.clear();
+        return true;
+    }
+
+    public String toPath() {
+       return  mediaFileList.get(0).parentPath();
     }
 
     //Parcel stuff goes here

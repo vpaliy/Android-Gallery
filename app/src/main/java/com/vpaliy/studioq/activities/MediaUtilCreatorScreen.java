@@ -12,14 +12,14 @@ import java.util.HashMap;
 import java.util.Map;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
-import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
-import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
+import com.vpaliy.studioq.common.eventBus.ExitEvent;
+import com.vpaliy.studioq.common.eventBus.Launcher;
+import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.fragments.UtilSelectionFragment;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.fragments.MediaUtilReviewFragment;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import butterknife.ButterKnife;
 
 import com.squareup.otto.Subscribe;

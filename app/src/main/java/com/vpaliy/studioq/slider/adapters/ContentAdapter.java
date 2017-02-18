@@ -21,11 +21,11 @@ import com.vpaliy.studioq.slider.screens.PlayerActivity;
 import com.vpaliy.studioq.slider.utils.RecyclingPagerAdapter;
 import com.vpaliy.studioq.slider.utils.SliderImageView;
 import com.vpaliy.studioq.slider.utils.SliderOnDoubleTapListener;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.vpaliy.studioq.views.MediaView;
 
 import java.util.ArrayList;
-import java.util.List;
+
 import uk.co.senab.photoview.PhotoViewAttacher;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

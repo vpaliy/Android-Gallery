@@ -1,7 +1,8 @@
-package com.vpaliy.studioq.activities.utils.eventBus;
+package com.vpaliy.studioq.common.eventBus;
 
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
+
 public final class EventBusProvider {
 
     private static Bus instance;

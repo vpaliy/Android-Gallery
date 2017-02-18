@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.activities.main;
+package com.vpaliy.studioq.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -19,27 +19,28 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
+
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.activities.utils.eventBus.Launcher;
-import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
+import com.vpaliy.studioq.common.eventBus.Launcher;
+import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.activities.GalleryActivity;
-import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
+import com.vpaliy.studioq.common.snackbarUtils.ActionCallback;
+import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import com.vpaliy.studioq.utils.snackbarUtils.ActionCallback;
-import com.vpaliy.studioq.utils.snackbarUtils.SnackbarWrapper;
-import butterknife.ButterKnife;
 
+import butterknife.ButterKnife;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
 import butterknife.BindView;
@@ -212,19 +213,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void makeQuery() {
         adapter=null;
-        new DataProvider(this) {
-            @Override
-            public void onPostExecute(ArrayList<MediaFolder> mediaFolders) {
-                final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                        .setMenu(R.menu.main_menu, callback)
-                        .setBackgroundColor(Color.WHITE)
-                        .build();
-                contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
-                        2, GridLayoutManager.VERTICAL, false));
-                adapter = new FolderAdapter(MainActivity.this, mode, mediaFolders);
-                contentGrid.setAdapter(adapter);
-            }
-        };
+        DataController.controllerInstance()
+                .makeQuery(new DataController.Callback() {
+                    @Override
+                    public void onFinished() {
+                        final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
+                                .setMenu(R.menu.main_menu, callback)
+                                .setBackgroundColor(Color.WHITE)
+                                .build();
+                        contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
+                                2, GridLayoutManager.VERTICAL, false));
+                        adapter = new FolderAdapter(MainActivity.this, mode,
+                                DataController.controllerInstance().getFolders());
+                        contentGrid.setAdapter(adapter);
+                    }
+                });
     }
 
     private void startSettings() {

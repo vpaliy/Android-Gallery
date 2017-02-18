@@ -18,12 +18,12 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.activities.utils.eventBus.ExitEvent;
-import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
+import com.vpaliy.studioq.common.eventBus.ExitEvent;
+import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.UtilReviewAdapter;
 import com.vpaliy.studioq.model.MediaFile;
-import com.vpaliy.studioq.activities.utils.eventBus.EventBusProvider;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.eventBus.EventBusProvider;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

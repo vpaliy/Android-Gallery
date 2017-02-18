@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.utils;
+package com.vpaliy.studioq.common.utils;
 import android.content.Context;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;

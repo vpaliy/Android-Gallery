@@ -15,10 +15,10 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.squareup.otto.Subscribe;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
-import com.vpaliy.studioq.activities.utils.eventBus.ChangeFilter;
-import com.vpaliy.studioq.activities.utils.eventBus.Registrator;
+import com.vpaliy.studioq.common.eventBus.ChangeFilter;
+import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.slider.adapters.ThumbnailAdapter;
-import com.vpaliy.studioq.utils.ProjectUtils;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.zomato.photofilters.SampleFilters;
 
 import java.util.Arrays;

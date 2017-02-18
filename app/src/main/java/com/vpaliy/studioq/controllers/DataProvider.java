@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.activities.main;
+package com.vpaliy.studioq.controllers;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -6,21 +6,22 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.model.ImageFile;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.model.VideoFile;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> {
+public abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaFolder>> {
 
     private final static String  TAG=DataProvider.class.getSimpleName();
 
@@ -33,7 +34,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     private Map<String, ArrayList<MediaFile>> freshData;
 
 
-    DataProvider(Context context) {
+    protected DataProvider(Context context) {
         this.contentResolver =context.getContentResolver();
         execute(null,null);
     }
@@ -47,7 +48,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
     }
 
     @Override
-    protected ArrayList<MediaFolder> doInBackground(Void... voids) {
+    protected Map<String,MediaFolder> doInBackground(Void... voids) {
         Map<String,MediaFolder> folderMap=new LinkedHashMap<>();
         useFreshData(folderMap);
         String[] projection = {
@@ -107,7 +108,7 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
                 cursor.close();
             }
         }
-        return new ArrayList<>(folderMap.values());
+        return folderMap;
     }
 
     private void useFreshData(@NonNull Map<String,MediaFolder> map) {
@@ -122,5 +123,5 @@ abstract class DataProvider extends AsyncTask<Void,Void,ArrayList<MediaFolder>> 
 
 
     @Override
-    public abstract void onPostExecute(ArrayList<MediaFolder> mediaFolders);
+    public abstract void onPostExecute(Map<String,MediaFolder> result);
 }
