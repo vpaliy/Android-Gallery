@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
-
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.common.eventBus.Launcher;
@@ -33,12 +32,9 @@ import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.vpaliy.studioq.common.snackbarUtils.ActionCallback;
 import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
-
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import butterknife.ButterKnife;
 import android.support.annotation.NonNull;
