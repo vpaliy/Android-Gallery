@@ -1,6 +1,5 @@
 package com.vpaliy.studioq.fragments;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -8,7 +7,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,7 +28,7 @@ import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderUtilAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.model.DummyFolder;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.adapters.GalleryAdapter;
 import com.vpaliy.studioq.model.MediaFolder;
@@ -40,12 +38,12 @@ import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import static butterknife.ButterKnife.findById;
-import android.widget.Toast;
 
 import butterknife.OnClick;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
 import butterknife.BindView;
+import android.support.annotation.Nullable;
 
 //TODO when snack is enabled and the activity finishes
 
@@ -68,12 +66,11 @@ public class GalleryFragment extends Fragment {
     @BindView(R.id.cameraButton)
     protected FloatingActionButton actionButton;
 
-    private GalleryAdapter adapter;
     private MediaFolder mediaFolder;
 
-    private ArrayList<MediaFolder> updatedData;
+    private GalleryAdapter adapter;
     private FolderUtilAdapter utilAdapter;
-    private ArrayList<DummyFolder> dummyFolders;
+
     private boolean changed=false;
 
     private Unbinder unbinder;
@@ -210,6 +207,7 @@ public class GalleryFragment extends Fragment {
 
                             @Override
                             public void onPerform() {
+                                changed=true;
                                 showActionButton();
                                 deleteInBackground(deleteFolderList,
                                         deleteFolderList.size() == originalList.size());
@@ -220,7 +218,8 @@ public class GalleryFragment extends Fragment {
     }
 
     private void deleteInBackground(final ArrayList<MediaFile> mediaFileList, final boolean finish) {
-        changed=true;
+        DataController.controllerInstance().
+            sensitiveDelete(mediaFileList);
         App.appInstance().delete(mediaFileList);
         if(finish) {
             finish();
@@ -259,15 +258,9 @@ public class GalleryFragment extends Fragment {
     }
 
     private void finish() {
-        if(changed || updatedData!=null) {
-            Intent data = new Intent();
-            if(updatedData!=null) {
-                data.putExtra(ProjectUtils.MEDIA_DATA,updatedData);
-            }
-            if(changed) {
-                data.putExtra(ProjectUtils.MEDIA_FOLDER, mediaFolder);
-            }
-            EventBusProvider.defaultBus().post(new ExitEvent(data));
+        if(changed) {
+            Intent dummyData = new Intent();
+            EventBusProvider.defaultBus().post(new ExitEvent(dummyData));
         }else {
             EventBusProvider.defaultBus().post(new ExitEvent(null));
         }
@@ -287,10 +280,6 @@ public class GalleryFragment extends Fragment {
         outState.putBoolean(ProjectUtils.DELETED,changed);
         outState.putBoolean(KEY,false);
         outState.putParcelable(ProjectUtils.MEDIA_FOLDER,mediaFolder);
-        outState.putParcelableArrayList(ProjectUtils.ALL_MEDIA,dummyFolders);
-        if(updatedData!=null) {
-            outState.putParcelableArrayList(UPDATED, updatedData);
-        }
         if(utilAdapter!=null) {
             utilAdapter.saveState(outState);
             outState.putBoolean(KEY, true);
@@ -299,7 +288,6 @@ public class GalleryFragment extends Fragment {
     }
 
     private void restoreMediaDataList(Bundle savedInstanceState) {
-        this.dummyFolders=savedInstanceState.getParcelableArrayList(ProjectUtils.ALL_MEDIA);
         this.mediaFolder=savedInstanceState.getParcelable(ProjectUtils.MEDIA_FOLDER);
     }
 
@@ -315,7 +303,7 @@ public class GalleryFragment extends Fragment {
     public void onViewCreated(View root, Bundle savedInstanceState) {
         if(root!=null) {
             final Toolbar actionBar=findById(root,R.id.actionBar);
-            actionBar.setTitle(mediaFolder.getFolderName());
+            actionBar.setTitle(mediaFolder.name());
             actionBar.setNavigationOnClickListener(onNavigationIconClick);
             actionBar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())
@@ -328,15 +316,14 @@ public class GalleryFragment extends Fragment {
             RecyclerView.Adapter tempAdapter;
             if(savedInstanceState!=null) {
                 changed=savedInstanceState.getBoolean(ProjectUtils.DELETED);
-                updatedData=savedInstanceState.getParcelableArrayList(UPDATED);
                 if(!savedInstanceState.getBoolean(KEY,false)) {
-                    tempAdapter=adapter = new GalleryAdapter(getContext(), mode, mediaFolder.getMediaFileList(), savedInstanceState);
+                    tempAdapter=adapter = new GalleryAdapter(getContext(), mode, mediaFolder.list(), savedInstanceState);
                 }else {
-                    adapter=new GalleryAdapter(getContext(),mode,mediaFolder.getMediaFileList());
-                    tempAdapter=utilAdapter = new FolderUtilAdapter(getContext(),dummyFolders, savedInstanceState);
+                    adapter=new GalleryAdapter(getContext(),mode,mediaFolder.list());
+                    tempAdapter=utilAdapter = new FolderUtilAdapter(getContext(), savedInstanceState);
                 }
             }else {
-                tempAdapter=adapter = new GalleryAdapter(getContext(), mode, mediaFolder.getMediaFileList());
+                tempAdapter=adapter = new GalleryAdapter(getContext(), mode, mediaFolder.list());
             }
             recyclerView.setAdapter(tempAdapter);
         }
@@ -358,7 +345,11 @@ public class GalleryFragment extends Fragment {
 
 
     public void onBackPressed() {
-        if(adapter.isMultiModeActivated()) {
+        if(utilAdapter!=null) {
+            //change the adapter
+            onChange(null);
+
+        } else if(adapter.isMultiModeActivated()) {
             onNavigationIconClick.onClick(null);
         }else {
             finish();
@@ -366,13 +357,15 @@ public class GalleryFragment extends Fragment {
     }
 
     @Subscribe
-    public void onChange(@NonNull final MoveEvent event) {
+    public void onChange(@Nullable final MoveEvent event) {
         utilAdapter=null;
         recyclerView.setAdapter(adapter);
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
-                moveData(event);
+                if(event!=null) {
+                    moveData(event);
+                }
             }
         });
     }
@@ -382,7 +375,7 @@ public class GalleryFragment extends Fragment {
         View root = getView();
         if (root!= null) {
             final ArrayList<MediaFile> delete = new ArrayList<>(event.checked.length);
-            final ArrayList<MediaFile> original = new ArrayList<>(mediaFolder.getMediaFileList());
+            final ArrayList<MediaFile> original = new ArrayList<>(mediaFolder.list());
 
             for (int index = 0, itemShift = 0; index < event.checked.length; index++) {
                 int jIndex = event.checked[index] - itemShift;
@@ -393,34 +386,8 @@ public class GalleryFragment extends Fragment {
                 }
             }
 
-            final ArrayList<MediaFile> temp=new ArrayList<>(delete);
-            updateWith(event.moveFolder.getName(),delete);
-            if(!delete.isEmpty()) {
-                hideActionButton();
-               actionSnackbarWith(event,root,original,delete);
-            }else {
-                if(event.move) {
-                    AlertDialog.Builder builder=new AlertDialog.Builder(getContext());
-                    builder.setMessage(R.string.copyDuplicate)
-                            .setPositiveButton(R.string.Okay,new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    mediaFolder.setMediaFileList(original);
-                                    adapter.setData(original);
-                                }
-                            })
-                            .setNegativeButton(R.string.Cancel,new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int index) {
-                                    App.appInstance().delete(temp);
-                                    dialogInterface.cancel();
-                                }
-                            })
-                            .create().show();
-                }else {
-                    Toast.makeText(getContext(), "You have already copied the data", Toast.LENGTH_SHORT).show();
-                }
-            }
+            hideActionButton();
+            actionSnackbarWith(event,root,original,delete);
         }
 
     }
@@ -444,14 +411,19 @@ public class GalleryFragment extends Fragment {
 
                     @Override
                     public void onPerform() {
-                        changed = event.move || changed;
+                        changed = true;
 
                         //make the operation here
                         Map<String, ArrayList<MediaFile>> mapData = new HashMap<>();
                         mapData.put(event.moveFolder.getAbsolutePath(), delete);
 
+                        DataController.controllerInstance().
+                            sensitiveUpdate(event.moveFolder.getAbsolutePath(),delete);
+
                         if(event.move) {
                             App.appInstance().move(mapData);
+                            DataController.controllerInstance()
+                                .sensitiveDelete(delete);
                             if (delete.size() == original.size()) {
                                 finish();
                                 return;
@@ -465,33 +437,10 @@ public class GalleryFragment extends Fragment {
                 }).show();
     }
 
-
-    //update the date that will be sent back to the Activity
-    private void updateWith(String folder,ArrayList<MediaFile> data) {
-        if(updatedData==null) {
-            updatedData=new ArrayList<>();
-        }
-
-        MediaFolder mediaFolder=new MediaFolder(folder,data);
-        int index=updatedData.indexOf(mediaFolder);
-        if(index<0) {
-            updatedData.add(mediaFolder);
-        }else {
-            MediaFolder current=updatedData.get(index);
-
-            //remove the data that has been copied more than once
-            data.removeAll(current.getMediaFileList());
-
-            //update
-            current.updateWith(mediaFolder);
-        }
-    }
-
-
     //this method changes the adapter in order to provide users with the UI for selecting a folder
     private void change(boolean move) {
         int[] checked=adapter.getAllChecked(true);
-        utilAdapter=new FolderUtilAdapter(getContext(),dummyFolders,checked,move);
+        utilAdapter=new FolderUtilAdapter(getContext(),checked,move);
         hideActionButton();
         recyclerView.setAdapter(utilAdapter);
     }

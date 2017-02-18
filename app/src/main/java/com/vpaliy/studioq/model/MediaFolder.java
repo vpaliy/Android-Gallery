@@ -56,7 +56,7 @@ public final class MediaFolder implements Parcelable {
     }
 
     public void updateWith(@NonNull  MediaFolder folder) {
-        List<MediaFile> data=folder.getMediaFileList();
+        List<MediaFile> data=folder.list();
         if(data!=null) {
             for (MediaFile mediaFile : data) {
                 if(!mediaFileList.contains(mediaFile)) {
@@ -98,9 +98,9 @@ public final class MediaFolder implements Parcelable {
     //returns true if folder is empty now
     public boolean removeAll(MediaFolder mediaFolder) {
         if(mediaFolder!=null) {
-            mediaFileList.removeAll(mediaFolder.getMediaFileList());
-            imageFileList.removeAll(mediaFolder.getImageFileList());
-            videoFileList.removeAll(mediaFolder.getVideoFileList());
+            mediaFileList.removeAll(mediaFolder.list());
+            imageFileList.removeAll(mediaFolder.imageList());
+            videoFileList.removeAll(mediaFolder.videoList());
             return mediaFileList.isEmpty();
         }
         return false;
@@ -135,49 +135,52 @@ public final class MediaFolder implements Parcelable {
     }
 
     //Covers
-    public MediaFile getCoverForAll() {
+    public MediaFile cover() {
         return mediaFileList.get(0);
     }
 
-    public MediaFile  getCoverForVideo() {
+    public MediaFile videoCover() {
         if (videoFileList.isEmpty()) {
             return null;
         }
         return videoFileList.get(0);
     }
 
-    public MediaFile  getCoverForImage() {
+    public MediaFile imageCover() {
         if (imageFileList.isEmpty())
             return null;
         return imageFileList.get(0);
     }
 
+
     //Data providers
-    public List<MediaFile> getImageFileList() {
+    public List<MediaFile> imageList() {
         return imageFileList;
     }
 
-    public List<MediaFile> getVideoFileList() {
+    public List<MediaFile> videoList() {
         return videoFileList;
     }
 
-    public List<MediaFile> getMediaFileList() {
+    public List<MediaFile> list() {
         return mediaFileList;
     }
 
 
 
-    public int getFileCount() {
+    public int size() {
         return mediaFileList.size();
     }
 
-    public String getFolderName() {
+    public String name() {
         return folderName;
     }
 
+
+
     @Override
     public String toString() {
-        return getFolderName();
+        return name();
     }
 
     @Override
@@ -248,7 +251,7 @@ public final class MediaFolder implements Parcelable {
 
     public static DummyFolder createDummy(@NonNull MediaFolder folder) {
         int size=folder.mediaFileList!=null?folder.mediaFileList.size():0;
-        return new DummyFolder(folder.getCoverForAll(),folder.folderName,size);
+        return new DummyFolder(folder.cover(),folder.folderName,size);
     }
 
 }

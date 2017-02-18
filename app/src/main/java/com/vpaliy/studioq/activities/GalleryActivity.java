@@ -110,17 +110,8 @@ public class GalleryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case ProjectUtils.LAUNCH_SLIDER: {
-                    ArrayList<MediaFile> mediaFileList=data.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
-                    Intent resultData = new Intent();
-                    resultData.putExtra(ProjectUtils.DELETED, true);
-                    setResult(RESULT_OK, resultData);
-                    if(mediaFileList==null||mediaFileList.isEmpty()) {
-                        finish();
-                    }
-                   // mediaFolder.setMediaFileList(mediaFileList);
+                case ProjectUtils.LAUNCH_SLIDER:
                     break;
-                }
             }
         }
     }

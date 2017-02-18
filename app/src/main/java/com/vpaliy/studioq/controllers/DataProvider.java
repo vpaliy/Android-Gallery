@@ -6,35 +6,19 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.model.ImageFile;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.model.VideoFile;
-
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
-public abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaFolder>> {
-
-    private final static String  TAG=DataProvider.class.getSimpleName();
+abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaFolder>> {
 
     private ContentResolver contentResolver;
 
-    @Nullable
-    private Set<File> staleData;
-
-    @Nullable
-    private Map<String, ArrayList<MediaFile>> freshData;
-
-
-    protected DataProvider(Context context) {
+    DataProvider(Context context) {
         this.contentResolver =context.getContentResolver();
         execute(null,null);
     }
@@ -42,15 +26,12 @@ public abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaF
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        staleData=App.appInstance().provideStaleData();
-        freshData=App.appInstance().provideFreshData();
 
     }
 
     @Override
     protected Map<String,MediaFolder> doInBackground(Void... voids) {
         Map<String,MediaFolder> folderMap=new LinkedHashMap<>();
-        useFreshData(folderMap);
         String[] projection = {
                 MediaStore.Files.FileColumns._ID,
                 MediaStore.Files.FileColumns.DATA,
@@ -75,11 +56,7 @@ public abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaF
                     do {
                         String pathTo=cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
                         File file=new File(pathTo);
-                        if(staleData!=null) {
-                            if (staleData.contains(file)) {
-                                continue;
-                            }
-                        }
+
                         String folder=cursor.getString(cursor.
                             getColumnIndex(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME));
                         String mimeType=cursor.getString(cursor.
@@ -111,15 +88,6 @@ public abstract class DataProvider extends AsyncTask<Void,Void,Map<String,MediaF
         return folderMap;
     }
 
-    private void useFreshData(@NonNull Map<String,MediaFolder> map) {
-        if(freshData!=null) {
-            for(Map.Entry<String,ArrayList<MediaFile>> entry:freshData.entrySet()) {
-                String folder=entry.getKey().substring(entry.getKey().lastIndexOf(File.separator)+1);
-                map.put(entry.getKey(),new MediaFolder(folder));
-                map.get(entry.getKey()).addAll(entry.getValue());
-            }
-        }
-    }
 
 
     @Override

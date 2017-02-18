@@ -15,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import static com.vpaliy.studioq.common.utils.ProjectUtils.INIT;
-import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_DATA;
 import static com.vpaliy.studioq.common.utils.ProjectUtils.ACCESS_TO_EXTERNAL_STORAGE;
 
 public class SplashActivity extends AppCompatActivity
@@ -24,11 +23,11 @@ public class SplashActivity extends AppCompatActivity
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DataController.controllerInstance().subsribe(this);
+        DataController.controllerInstance().subscribe(this);
         if(!Permissions.requestIfNotAllowed(SplashActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE,
                 new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE},ACCESS_TO_EXTERNAL_STORAGE)) {
-           DataController.controllerInstance().makeQuery();
+           DataController.controllerInstance().makeQueryIfEmpty();
         }
     }
 
@@ -50,12 +49,11 @@ public class SplashActivity extends AppCompatActivity
 
     @Override
     public void notifyAboutChange() {
-        DataController controller=DataController.controllerInstance();
-        controller.unSubsribeAll();
+        DataController.controllerInstance()
+            .unSubscribe(this);
         //start the main activity
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.putExtra(INIT, true);
-        intent.putExtra(MEDIA_DATA,controller.getAllData());
         startActivity(intent);
     }
 

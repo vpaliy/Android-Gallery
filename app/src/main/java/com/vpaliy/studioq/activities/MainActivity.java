@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
                 2, GridLayoutManager.VERTICAL, false));
         if(state.getBoolean(ProjectUtils.INIT,false)) {
-            ArrayList<MediaFolder> data=state.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
+            ArrayList<MediaFolder> data= DataController.controllerInstance().getFolders();
             adapter=new FolderAdapter(this,mode,data);
         }else {
             adapter=new FolderAdapter(this,mode,state);
@@ -334,15 +334,16 @@ public class MainActivity extends AppCompatActivity {
             List<MediaFile> tempList = new LinkedList<>();
             for(MediaFolder folder:deleteFolderList) {
                 if(mode== FolderAdapter.Mode.IMAGE) {
-                    tempList.addAll(folder.getImageFileList());
+                    tempList.addAll(folder.imageList());
                 }else if(mode== FolderAdapter.Mode.VIDEO) {
-                    tempList.addAll(folder.getVideoFileList());
+                    tempList.addAll(folder.videoList());
                 }else {
-                    tempList.addAll(folder.getMediaFileList());
+                    tempList.addAll(folder.list());
                 }
             }
 
             if(!tempList.isEmpty()) {
+                DataController.controllerInstance().justDelete(tempList);
                 App.appInstance().delete(new ArrayList<>(tempList));
             }
 
@@ -354,23 +355,10 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode,int resultCode, @NonNull Intent data) {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case ProjectUtils.CREATE_MEDIA_FOLDER: {
-                    MediaFolder folder = data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
-                    adapter.addFolder(folder);
+                case ProjectUtils.LAUNCH_GALLERY:
+                case ProjectUtils.CREATE_MEDIA_FOLDER:
+                    adapter.notifyAboutChange();
                     break;
-                }
-                case ProjectUtils.LAUNCH_GALLERY: {
-                    MediaFolder result=data.getParcelableExtra(ProjectUtils.MEDIA_FOLDER);
-                    if(result!=null) {
-                        adapter.replace(result);
-                    }
-
-                    List<MediaFolder> updatedData=data.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
-                    if(updatedData!=null) {
-                        adapter.update(updatedData);
-                    }
-                    break;
-                }
             }
         }
 
@@ -401,19 +389,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void addMediaFolder() {
-        Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
-        List<MediaFolder> folderList=adapter.geMediaFolderList();
-        Set<MediaFile> fileSet=new LinkedHashSet<>();
-        for(MediaFolder folder:folderList) {
-            List<MediaFile> fileList=folder.getMediaFileList();
-            if(fileList!=null) {
-                for (MediaFile mediaFile : fileList) {
-                    fileSet.add(mediaFile);
-                }
-            }
-        }
-        if(!fileSet.isEmpty()) {
-            ArrayList<MediaFile> mediaFileList=new ArrayList<>(fileSet);
+        ArrayList<MediaFile> mediaFileList=DataController.
+            controllerInstance().filterDuplicates();
+        if(!mediaFileList.isEmpty()){
+            Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
             intent.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaFileList);
             startActivityForResult(intent, ProjectUtils.CREATE_MEDIA_FOLDER);
         }else {

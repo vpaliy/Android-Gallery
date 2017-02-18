@@ -13,10 +13,12 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.dataUtils.Subscriber;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.DummyFolder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
@@ -31,7 +33,8 @@ import android.support.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class FolderAdapter extends BaseAdapter {
+public class FolderAdapter extends BaseAdapter
+        implements Subscriber {
 
     private final String KEY_MODE="adapter:mode";
     private final String KEY_DATA="adapter:data";
@@ -138,7 +141,6 @@ public class FolderAdapter extends BaseAdapter {
                 }
                 Bundle data=new Bundle();
                 data.putParcelable(ProjectUtils.MEDIA_FOLDER,resultFolder);
-                data.putParcelableArrayList(ProjectUtils.ALL_MEDIA,convertToDummy(resultFolder));
                 EventBusProvider.defaultBus().post(new Launcher<>(data,view));
             }
             super.onClick(view);
@@ -170,8 +172,8 @@ public class FolderAdapter extends BaseAdapter {
                     });
 
 
-            folderName.setText(currentFolderList.get(position).getFolderName());
-            mediaCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).getFileCount()));
+            folderName.setText(currentFolderList.get(position).name());
+            mediaCount.setText(String.format(Locale.US,"%d",currentFolderList.get(position).size()));
             determineDescription(mediaFile.getType());
             determineState();
         }
@@ -197,11 +199,11 @@ public class FolderAdapter extends BaseAdapter {
 
     private MediaFile loaderCover(int position) {
         if(adapterMode==Mode.ALL) {
-            return currentFolderList.get(position).getCoverForAll();
+            return currentFolderList.get(position).cover();
         }else if(adapterMode==Mode.IMAGE) {
-            return currentFolderList.get(position).getCoverForImage();
+            return currentFolderList.get(position).imageCover();
         }
-        return currentFolderList.get(position).getCoverForVideo();
+        return currentFolderList.get(position).videoCover();
     }
 
 
@@ -211,7 +213,7 @@ public class FolderAdapter extends BaseAdapter {
         }else if(adapterMode==Mode.IMAGE) {
             ArrayList<MediaFolder> imageFolderList=new ArrayList<>();
             for(MediaFolder folder:mediaFolderList) {
-                if(folder.getCoverForImage()!=null) {
+                if(folder.imageCover()!=null) {
                     imageFolderList.add(folder);
                 }
             }
@@ -219,7 +221,7 @@ public class FolderAdapter extends BaseAdapter {
         }else {
             ArrayList<MediaFolder> videoFolderList=new ArrayList<>();
             for(MediaFolder folder:mediaFolderList) {
-                if(folder.getCoverForVideo()!=null) {
+                if(folder.videoCover()!=null) {
                     videoFolderList.add(folder);
                 }
             }
@@ -227,17 +229,7 @@ public class FolderAdapter extends BaseAdapter {
         }
     }
 
-    private ArrayList<DummyFolder> convertToDummy(MediaFolder exception) {
-        ArrayList<DummyFolder> list=new ArrayList<>(mediaFolderList.size());
-        for(MediaFolder folder:mediaFolderList) {
-            if(!exception.equals(folder)) {
-                list.add(MediaFolder.createDummy(folder));
-            }
-        }
-        return list;
-    }
-
-    public List<MediaFolder> geMediaFolderList() {
+    public List<MediaFolder> folderList() {
         return mediaFolderList;
     }
 
@@ -315,11 +307,11 @@ public class FolderAdapter extends BaseAdapter {
                     int jIndex=mediaFolderList.indexOf(folder);
                     if(jIndex!=-1) {
                         MediaFolder temp = mediaFolderList.get(jIndex);
-                        Collection<MediaFile> collection = folder.getMediaFileList();
+                        Collection<MediaFile> collection = folder.list();
                         if (adapterMode == Mode.IMAGE) {
-                            temp.getImageFileList().retainAll(collection);
+                            temp.imageList().retainAll(collection);
                         } else {
-                            temp.getVideoFileList().retainAll(collection);
+                            temp.videoList().retainAll(collection);
                         }
                     }
                 }
@@ -334,9 +326,9 @@ public class FolderAdapter extends BaseAdapter {
         if(adapterMode!=Mode.ALL) {
             index=currentFolderList.size()!=0?currentFolderList.size()-1:0;
             if(adapterMode==Mode.IMAGE) {
-                if (folder.getCoverForImage() != null)
+                if (folder.imageCover() != null)
                     currentFolderList.add(index,folder);
-            }else if(folder.getCoverForVideo()!=null) {
+            }else if(folder.videoCover()!=null) {
                 currentFolderList.add(index,folder);
             }
         }
@@ -353,6 +345,18 @@ public class FolderAdapter extends BaseAdapter {
             }
             notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void notifyAboutChange() {
+        mediaFolderList= DataController.controllerInstance()
+                .getFolders();
+        if(adapterMode==Mode.ALL) {
+            currentFolderList=mediaFolderList;
+        }else {
+            initCurrentList();
+        }
+        notifyDataSetChanged();
     }
 
     public  List<MediaFolder> getData() {

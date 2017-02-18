@@ -9,11 +9,9 @@ import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.services.DataService;
 import com.vpaliy.studioq.common.utils.ProjectUtils;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,39 +24,22 @@ public final class App extends Application {
     @Nullable
     private DataService service;
 
-
     private DataController dataController;
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance=this;
-        setupData();
+        dataController = DataController.controllerInstance();
     }
 
     @Override
     public void onTerminate() {
         super.onTerminate();
         instance=null;
-        dataController.unSubsribeAll();
+        dataController.unSubscribeAll();
         dataController=null;
 
-    }
-
-    @Nullable
-    public Set<File> provideStaleData() {
-        if(service!=null) {
-            return service.staleData();
-        }
-        return null;
-    }
-
-    @Nullable
-    public Map<String, ArrayList<MediaFile>> provideFreshData() {
-        if(service!=null) {
-            return service.freshData();
-        }
-        return null;
     }
 
     public void delete(@NonNull ArrayList<MediaFile> mediaFileList) {
@@ -112,12 +93,8 @@ public final class App extends Application {
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        dataController.unSubsribeAll();
+        dataController.unSubscribeAll();
         dataController=null;
-    }
-
-    private void setupData() {
-        //dataController= DataController.create(this);
     }
 
 

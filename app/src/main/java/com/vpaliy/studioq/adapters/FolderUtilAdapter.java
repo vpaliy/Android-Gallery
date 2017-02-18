@@ -19,8 +19,10 @@ import com.bumptech.glide.request.animation.DrawableCrossFadeFactory;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.fragments.GalleryFragment;
-import com.vpaliy.studioq.model.DummyFolder;
+import com.vpaliy.studioq.model.MediaFolder;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -35,21 +37,21 @@ public class FolderUtilAdapter
     private static final String DATA="util:adapter:data";
     private static final String MOVE="util:adapter:move";
 
-    private ArrayList<DummyFolder> data;
+    private ArrayList<MediaFolder> data;
     private LayoutInflater inflater;
     private int[] checked;
     private boolean move;
 
-    public FolderUtilAdapter(Context context, ArrayList<DummyFolder> data, int checked[], boolean move) {
-        this.data=data;
+    public FolderUtilAdapter(Context context, int checked[], boolean move) {
+        this.data= DataController.controllerInstance().getFolders();
         this.checked=checked;
         this.inflater=LayoutInflater.from(context);
         this.move=move;
     }
 
-    public FolderUtilAdapter(Context context, ArrayList<DummyFolder> data, @NonNull Bundle state) {
+    public FolderUtilAdapter(Context context, @NonNull Bundle state) {
         this.inflater=LayoutInflater.from(context);
-        this.data=data;
+        this.data=DataController.controllerInstance().getFolders();
         restoreState(state);
     }
 
@@ -70,8 +72,7 @@ public class FolderUtilAdapter
         @Override
         public void onClick(View view) {
             int position=getAdapterPosition();
-            File moveFolder=data.get(position).cover().mediaFile().getParentFile();
-            Log.d(TAG,moveFolder.toString());
+            File moveFolder=new File(data.get(position).cover().parentPath());
             EventBusProvider.defaultBus().post(new GalleryFragment.MoveEvent(moveFolder,checked,move));
         }
 

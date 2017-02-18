@@ -7,29 +7,32 @@ import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-//CRUD
-@SuppressWarnings("ALL")
+//Hello, CRUD
 public class DataController {
+
+    private static DataController instance;
 
     private List<Subscriber> subscriberList;
     private Map<String,MediaFolder> dataModel;
 
     private volatile boolean finished=true;
 
-    private static DataController instance;
 
     private DataController() {
         subscriberList=new LinkedList<>();
     }
 
-    public void subsribe(@NonNull Subscriber subscriber) {
+    public void subscribe(@NonNull Subscriber subscriber) {
         subscriberList.add(subscriber);
     }
 
@@ -37,7 +40,7 @@ public class DataController {
         subscriberList.remove(subscriber);
     }
 
-    public void unSubsribeAll() {
+    public void unSubscribeAll() {
         subscriberList.clear();
     }
 
@@ -85,6 +88,13 @@ public class DataController {
         }
     }
 
+    public void makeQueryIfEmpty() {
+        if(dataModel==null) {
+            makeQuery();
+        }else {
+            notifyAboutChange();
+        }
+    }
 
     private boolean queryBefore() {
         if(finished) {
@@ -99,11 +109,11 @@ public class DataController {
     }
 
     //delete
-    public void sensetiveDelete(@NonNull String folderName, List<MediaFile> data) {
+    public void sensitiveDelete(@NonNull String folderName, List<MediaFile> data) {
         delete(folderName,data,true);
     }
 
-    public void sensetiveDelete(List<MediaFile> data) {
+    public void sensitiveDelete(List<MediaFile> data) {
         if(!data.isEmpty()) {
             delete(data.get(0).parentPath(),data,true);
         }
@@ -133,7 +143,8 @@ public class DataController {
         }
     }
 
-    public void sensetiveAdd(@NonNull MediaFolder folder) {
+    //add
+    public void sensitiveAdd(@NonNull MediaFolder folder) {
         add(folder,true);
     }
 
@@ -146,6 +157,38 @@ public class DataController {
         if(notify) {
             notifyAboutChange();
         }
+    }
+
+    //update
+    public void sensitiveUpdate(@NonNull String folder, ArrayList<MediaFile> data) {
+        update(folder,data,true);
+    }
+
+    public void justUpdate(@NonNull String folder, ArrayList<MediaFile> data) {
+        update(folder,data,false);
+    }
+
+    private void update(@NonNull String folder, ArrayList<MediaFile> data, boolean notify) {
+        MediaFolder target=dataModel.get(folder);
+        if(target!=null) {
+            target.addAll(data);
+            //tell your friends about this great event!
+            if(notify) {
+                notifyAboutChange();
+            }
+        }
+    }
+
+    public ArrayList<MediaFile> filterDuplicates() {
+        Collection<MediaFolder> collection=dataModel.values();
+        Set<MediaFile> set=new LinkedHashSet<>();
+        //let's go
+        for(MediaFolder folder:collection) {
+            set.addAll(folder.list());
+        }
+
+        //you're welcome
+        return new ArrayList<>(set);
     }
 
     public boolean containsFolder(@NonNull String pathTo) {
