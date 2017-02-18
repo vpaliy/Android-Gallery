@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.model.MediaFile;
@@ -86,9 +87,10 @@ public class UtilReviewAdapter
                 image.setOnCloseListener(new CloseableImage.OnCloseListener() {
                     @Override
                     public void onClose(View closeableImage) {
-                        image.animate().scaleY(0f)
-                                .scaleX(0f).setDuration(150)
-                                .setListener(new AnimatorListenerAdapter() {
+                        ScaleBuilder.start(image,0f)
+                                .duration(150)
+                                .accelerate()
+                                .listener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationStart(Animator animation) {
                                         super.onAnimationStart(animation);
@@ -108,7 +110,7 @@ public class UtilReviewAdapter
                                         notifyItemRemoved(position + 1);
                                         animationFinished = true;
                                     }
-                                }).start();
+                                }).execute();
                     }
                 });
             }

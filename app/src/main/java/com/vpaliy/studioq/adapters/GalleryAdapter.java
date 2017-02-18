@@ -12,6 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
@@ -73,19 +74,17 @@ public class GalleryAdapter extends BaseAdapter {
         @Override
         public void enterState() {
             super.enterState();
-            itemView.animate()
-                    .scaleX(SCALE_F)
-                    .scaleY(SCALE_F)
-                    .setDuration(180).start();
+            ScaleBuilder.start(itemView,SCALE_F)
+                .accelerate()
+                .execute();
         }
 
         @Override
         public void exitState() {
             super.exitState();
             if (itemView.getScaleY() < 1.f) {
-                itemView.animate().setDuration(180)
-                        .scaleY(1.f).scaleX(1.f)
-                        .start();
+                ScaleBuilder.start(itemView,1f)
+                        .execute();
             }
         }
 

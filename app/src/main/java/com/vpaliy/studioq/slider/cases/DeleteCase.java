@@ -4,14 +4,13 @@ package com.vpaliy.studioq.slider.cases;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ChangeableAdapter;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
@@ -22,6 +21,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -71,12 +72,11 @@ public class DeleteCase extends Case {
         if(navigationCase!=null) {
             navigationCase.block();
         }
-        victim.animate()
-                .scaleY(0.0f)
-                .scaleX(0.0f)
-                .setDuration(200)
-                .setInterpolator(new DecelerateInterpolator())
-                .setListener(new AnimatorListenerAdapter() {
+        ScaleBuilder.start(victim,0.f)
+                .duration(200)
+                .accelerate()
+                .interpolator(new DecelerateInterpolator())
+                .listener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
@@ -115,7 +115,7 @@ public class DeleteCase extends Case {
                         showSnackbar("Deleted","Cancel",7000);
 
                     }
-                }).start();
+                }).execute();
     }
 
     private void notifySubscribers(ArrayList<MediaFile> data) {
@@ -159,21 +159,22 @@ public class DeleteCase extends Case {
                                 mediaSlider.setCurrentItem(deletedPosition);
                                 if(!lastOne) {
                                     victim = mediaSlider.findViewWithTag(deletedPosition);
+
                                     victim.setScaleX(0.1f);
                                     victim.setScaleY(0.1f);
-                                    victim.animate()
-                                            .scaleX(1.f)
-                                            .scaleY(1.f)
-                                            .setDuration(300)
-                                            .setStartDelay(50)
-                                            .setInterpolator(new DecelerateInterpolator())
-                                            .setListener(new AnimatorListenerAdapter() {
-                                                @Override
-                                                public void onAnimationEnd(Animator animation) {
-                                                    super.onAnimationEnd(animation);
-                                                    unBlock();
-                                                }
-                                            }).start();
+
+                                    ScaleBuilder.start(victim,1.f)
+                                        .duration(300)
+                                        .accelerate()
+                                        .delay(50)
+                                        .listener(new AnimatorListenerAdapter() {
+                                            @Override
+                                            public void onAnimationEnd(Animator animation) {
+                                                super.onAnimationEnd(animation);
+                                                unBlock();
+                                            }
+                                        }).execute();
+
                                 }else {
                                     mediaSlider.setScrollDurationFactor(1);
                                     unBlock();

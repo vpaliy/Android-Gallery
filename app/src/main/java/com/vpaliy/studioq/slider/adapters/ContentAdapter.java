@@ -160,6 +160,20 @@ public class ContentAdapter extends RecyclingPagerAdapter
             image = SliderImageView.class.cast(view);
         }
 
+
+        Glide.with(inflater.getContext())
+                .load(mediaFileList.get(position).mediaFile())
+                .asBitmap()
+                .fitCenter()
+                .dontAnimate()
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(new ImageViewTarget<Bitmap>(image) {
+                    @Override
+                    protected void setResource(Bitmap resource) {
+                        image.setImageBitmap(resource);
+                    }
+                });
+
         image.post(new Runnable() {
             @Override
             public void run() {
@@ -175,19 +189,6 @@ public class ContentAdapter extends RecyclingPagerAdapter
                 });
             }
         });
-
-        Glide.with(inflater.getContext())
-                .load(mediaFileList.get(position).mediaFile())
-                .asBitmap()
-                .fitCenter()
-                .dontAnimate()
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                .into(new ImageViewTarget<Bitmap>(image) {
-                    @Override
-                    protected void setResource(Bitmap resource) {
-                        image.setImageBitmap(resource);
-                    }
-                });
         return image;
     }
 

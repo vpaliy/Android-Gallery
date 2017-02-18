@@ -246,8 +246,8 @@ public class SliderImageView extends
 
     @Override
     protected void onDetachedFromWindow() {
-        mAttacher.cleanup();
-        mAttacher = null;
+       // mAttacher.cleanup();
+      //  mAttacher = null;
         super.onDetachedFromWindow();
     }
 

@@ -21,6 +21,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.animationUtils.AnimationUtils;
+import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderAdapter;
@@ -47,7 +49,6 @@ import static butterknife.ButterKnife.findById;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static String TAG=MainActivity.class.getSimpleName();
 
     @BindView(R.id.mainContent)
     protected RecyclerView contentGrid;
@@ -282,13 +283,10 @@ public class MainActivity extends AppCompatActivity {
             adapter.onResume();
         }
 
-        if(actionButton!=null) {
-            if(actionButton.getScaleX()<1f) {
-                actionButton.animate().scaleX(1.f).scaleY(1.f)
-                        .setListener(null).setDuration(200)
-                        .start();
-            }
-        }
+        ScaleBuilder.start(actionButton,1.f)
+                .duration(300)
+                .accelerate()
+                .execute();
 
     }
 

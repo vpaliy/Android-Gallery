@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.ExitEvent;
 import com.vpaliy.studioq.common.eventBus.Registrator;
@@ -168,9 +169,10 @@ public class GalleryFragment extends Fragment {
             if(actionButton!=null) {
                 actionButton.setVisibility(View.VISIBLE);
                 if (actionButton.getScaleX() < 1f) {
-                    actionButton.animate().scaleX(1.f).scaleY(1.f)
-                            .setListener(null).setDuration(200)
-                            .start();
+                    ScaleBuilder.start(actionButton,1.f)
+                            .duration(300)
+                            .accelerate()
+                            .execute();
                 }
             }
         }
