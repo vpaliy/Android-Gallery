@@ -144,16 +144,16 @@ public class DataController {
     }
 
     //add
-    public void sensitiveAdd(@NonNull MediaFolder folder) {
-        add(folder,true);
+    public void sensitiveAdd(@NonNull String path,@NonNull MediaFolder folder) {
+        add(path,folder,true);
     }
 
-    public void justAdd(@NonNull MediaFolder folder) {
-        add(folder,false);
+    public void justAdd(@NonNull String path,@NonNull MediaFolder folder) {
+        add(path,folder,false);
     }
 
-    private void add(@NonNull MediaFolder folder, boolean notify) {
-        dataModel.put(folder.toPath(),folder);
+    private void add(@NonNull String path, @NonNull MediaFolder folder, boolean notify) {
+        dataModel.put(path,folder);
         if(notify) {
             notifyAboutChange();
         }

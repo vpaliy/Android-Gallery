@@ -1,32 +1,35 @@
 package com.vpaliy.studioq.activities;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.dataUtils.FileUtils;
 import com.vpaliy.studioq.common.eventBus.ExitEvent;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.common.eventBus.Registrator;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.fragments.UtilSelectionFragment;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.fragments.MediaUtilReviewFragment;
 import com.vpaliy.studioq.model.MediaFolder;
 import com.vpaliy.studioq.common.utils.ProjectUtils;
 import butterknife.ButterKnife;
-
 import com.squareup.otto.Subscribe;
 
-public class MediaUtilCreatorScreen extends AppCompatActivity {
+import static com.vpaliy.studioq.common.utils.ProjectUtils.SELECTION_FRAGMENT;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.REVIEW_FRAGMENT;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_TITLE;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_DATA;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MOVE_FILE_TO;
 
-    private static final String  TAG=MediaUtilCreatorScreen.class.getSimpleName();
+public class MediaUtilCreatorScreen extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,8 +46,7 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
             final FragmentManager manager = getSupportFragmentManager();
             final FragmentTransaction transaction = manager.beginTransaction();
             transaction.replace(R.id.fragmentPlaceHolder,
-                    UtilSelectionFragment.newInstance(mediaFileList),
-                    ProjectUtils.SELECTION_FRAGMENT)
+                    UtilSelectionFragment.newInstance(mediaFileList),SELECTION_FRAGMENT)
                     .commit();
         }
 
@@ -54,11 +56,10 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
     public void onMediaSetCreated(Launcher<ArrayList<MediaFile>> launcher) {
         final FragmentManager manager=getSupportFragmentManager();
         manager.beginTransaction()
-                .hide(manager.findFragmentByTag(ProjectUtils.SELECTION_FRAGMENT))
+                .hide(manager.findFragmentByTag(SELECTION_FRAGMENT))
                 .add(R.id.fragmentPlaceHolder,
-                        MediaUtilReviewFragment.newInstance(launcher.data),
-                         ProjectUtils.REVIEW_FRAGMENT)
-                .addToBackStack(ProjectUtils.SELECTION_FRAGMENT)
+                 MediaUtilReviewFragment.newInstance(launcher.data),REVIEW_FRAGMENT)
+                .addToBackStack(SELECTION_FRAGMENT)
                 .commit();
     }
 
@@ -66,32 +67,29 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
     @Subscribe
     public void onMediaSetReviewed(final ExitEvent exitEvent) {
         if(exitEvent.intent!=null) {
-            String folderName = exitEvent.intent.getStringExtra(ProjectUtils.MEDIA_TITLE);
-            boolean moveTo = exitEvent.intent.getBooleanExtra(ProjectUtils.MOVE_FILE_TO, false);
-            ArrayList<MediaFile> result = exitEvent.intent.getParcelableArrayListExtra(ProjectUtils.MEDIA_DATA);
-
+            String folderName = exitEvent.intent.getStringExtra(MEDIA_TITLE);
+            boolean moveTo = exitEvent.intent.getBooleanExtra(MOVE_FILE_TO, false);
+            ArrayList<MediaFile> result = exitEvent.intent.getParcelableArrayListExtra(MEDIA_DATA);
             if (folderName != null) {
-
-                String pathTo = Environment.getExternalStorageDirectory() + File.separator + folderName+File.separator;
-                File mediaFolder = new File(pathTo);
-                if (!mediaFolder.mkdir()) {
-                    Toast.makeText(MediaUtilCreatorScreen.this, "Failed to create the folder", Toast.LENGTH_SHORT).show();
+                File mediaFolder= FileUtils.createFolderInExternalStorage(this,folderName);
+                if(mediaFolder==null) {
                     finish();
+                    return;
                 }
-
                 Map<String, ArrayList<MediaFile>> map = new HashMap<>();
                 map.put(mediaFolder.getAbsolutePath(), result);
                 if(moveTo) {
+                    DataController.controllerInstance()
+                        .justDelete(result);
                     App.appInstance().move(map);
                 }else {
+                    DataController.controllerInstance()
+                        .justAdd(mediaFolder.getAbsolutePath(),
+                            new MediaFolder(folderName,result));
                     App.appInstance().copy(map);
                 }
-
-                exitEvent.intent.putExtra(ProjectUtils.MEDIA_FOLDER, new MediaFolder(folderName, result));
-
             }
-
-            setResult(RESULT_OK, exitEvent.intent);
+            setResult(RESULT_OK, null);
             finish();
         }
 

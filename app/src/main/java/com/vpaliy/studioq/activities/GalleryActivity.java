@@ -25,13 +25,12 @@ import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
 
+import static com.vpaliy.studioq.common.utils.ProjectUtils.LAUNCH_SLIDER;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.GALLERY_FRAGMENT;
 
 public class GalleryActivity extends AppCompatActivity {
 
-    private final static String TAG=GalleryActivity.class.getSimpleName();
-
     private GalleryFragment fragment;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,8 +67,7 @@ public class GalleryActivity extends AppCompatActivity {
             } else {
                 transaction.setCustomAnimations(R.anim.enter, R.anim.exit);
             }
-            transaction.replace(R.id.mediaFragmentPlaceHolder, fragment,
-                    ProjectUtils.GALLERY_FRAGMENT);
+            transaction.replace(R.id.mediaFragmentPlaceHolder, fragment, GALLERY_FRAGMENT);
             transaction.commit();
             manager.executePendingTransactions();
         }
@@ -82,7 +80,7 @@ public class GalleryActivity extends AppCompatActivity {
             fragment.onBackPressed();
         }else {
             fragment=GalleryFragment.class.cast(getSupportFragmentManager().
-                findFragmentByTag(ProjectUtils.GALLERY_FRAGMENT));
+                findFragmentByTag(GALLERY_FRAGMENT));
             if(fragment!=null) {
                 onBackPressed();
             }
@@ -94,7 +92,7 @@ public class GalleryActivity extends AppCompatActivity {
         Intent intent=new Intent(this, MediaSliderActivity.class);
         intent.putExtra(ProjectUtils.MEDIA_DATA,launcher.data);
         intent.putExtra(ProjectUtils.POSITION,launcher.position);
-        startActivityForResult(intent, ProjectUtils.LAUNCH_SLIDER);
+        startActivityForResult(intent, LAUNCH_SLIDER);
     }
 
     @Subscribe
@@ -110,7 +108,7 @@ public class GalleryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case ProjectUtils.LAUNCH_SLIDER:
+                case LAUNCH_SLIDER:
                     break;
             }
         }

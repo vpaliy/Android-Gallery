@@ -6,8 +6,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,6 +19,7 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Random;
 
+import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.model.MediaFile;
 
 public final class FileUtils {
@@ -163,6 +167,16 @@ public final class FileUtils {
         Random random=new Random();
         fileName+=Integer.toString(random.nextInt(100));
         return fileName;
+    }
+
+    public static File createFolderInExternalStorage(@NonNull Context context, @NonNull String folderName) {
+        String pathTo = Environment.getExternalStorageDirectory() + File.separator + folderName+File.separator;
+        File mediaFolder = new File(pathTo);
+        if (!mediaFolder.mkdir()) {
+            Toast.makeText(context, "Failed to create the folder", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        return mediaFolder;
     }
 
     private static MediaFile convertToCopy(File to, MediaFile from) {

@@ -17,33 +17,36 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.AnimationUtils;
 import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
+import com.vpaliy.studioq.common.utils.Permissions;
 import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.vpaliy.studioq.common.snackbarUtils.ActionCallback;
 import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import butterknife.ButterKnife;
+
 import android.support.annotation.NonNull;
 import com.squareup.otto.Subscribe;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.vpaliy.studioq.common.utils.ProjectUtils.LAUNCH_GALLERY;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.INIT;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.CREATE_MEDIA_FOLDER;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_DATA;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MODE;
 import static butterknife.ButterKnife.findById;
 
 
@@ -144,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
                 2, GridLayoutManager.VERTICAL, false));
-        if(state.getBoolean(ProjectUtils.INIT,false)) {
+        if(state.getBoolean(INIT,false)) {
             ArrayList<MediaFolder> data= DataController.controllerInstance().getFolders();
             adapter=new FolderAdapter(this,mode,data);
         }else {
@@ -160,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         if(state==null) {
             currentMode = R.id.allMedia;
         }else {
-            currentMode = state.getInt(ProjectUtils.MODE, R.id.allMedia);
+            currentMode = state.getInt(MODE, R.id.allMedia);
         }
 
         final DrawerLayout layout=findById(this,R.id.drawerLayout);
@@ -250,20 +253,22 @@ public class MainActivity extends AppCompatActivity {
     public void startGalleryActivity(Launcher<Bundle> launcher) {
         final Intent intent=new Intent(this,GalleryActivity.class);
         intent.putExtras(launcher.data);
-        actionButton.animate().scaleX(0f).scaleY(0f)
-                .setInterpolator(new DecelerateInterpolator())
-                .setDuration(100).setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.LOLLIPOP) {
-                    startActivityForResult(intent, ProjectUtils.LAUNCH_GALLERY,
-                            ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-                }else {
-                    startActivityForResult(intent, ProjectUtils.LAUNCH_GALLERY);
+
+        ScaleBuilder.start(actionButton,0f)
+            .duration(100)
+            .accelerate()
+            .listener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
+                        startActivityForResult(intent, LAUNCH_GALLERY,
+                                ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+                    }else {
+                        startActivityForResult(intent, LAUNCH_GALLERY);
+                    }
                 }
-            }
-        }).start();
+            }).execute();
     }
 
 
@@ -349,8 +354,8 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode,int resultCode, @NonNull Intent data) {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case ProjectUtils.LAUNCH_GALLERY:
-                case ProjectUtils.CREATE_MEDIA_FOLDER:
+                case LAUNCH_GALLERY:
+                case CREATE_MEDIA_FOLDER:
                     adapter.notifyAboutChange();
                     break;
             }
@@ -387,8 +392,8 @@ public class MainActivity extends AppCompatActivity {
             controllerInstance().filterDuplicates();
         if(!mediaFileList.isEmpty()){
             Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
-            intent.putParcelableArrayListExtra(ProjectUtils.MEDIA_DATA,mediaFileList);
-            startActivityForResult(intent, ProjectUtils.CREATE_MEDIA_FOLDER);
+            intent.putParcelableArrayListExtra(MEDIA_DATA,mediaFileList);
+            startActivityForResult(intent, CREATE_MEDIA_FOLDER);
         }else {
             //TODO propose some options | my creativity goes down at this point :(
             Toast.makeText(this,"You don't have any photos",Toast.LENGTH_LONG).show();

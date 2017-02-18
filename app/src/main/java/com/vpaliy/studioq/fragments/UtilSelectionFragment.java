@@ -27,8 +27,6 @@ import android.support.annotation.Nullable;
 
 import static butterknife.ButterKnife.findById;
 
-//TODO check out removing in BaseAdapter manually
-
 public class UtilSelectionFragment extends Fragment {
 
 

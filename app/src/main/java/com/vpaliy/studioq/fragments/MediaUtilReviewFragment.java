@@ -28,19 +28,23 @@ import com.vpaliy.studioq.common.utils.ProjectUtils;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import static butterknife.ButterKnife.findById;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_DATA;
 
 public class MediaUtilReviewFragment extends Fragment {
 
-    private final static String TAG=MediaUtilReviewFragment.class.getSimpleName();
-
-
     private UtilReviewAdapter adapter;
 
+    private Callback callback=new Callback() {
+        @Override
+        public void onFinish() {
+            getActivity().onBackPressed();
+        }
+    };
 
     public static MediaUtilReviewFragment newInstance(ArrayList<MediaFile> mediaFileList) {
         MediaUtilReviewFragment fragment=new MediaUtilReviewFragment();
         Bundle args=new Bundle();
-        args.putParcelableArrayList(ProjectUtils.MEDIA_DATA,mediaFileList);
+        args.putParcelableArrayList(MEDIA_DATA,mediaFileList);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,9 +57,9 @@ public class MediaUtilReviewFragment extends Fragment {
         if(savedInstanceState==null) {
             savedInstanceState = getArguments();
             ArrayList<MediaFile> temp=savedInstanceState.getParcelableArrayList(ProjectUtils.MEDIA_DATA);
-            adapter = new UtilReviewAdapter(getContext(), temp);
+            adapter = new UtilReviewAdapter(callback,getContext(), temp);
         }else {
-            adapter=new UtilReviewAdapter(getContext(),savedInstanceState);
+            adapter=new UtilReviewAdapter(callback,getContext(),savedInstanceState);
         }
     }
 
@@ -72,7 +76,7 @@ public class MediaUtilReviewFragment extends Fragment {
         if(root!=null) {
             Toolbar actionBar=findById(root,R.id.actionBar);
             initToolbar(actionBar);
-            //
+
             RecyclerView mediaRecyclerView = findById(root, R.id.mediaRecyclerView);
             //TODO xml representation
             GridLayoutManager manager=new GridLayoutManager(getContext(),2, GridLayoutManager.VERTICAL,false);
@@ -108,7 +112,7 @@ public class MediaUtilReviewFragment extends Fragment {
         actionBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().onBackPressed();
+                callback.onFinish();
             }
         });
 
@@ -187,5 +191,9 @@ public class MediaUtilReviewFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Registrator.register(this);
+    }
+
+    public interface  Callback {
+        void onFinish();
     }
 }

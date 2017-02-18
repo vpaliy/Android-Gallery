@@ -30,36 +30,37 @@ import java.util.List;
 import android.support.annotation.NonNull;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import static com.vpaliy.studioq.fragments.MediaUtilReviewFragment.Callback;
 
 
-public class UtilReviewAdapter
-        extends RecyclerView.Adapter<UtilReviewAdapter.AbstractHolder>
+public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.AbstractHolder>
         implements SavableAdapter {
 
     private static final String KEY="util:review:adapter:title";
-    private static final String TAG=UtilReviewAdapter.class.getSimpleName();
 
     private static final int HEADER_TYPE=0;
     private static final int CONTENT_TYPE=1;
 
 
+    private Callback callback;
     private ArrayList<MediaFile> mediaFileList;
     private LayoutInflater inflater;
     private String titleText;
 
     private volatile boolean animationFinished=true;
 
-    private UtilReviewAdapter(@NonNull Context context) {
+    private UtilReviewAdapter(@NonNull Callback callback,@NonNull Context context) {
         this.inflater=LayoutInflater.from(context);
+        this.callback=callback;
     }
 
-    public UtilReviewAdapter(@NonNull Context context, @NonNull ArrayList<MediaFile> mDataModel) {
-        this(context);
+    public UtilReviewAdapter(@NonNull Callback callback,@NonNull Context context, @NonNull ArrayList<MediaFile> mDataModel) {
+        this(callback,context);
         this.mediaFileList=mDataModel;
     }
 
-    public UtilReviewAdapter(@NonNull Context context, @NonNull Bundle state) {
-        this(context);
+    public UtilReviewAdapter(@NonNull Callback callback, @NonNull Context context, @NonNull Bundle state) {
+        this(callback,context);
         restoreState(state);
     }
 
@@ -70,8 +71,7 @@ public class UtilReviewAdapter
         public void onBindData(int position){}
     }
 
-
-    @SuppressWarnings("all")
+    @SuppressWarnings("WeakerAccess")
     public class ContentHolder extends AbstractHolder {
 
         @BindView(R.id.image)
@@ -83,37 +83,38 @@ public class UtilReviewAdapter
         ContentHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            if(animationFinished) {
                 image.setOnCloseListener(new CloseableImage.OnCloseListener() {
                     @Override
                     public void onClose(View closeableImage) {
-                        ScaleBuilder.start(image,0f)
-                                .duration(150)
-                                .accelerate()
-                                .listener(new AnimatorListenerAdapter() {
-                                    @Override
-                                    public void onAnimationStart(Animator animation) {
-                                        super.onAnimationStart(animation);
-                                        animationFinished = false;
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        super.onAnimationEnd(animation);
-                                        int position = getAdapterPosition() - 1;
-                                        MediaFile mediaFile = mediaFileList.get(position);
-                                        EventBusProvider.defaultBus().post(new ReviewStateTrigger(mediaFile));
-                                        mediaFileList.remove(position);
-                                        if (mediaFileList.size() == 0) {
-
+                        if(animationFinished) {
+                            ScaleBuilder.start(image, 0f)
+                                    .duration(150)
+                                    .accelerate()
+                                    .listener(new AnimatorListenerAdapter() {
+                                        @Override
+                                        public void onAnimationStart(Animator animation) {
+                                            super.onAnimationStart(animation);
+                                            animationFinished = false;
                                         }
-                                        notifyItemRemoved(position + 1);
-                                        animationFinished = true;
-                                    }
-                                }).execute();
+
+                                        @Override
+                                        public void onAnimationEnd(Animator animation) {
+                                            super.onAnimationEnd(animation);
+                                            int position = getAdapterPosition() - 1;
+                                            MediaFile mediaFile = mediaFileList.get(position);
+                                            EventBusProvider.defaultBus().post(new ReviewStateTrigger(mediaFile));
+                                            mediaFileList.remove(position);
+                                            if (mediaFileList.size() == 0) {
+                                                callback.onFinish();
+                                            }
+                                            notifyItemRemoved(position + 1);
+                                            animationFinished = true;
+                                        }
+                                    }).execute();
+                        }
+
                     }
                 });
-            }
         }
 
         @Override
@@ -145,11 +146,13 @@ public class UtilReviewAdapter
             MediaFile mediaFile=mediaFileList.get(position);
             description.setImageDrawable(null);
             if(mediaFile.getType()== MediaFile.Type.VIDEO) {
-                Drawable drawable=itemView.getContext().
-                        getDrawable(R.drawable.ic_play_circle_filled_white_24dp);
+                Drawable drawable=itemView.getContext().getResources().
+                    getDrawable(R.drawable.ic_play_circle_filled_white_24dp);
                 description.setImageDrawable(drawable);
             }else if(mediaFile.getType()== MediaFile.Type.GIF) {
-
+                Drawable drawable=itemView.getContext().getResources().
+                        getDrawable(R.drawable.ic_gif_white_24dp);
+                description.setImageDrawable(drawable);
             }
         }
     }
