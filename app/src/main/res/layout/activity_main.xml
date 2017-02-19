@@ -25,14 +25,14 @@
         </android.support.design.widget.AppBarLayout>
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/mainContent"
+            android:id="@+id/mediaRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
         </android.support.v7.widget.RecyclerView>
 
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/addFloatingActionButton"
+            android:id="@+id/actionButton"
             android:layout_margin="25dp"
             android:layout_gravity="bottom|end"
             android:layout_width="wrap_content"

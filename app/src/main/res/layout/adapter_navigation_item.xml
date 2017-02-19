@@ -1,7 +1,9 @@
-<ImageView
+<com.vpaliy.studioq.views.MediaView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/navigationImage"
-    android:layout_width="100dp"
-    android:layout_height="100dp"
-    tools:ignore="ContentDescription"/>
+    app:squaredMainImage="false"
+    android:layout_width="@dimen/navigationWidth"
+    android:layout_height="@dimen/navigationHeight"
+    tools:ignore="ContentDescription" />

@@ -11,7 +11,7 @@ import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
 import com.vpaliy.studioq.adapters.multipleChoice.MultiMode;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.views.MediaView;
 import java.util.ArrayList;

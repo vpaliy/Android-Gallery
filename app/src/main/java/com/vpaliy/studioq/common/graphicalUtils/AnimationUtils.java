@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.common.animationUtils;
+package com.vpaliy.studioq.common.graphicalUtils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;

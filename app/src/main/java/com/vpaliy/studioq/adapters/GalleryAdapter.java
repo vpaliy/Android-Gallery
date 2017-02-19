@@ -12,7 +12,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.adapters.multipleChoice.BaseAdapter;
@@ -24,7 +24,8 @@ import butterknife.ButterKnife;
 import android.support.annotation.NonNull;
 import butterknife.BindView;
 
-public class GalleryAdapter extends BaseAdapter {
+public class GalleryAdapter extends BaseAdapter
+        implements MediaAdapter<MediaFile> {
 
     private static final String TAG=GalleryAdapter.class.getSimpleName();
     private final static float SCALE_F=0.85f;
@@ -46,8 +47,6 @@ public class GalleryAdapter extends BaseAdapter {
         this.inflater=LayoutInflater.from(context);
         this.mediaFileList=mDataModel;
     }
-
-
 
     class GalleryViewHolder extends BaseAdapter.BaseViewHolder {
 
@@ -181,6 +180,11 @@ public class GalleryAdapter extends BaseAdapter {
     public void removeAt(int index) {
         mediaFileList.remove(index);
         notifyItemRemoved(index);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return getItemCount()==0;
     }
 
     @Override

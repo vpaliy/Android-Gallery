@@ -21,6 +21,8 @@
             <flag name="center" value="0x11" />
         </attr>
 
+        <attr name="squaredMainImage" format="boolean"/>
+
         <attr name="description_margin" format="dimension"/>
         <attr name="description_margin_left" format="dimension"/>
         <attr name="description_margin_top" format="dimension"/>

@@ -12,7 +12,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -37,6 +36,7 @@ public class MediaView extends RelativeLayout {
     @DrawableRes
     private int icon=-1;
     private int descriptionGravity=Gravity.TOP | Gravity.END;
+    private boolean squareImage=true;
 
     private ImageView descriptionIcon;
     private ImageView mainContent;
@@ -85,6 +85,9 @@ public class MediaView extends RelativeLayout {
                 case R.styleable.MediaView_description_margin_bottom:
                     setDescriptionMarginBottom((int)array.getDimension(array.getIndex(index),descriptionMarginBottom));
                     break;
+                case R.styleable.MediaView_squaredMainImage:
+                    setSquareImage(array.getBoolean(array.getIndex(index),true));
+                    break;
                 //
                 case R.styleable.MediaView_description_icon:
                     setDescriptionIcon(array.getResourceId(array.getIndex(index),icon));
@@ -107,11 +110,7 @@ public class MediaView extends RelativeLayout {
         setDescriptionGravity(descriptionGravity);
 
         //
-        mainContent=new SquareImage(getContext());
-        RelativeLayout.LayoutParams contentParams=new RelativeLayout.
-            LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        contentParams.addRule(CENTER_IN_PARENT);
-        mainContent.setLayoutParams(contentParams);
+        initMainImage();
 
         addView(mainContent);
         addView(descriptionIcon);
@@ -119,6 +118,13 @@ public class MediaView extends RelativeLayout {
     }
 
 
+    private void initMainImage() {
+        mainContent=squareImage?new SquareImage(getContext()):new ImageView(getContext());
+        RelativeLayout.LayoutParams contentParams=new RelativeLayout.
+                LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        contentParams.addRule(CENTER_IN_PARENT);
+        mainContent.setLayoutParams(contentParams);
+    }
 
     public void setCornerRadius(float radius) {
         this.cornerRadius=radius;
@@ -236,6 +242,16 @@ public class MediaView extends RelativeLayout {
         }
     }
 
+    public void setSquareImage(boolean isSquared) {
+        if(squareImage!=isSquared) {
+            this.squareImage=isSquared;
+            if(mainContent!=null) {
+                removeView(mainContent);
+                initMainImage();
+                addView(mainContent);
+            }
+        }
+    }
 
     public void setOnIconClickListener(@NonNull OnClickListener clickListener) {
         descriptionIcon.setOnClickListener(clickListener);
@@ -302,5 +318,4 @@ public class MediaView extends RelativeLayout {
 
         }
     }
-
 }

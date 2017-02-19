@@ -18,7 +18,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.ReviewStateTrigger;
 import com.vpaliy.studioq.model.MediaFile;
@@ -119,7 +119,6 @@ public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.Ab
 
         @Override
         public void onBindData(int position) {
-            //set in the normal state
             position--;
             if(itemView.getScaleX()<1.f) {
                 itemView.setScaleX(1f);
@@ -158,8 +157,7 @@ public class UtilReviewAdapter extends RecyclerView.Adapter<UtilReviewAdapter.Ab
     }
 
 
-
-    @SuppressWarnings("all")
+    @SuppressWarnings("WeakerAccess")
     public class CaptionHolder extends AbstractHolder
             implements TextWatcher {
 

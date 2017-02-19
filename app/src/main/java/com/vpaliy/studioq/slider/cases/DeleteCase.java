@@ -10,7 +10,8 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.cases.Case;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ChangeableAdapter;
 import com.vpaliy.studioq.slider.utils.PhotoSlider;
@@ -30,7 +31,7 @@ import butterknife.ButterKnife;
  * An abstraction of the delete operation
  */
 
-@SuppressWarnings("all")
+@SuppressWarnings("WeakerAccess")
 public class DeleteCase extends Case {
 
     @BindView(R.id.rootView)
@@ -45,7 +46,7 @@ public class DeleteCase extends Case {
     @NonNull
     private ArrayList<MediaFile> data;
 
-    @Nullable
+    @NonNull
     private ArrayList<MediaFile> fakeData;
 
     @Nullable

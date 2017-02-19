@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.common.dataUtils.Subscriber;
+import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.slider.adapters.ContentAdapter;
 import com.vpaliy.studioq.slider.adapters.NavigationAdapter;
@@ -31,7 +33,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class MediaSliderActivity extends AppCompatActivity
-        implements OnSliderEventListener {
+        implements OnSliderEventListener,Subscriber{
 
     @BindView(R.id.mediaNavigator)
     protected RecyclerView mediaNavigator;
@@ -179,7 +181,9 @@ public class MediaSliderActivity extends AppCompatActivity
             switch (requestCode) {
                 case UCrop.REQUEST_CROP:
                     if(data!=null) {
+                        DataController.controllerInstance().subscribe(this);
                         EditCase.handleResult(data);
+                        DataController.controllerInstance().unSubscribe(this);
                     }
             }
 
@@ -200,5 +204,10 @@ public class MediaSliderActivity extends AppCompatActivity
             setResult(RESULT_OK,data);
         }
         super.onBackPressed();
+    }
+
+    @Override
+    public void notifyAboutChange() {
+
     }
 }

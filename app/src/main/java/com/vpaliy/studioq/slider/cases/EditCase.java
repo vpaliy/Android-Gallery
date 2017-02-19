@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-
 import com.vpaliy.studioq.App;
+import com.vpaliy.studioq.cases.Case;
 import com.vpaliy.studioq.model.MediaFile;
 import com.yalantis.ucrop.UCrop;
 
+import android.support.annotation.NonNull;
 import java.io.File;
 
 public class EditCase extends Case {
@@ -68,8 +68,8 @@ public class EditCase extends Case {
     public static void handleResult(@NonNull Intent data) {
         Uri image=UCrop.getOutput(data);
         if(image!=null) {
-            App.appInstance().copy(instance.target.parentPath(),
-                MediaFile.createFrom(image,instance.target));
+            MediaFile file=MediaFile.createFrom(image,instance.target);
+            App.appInstance().copy(instance.target.parentPath(),file);
         }
         instance=null;
     }

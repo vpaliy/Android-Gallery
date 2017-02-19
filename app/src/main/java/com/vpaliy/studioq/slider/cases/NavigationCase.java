@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
 import com.vpaliy.studioq.R;
+import com.vpaliy.studioq.cases.Case;
 import com.vpaliy.studioq.common.utils.Permissions;
 
 import butterknife.BindView;

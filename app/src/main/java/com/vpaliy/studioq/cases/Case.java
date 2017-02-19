@@ -1,4 +1,4 @@
-package com.vpaliy.studioq.slider.cases;
+package com.vpaliy.studioq.cases;
 
 public abstract class Case {
 

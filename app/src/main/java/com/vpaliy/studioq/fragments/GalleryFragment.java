@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.cases.DeleteCase;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.ExitEvent;
 import com.vpaliy.studioq.common.eventBus.Registrator;
@@ -46,7 +47,6 @@ import com.squareup.otto.Subscribe;
 import butterknife.BindView;
 import android.support.annotation.Nullable;
 
-//TODO when snack is enabled and the activity finishes
 
 public class GalleryFragment extends Fragment {
 
@@ -64,7 +64,7 @@ public class GalleryFragment extends Fragment {
     @BindView(R.id.mediaRecyclerView)
     protected RecyclerView recyclerView;
 
-    @BindView(R.id.cameraButton)
+    @BindView(R.id.actionButton)
     protected FloatingActionButton actionButton;
 
     private MediaFolder mediaFolder;
@@ -181,50 +181,24 @@ public class GalleryFragment extends Fragment {
 
     private void delete() {
         View root=getView();
-        if (root!= null) {
-            if (adapter.isMultiModeActivated()) {
-                final ArrayList<MediaFile> deleteFolderList = adapter.getAllChecked();
-                final ArrayList<MediaFile> originalList=new ArrayList<>(adapter.getData());
-                recyclerView.setItemAnimator(null);
-                final int[] checked=adapter.getAllCheckedForDeletion();
-                //remove the items from the list
-                recyclerView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        recyclerView.setItemAnimator(new DefaultItemAnimator());
-                        for(int index:checked) {
-                            adapter.removeAt(index);
+        if(root!=null) {
+            DeleteCase.startWith(root, adapter)
+                    .filter(new DeleteCase.Filter<MediaFile>() {
+                        @Override
+                        public ArrayList<MediaFile> filterData(List<MediaFile> input) {
+                            return new ArrayList<>(input);
                         }
-                    }
-                });
-
-                SnackbarWrapper.start(root,Integer.toString(deleteFolderList.size()) +
-                        " have been moved to trash", R.integer.snackbarLength)
-                        .callback(new ActionCallback("UNDO") {
-                            @Override
-                            public void onCancel() {
-                                showActionButton();
-                                adapter.setData(originalList);
+                    }).callback(new DeleteCase.Callback() {
+                        @Override
+                        public void onExecute(ArrayList<MediaFile> result) {
+                            changed=true;
+                            DataController.controllerInstance().
+                                    sensitiveDelete(result);
+                            if(adapter.isEmpty()) {
+                                finish();
                             }
-
-                            @Override
-                            public void onPerform() {
-                                changed=true;
-                                showActionButton();
-                                deleteInBackground(deleteFolderList,
-                                        deleteFolderList.size() == originalList.size());
-                            }
-                        }).show();
-            }
-        }
-    }
-
-    private void deleteInBackground(final ArrayList<MediaFile> mediaFileList, final boolean finish) {
-        DataController.controllerInstance().
-            sensitiveDelete(mediaFileList);
-        App.appInstance().delete(mediaFileList);
-        if(finish) {
-            finish();
+                        }
+                    }).execute();
         }
     }
 
@@ -453,7 +427,7 @@ public class GalleryFragment extends Fragment {
         Registrator.unregister(this);
     }
 
-    @OnClick(R.id.cameraButton)
+    @OnClick(R.id.actionButton)
     public void openCamera(View view) {
         startActivity(new Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA));
     }

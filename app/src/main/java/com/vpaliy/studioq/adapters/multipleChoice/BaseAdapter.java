@@ -9,7 +9,7 @@ import android.view.View;
 import com.vpaliy.studioq.adapters.SavableAdapter;
 
 public abstract class BaseAdapter
-     extends RecyclerView.Adapter<BaseAdapter.BaseViewHolder>
+    extends RecyclerView.Adapter<BaseAdapter.BaseViewHolder>
         implements SavableAdapter {
 
     private static final String TAG=BaseAdapter.class.getSimpleName();

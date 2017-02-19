@@ -1,6 +1,4 @@
-package com.vpaliy.studioq.common.animationUtils;
-
-import android.support.transition.TransitionSet;
+package com.vpaliy.studioq.common.graphicalUtils;
 
 public class TransitionUtils {
 

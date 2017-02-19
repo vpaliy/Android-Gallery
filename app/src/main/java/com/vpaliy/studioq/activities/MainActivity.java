@@ -18,9 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.cases.DeleteCase;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.common.eventBus.Registrator;
 import com.vpaliy.studioq.adapters.FolderAdapter;
@@ -30,8 +30,6 @@ import com.vpaliy.studioq.common.utils.Permissions;
 import com.vpaliy.studioq.controllers.DataController;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
-import com.vpaliy.studioq.common.snackbarUtils.ActionCallback;
-import com.vpaliy.studioq.common.snackbarUtils.SnackbarWrapper;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,10 +51,10 @@ import static butterknife.ButterKnife.findById;
 public class MainActivity extends AppCompatActivity {
 
 
-    @BindView(R.id.mainContent)
+    @BindView(R.id.mediaRecyclerView)
     protected RecyclerView contentGrid;
 
-    @BindView(R.id.addFloatingActionButton)
+    @BindView(R.id.actionButton)
     protected FloatingActionButton actionButton;
 
     @BindView(R.id.actionBar)
@@ -297,56 +295,25 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void deleteFolder() {
-        if (adapter != null) {
-            if (adapter.isMultiModeActivated()) {
-                final ArrayList<MediaFolder> deleteFolderList = adapter.getAllChecked();
-                final List<MediaFolder> originalList=new ArrayList<>(adapter.getData());
-                final int[] checked=adapter.getAllCheckedForDeletion();
-
-                for(int index:checked) {
-                    adapter.removeAt(index);
+        DeleteCase.startWith(this,adapter)
+            .filter(new DeleteCase.Filter<MediaFolder>() {
+                @Override
+                public ArrayList<MediaFile> filterData(List<MediaFolder> input) {
+                    List<MediaFile> tempList = new LinkedList<>();
+                    FolderAdapter.Mode mode=adapter.getAdapterMode();
+                    for(MediaFolder folder:input) {
+                        if(mode== FolderAdapter.Mode.IMAGE) {
+                            tempList.addAll(folder.imageList());
+                        }else if(mode== FolderAdapter.Mode.VIDEO) {
+                            tempList.addAll(folder.videoList());
+                        }else {
+                            tempList.addAll(folder.list());
+                        }
+                    }
+                    return new ArrayList<>(tempList);
                 }
-
-                SnackbarWrapper.start(findViewById(R.id.rootView),
-                        Integer.toString(deleteFolderList.size()) +
-                                " have been moved to trash", R.integer.snackbarLength)
-                        .callback(new ActionCallback("UNDO") {
-                            @Override
-                            public void onCancel() {
-                                adapter.setData(originalList);
-                                showButton();
-                            }
-
-                            @Override
-                            public void onPerform() {
-                                showButton();
-                                deleteData(deleteFolderList, adapter.getAdapterMode());
-                            }
-                        }).show();
-
-            }
-        }
-    }
-
-    private void deleteData(ArrayList<MediaFolder> deleteFolderList, FolderAdapter.Mode mode) {
-        if(deleteFolderList!=null) {
-            List<MediaFile> tempList = new LinkedList<>();
-            for(MediaFolder folder:deleteFolderList) {
-                if(mode== FolderAdapter.Mode.IMAGE) {
-                    tempList.addAll(folder.imageList());
-                }else if(mode== FolderAdapter.Mode.VIDEO) {
-                    tempList.addAll(folder.videoList());
-                }else {
-                    tempList.addAll(folder.list());
-                }
-            }
-
-            if(!tempList.isEmpty()) {
-                DataController.controllerInstance().justDelete(tempList);
-                App.appInstance().delete(new ArrayList<>(tempList));
-            }
-
-        }
+            })
+            .execute();
     }
 
 
@@ -381,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    @OnClick(R.id.addFloatingActionButton)
+    @OnClick(R.id.actionButton)
     public void onClickFloatingButton(View view) {
         addMediaFolder();
     }

@@ -13,8 +13,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.target.ImageViewTarget;
 import com.vpaliy.studioq.R;
-import com.vpaliy.studioq.common.animationUtils.AnimationUtils;
-import com.vpaliy.studioq.common.animationUtils.ScaleBuilder;
+import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.dataUtils.Subscriber;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.Launcher;
@@ -35,7 +34,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class FolderAdapter extends BaseAdapter
-        implements Subscriber {
+        implements Subscriber, MediaAdapter<MediaFolder>{
 
     private final String KEY_MODE="adapter:mode";
     private final String KEY_DATA="adapter:data";
@@ -183,6 +182,8 @@ public class FolderAdapter extends BaseAdapter
                 mainImage.setDescriptionIcon(R.drawable.ic_gif_white_24dp);
             }else if(type== MediaFile.Type.VIDEO) {
                 mainImage.setDescriptionIcon(R.drawable.ic_play_circle_outline_white_48dp);
+            }else {
+                mainImage.setDescriptionIcon(null);
             }
         }
 
@@ -335,7 +336,7 @@ public class FolderAdapter extends BaseAdapter
         notifyItemInserted(index);
     }
 
-    public void setData(List<MediaFolder> folderList) {
+    public void setData(ArrayList<MediaFolder> folderList) {
         if(folderList!=null) {
             currentFolderList=folderList;
             if(adapterMode!=Mode.ALL) {
@@ -372,6 +373,11 @@ public class FolderAdapter extends BaseAdapter
         super.saveState(outState);
         outState.putParcelableArrayList(KEY_DATA,(ArrayList<MediaFolder>)(mediaFolderList));
         outState.putString(KEY_MODE,adapterMode.name());
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return getItemCount()==0;
     }
 
     public enum Mode {

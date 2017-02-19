@@ -30,9 +30,8 @@
     </android.support.v7.widget.RecyclerView>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/cameraButton"
+        android:id="@+id/actionButton"
         android:layout_margin="25dp"
-        android:onClick="openCamera"
         android:visibility="invisible"
         android:scaleX="0"
         android:scaleY="0"
