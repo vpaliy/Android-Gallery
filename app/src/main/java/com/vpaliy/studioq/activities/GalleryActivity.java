@@ -121,7 +121,7 @@ public class GalleryActivity extends AppCompatActivity {
         Transition enterTransition=new Explode();
         enterTransition.excludeTarget(android.R.id.navigationBarBackground,true);
         enterTransition.excludeTarget(android.R.id.statusBarBackground,true);
-        enterTransition.excludeTarget(R.id.cameraButton,true);
+        enterTransition.excludeTarget(R.id.actionButton,true);
         enterTransition.setDuration(200);
         getWindow().setEnterTransition(enterTransition);
         getWindow().setSharedElementsUseOverlay(false);

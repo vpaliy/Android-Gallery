@@ -12,7 +12,6 @@ import android.view.animation.Interpolator;
 
 public class ScaleBuilder {
 
-    @NonNull
     View target;
 
     @Nullable
@@ -28,6 +27,7 @@ public class ScaleBuilder {
     float scaleY;
 
     boolean hardwareAcceleration;
+    boolean applyCondition;
 
 
     private ScaleBuilder(@NonNull View target) {
@@ -83,6 +83,20 @@ public class ScaleBuilder {
         return this;
     }
 
+    public ScaleBuilder applyCondition() {
+        this.applyCondition=true;
+        return this;
+    }
+
+    private boolean checkCondition() {
+        if(target==null)
+            return false;
+        if(target.getVisibility()!=View.VISIBLE) {
+            target.setVisibility(View.VISIBLE);
+        }
+        return (!applyCondition||target.getScaleX()<scaleX);
+    }
+
     public ScaleBuilder accelerate() {
         this.hardwareAcceleration=true;
         return this;
@@ -101,8 +115,9 @@ public class ScaleBuilder {
             interpolator=new DecelerateInterpolator();
         }
 
-        AnimationUtils.scaleTargetTo(this);
-
+        if(checkCondition()) {
+            AnimationUtils.scaleTargetTo(this);
+        }
     }
 
 }

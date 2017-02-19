@@ -82,7 +82,6 @@ public class GalleryFragment extends Fragment {
 
         @Override
         public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
-            showButton=true;
             switch (item.getItemId()) {
                 case R.id.deleteItem:
                     showButton=false;
@@ -110,6 +109,7 @@ public class GalleryFragment extends Fragment {
         @Override
         public void onModeActivated() {
             super.onModeActivated();
+            showButton=true;
             hideActionButton();
         }
 
@@ -166,15 +166,11 @@ public class GalleryFragment extends Fragment {
         }
 
         if(!isModeActivated && utilAdapter==null) {
-            if(actionButton!=null) {
-                actionButton.setVisibility(View.VISIBLE);
-                if (actionButton.getScaleX() < 1f) {
-                    ScaleBuilder.start(actionButton,1.f)
-                            .duration(300)
-                            .accelerate()
-                            .execute();
-                }
-            }
+            ScaleBuilder.start(actionButton,1.f)
+                    .duration(300)
+                    .applyCondition()
+                    .accelerate()
+                    .execute();
         }
     }
 

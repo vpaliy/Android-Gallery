@@ -1,7 +1,6 @@
 package com.vpaliy.studioq.cases;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +16,7 @@ import com.vpaliy.studioq.model.MediaFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.support.annotation.Nullable;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import butterknife.BindView;
@@ -37,7 +37,6 @@ public class DeleteCase<T> extends Case {
     @NonNull
     private MediaAdapter<T> adapter;
 
-    @NonNull
     private Filter<T> filter;
 
     @Nullable

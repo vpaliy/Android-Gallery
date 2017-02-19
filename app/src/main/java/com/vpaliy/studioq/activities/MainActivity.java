@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
         ScaleBuilder.start(actionButton,1.f)
                 .duration(300)
+                .applyCondition()
                 .accelerate()
                 .execute();
 
