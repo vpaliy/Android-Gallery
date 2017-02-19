@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(getSupportActionBar()!=null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
+       //     getSupportActionBar().setDisplayShowTitleEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setShowHideAnimationEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);

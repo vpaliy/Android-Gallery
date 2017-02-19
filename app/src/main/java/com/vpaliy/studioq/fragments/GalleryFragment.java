@@ -53,7 +53,6 @@ public class GalleryFragment extends Fragment {
     private static final String TAG=GalleryFragment.class.getSimpleName();
 
     private static final String KEY=TAG+"util:enabled";
-    private static final String UPDATED=TAG+"data:updated";
 
     public static GalleryFragment newInstance(@NonNull Bundle args) {
         GalleryFragment fragment=new GalleryFragment();
@@ -386,11 +385,13 @@ public class GalleryFragment extends Fragment {
                         changed = true;
 
                         //make the operation here
+                        ArrayList<MediaFile> result=MediaFile.
+                            createReferenceList(event.moveFolder.getAbsolutePath(),delete);
                         Map<String, ArrayList<MediaFile>> mapData = new HashMap<>();
                         mapData.put(event.moveFolder.getAbsolutePath(), delete);
 
                         DataController.controllerInstance().
-                            sensitiveUpdate(event.moveFolder.getAbsolutePath(),delete);
+                            sensitiveUpdate(event.moveFolder.getAbsolutePath(),result);
 
                         if(event.move) {
                             App.appInstance().move(mapData);

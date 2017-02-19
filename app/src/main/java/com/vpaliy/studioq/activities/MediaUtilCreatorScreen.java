@@ -77,15 +77,15 @@ public class MediaUtilCreatorScreen extends AppCompatActivity {
                     return;
                 }
                 Map<String, ArrayList<MediaFile>> map = new HashMap<>();
-                map.put(mediaFolder.getAbsolutePath(), result);
+                map.put(mediaFolder.getAbsolutePath(),result);
+                DataController.controllerInstance()
+                        .justAdd(mediaFolder.getAbsolutePath(), new MediaFolder(folderName,MediaFile.
+                                createReferenceList(mediaFolder.getAbsolutePath(),result)));
                 if(moveTo) {
                     DataController.controllerInstance()
                         .justDelete(result);
                     App.appInstance().move(map);
                 }else {
-                    DataController.controllerInstance()
-                        .justAdd(mediaFolder.getAbsolutePath(),
-                            new MediaFolder(folderName,result));
                     App.appInstance().copy(map);
                 }
             }

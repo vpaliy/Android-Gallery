@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -21,6 +22,8 @@ import java.util.Random;
 
 import com.vpaliy.studioq.activities.MediaUtilCreatorScreen;
 import com.vpaliy.studioq.model.MediaFile;
+
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public final class FileUtils {
 
@@ -54,6 +57,12 @@ public final class FileUtils {
         String pathTo=mediaFile.mediaFile().getAbsolutePath();
 
         if(!mediaFile.mediaFile().delete()) {
+            Log.d(TAG, "1:Failed to delete file2:" + pathTo);
+            pathTo=uniqueNameFor(pathTo);
+            File file=new File(pathTo);
+            if(!file.delete()) {
+                Log.d(TAG, "2:Failed to delete file:" + pathTo);
+            }
            return;
         }
 
@@ -120,9 +129,10 @@ public final class FileUtils {
 
                 boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
                 File file = new File(mediaFolder, fileName);
-                //let a user to decide whether to create a copy of already existing files
-                if(!file.exists()) {
+                //let the user to decide whether to create a copy of already existing files
+                if(file.exists()) {
                     file=new File(mediaFolder,uniqueNameFor(fileName));
+                    Log.d(TAG,"Unique name:"+file.getAbsolutePath());
                 }
 
                 if(!file.exists()) {

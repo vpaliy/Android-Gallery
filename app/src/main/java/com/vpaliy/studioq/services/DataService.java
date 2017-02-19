@@ -12,6 +12,8 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
+
+import com.drew.tools.FileUtil;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.model.MediaFile;
@@ -20,12 +22,10 @@ import com.vpaliy.studioq.common.utils.ProjectUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -33,6 +33,7 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 
 public class DataService extends Service {
 
@@ -134,7 +135,14 @@ public class DataService extends Service {
     private void delete() {
         updateNotification("Deleting data",0,0);
         while(!deleteContainer.isEmpty()){
-            FileUtils.deleteFile(this,deleteContainer.peek());
+            MediaFile file=deleteContainer.peek();
+            if(!checkIfReference(file)) {
+                FileUtils.deleteFile(this, deleteContainer.peek());
+            }else {
+                file=file.realFile();
+                Log.d(TAG,file.pathToMediaFile());
+                FileUtils.deleteFile(this,file);
+            }
             deleteContainer.poll();
         }
     }
@@ -144,27 +152,13 @@ public class DataService extends Service {
     private void copy() {
         updateNotification("Copying data",0,0);
         for(String key:copyContainer.keySet()) {
-            FileUtils.copyFileList(this,copyContainer.get(key),new File(key));
+            FileUtils.copyFileList(this, copyContainer.get(key), new File(key));
         }
     }
 
-    public  Set<File> staleData() {
-        if(deleteContainer==null) {
-            return null;
-        }
-        Set<File> resultSet=new LinkedHashSet<>(deleteContainer.size());
-        for(MediaFile file:deleteContainer) {
-            resultSet.add(file.mediaFile());
-        }
-       return resultSet;
-    }
-
-
-    public Map<String, ArrayList<MediaFile>> freshData() {
-        if(copyContainer==null) {
-            return null;
-        }
-        return new HashMap<>(copyContainer);
+    @WorkerThread
+    private boolean checkIfReference(@NonNull MediaFile file) {
+        return file.isReference();
     }
 
     @Override

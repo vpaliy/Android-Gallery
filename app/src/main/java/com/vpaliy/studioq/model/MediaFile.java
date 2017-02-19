@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.parceler.ParcelConverter;
@@ -18,6 +17,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.support.annotation.NonNull;
+
+@SuppressWarnings("WeakerAccess")
 public class MediaFile implements Parcelable{
 
     private static final String TAG=MediaFile.class.getSimpleName();
@@ -27,12 +29,15 @@ public class MediaFile implements Parcelable{
     protected long Id;
     protected Type type;
 
+    private String referencePath;
+    private boolean isReference;
 
     public MediaFile(@NonNull Cursor cursor, Type type) {
         this.type=type;
         this.mediaFile=cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
         this.mimeType=cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE));
         this.Id=cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID));
+        this.isReference=false;
     }
 
     public MediaFile(MediaFile mediaFile, File file) {
@@ -40,6 +45,8 @@ public class MediaFile implements Parcelable{
         this.mimeType=mediaFile.mimeType;
         this.Id=mediaFile.Id;
         this.type=mediaFile.type;
+        this.isReference=mediaFile.isReference();
+        this.referencePath=mediaFile.referencePath;
     }
 
     public MediaFile(Parcel in) {
@@ -47,7 +54,20 @@ public class MediaFile implements Parcelable{
         this.mimeType=in.readString();
         this.Id=in.readLong();
         this.type=Type.valueOf(in.readString());
+        this.isReference=in.readInt()==1;
+        if(isReference) {
+            this.referencePath=in.readString();
+        }
 
+    }
+
+    private MediaFile(@NonNull String referencePath, @NonNull MediaFile model) {
+        this.referencePath=referencePath;
+        this.mediaFile=model.pathToMediaFile();
+        this.mimeType=model.mimeType;
+        this.Id=model.Id;
+        this.type=model.type;
+        this.isReference=true;
     }
 
     public Uri uri() {
@@ -69,6 +89,10 @@ public class MediaFile implements Parcelable{
         out.writeString(mimeType);
         out.writeLong(Id);
         out.writeString(type.name());
+        out.writeInt(isReference?1:0);
+        if(isReference) {
+            out.writeString(referencePath);
+        }
     }
 
     public String pathToMediaFile() {
@@ -76,6 +100,9 @@ public class MediaFile implements Parcelable{
     }
 
     public String parentPath() {
+        if(isReference) {
+            return referencePath;
+        }
         return mediaFile().getParentFile().getAbsolutePath();
     }
 
@@ -145,11 +172,11 @@ public class MediaFile implements Parcelable{
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
+        HashCodeBuilder builder=new HashCodeBuilder()
                 .append(mediaFile)
                 .append(mimeType)
-                .append(Id)
-                .toHashCode();
+                .append(Id);
+        return builder.hashCode();
     }
 
     @Override
@@ -164,9 +191,35 @@ public class MediaFile implements Parcelable{
                 .append(Id,file.Id).isEquals();
     }
 
+    public boolean isReference() {
+        return isReference;
+    }
+
+    public MediaFile realFile() {
+        if(referencePath==null) {
+            return this;
+        }
+        mediaFile=referencePath+File.separator+mediaFile().getName();
+        return this;
+    }
+
     public static MediaFile createFrom(@NonNull Uri uri, @NonNull MediaFile copy) {
         return new MediaFile(copy,new File(uri.getPath()));
     }
+
+    public static MediaFile createReference(@NonNull String referencePath, @NonNull MediaFile model) {
+       return new MediaFile(referencePath,model);
+    }
+
+    public static ArrayList<MediaFile> createReferenceList(@NonNull String referencePath,
+                         @NonNull ArrayList<MediaFile> modelList) {
+        ArrayList<MediaFile> list=new ArrayList<>(modelList.size());
+        for(MediaFile file:modelList) {
+            list.add(createReference(referencePath,file));
+        }
+        return list;
+    }
+
 
     public long getId() {
         return Id;
