@@ -1,5 +1,6 @@
 package com.vpaliy.studioq.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -11,7 +12,10 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +27,7 @@ import java.util.Map;
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.cases.DeleteCase;
+import com.vpaliy.studioq.cases.SortCase;
 import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.EventBusProvider;
 import com.vpaliy.studioq.common.eventBus.ExitEvent;
@@ -66,6 +71,11 @@ public class GalleryFragment extends Fragment {
     @BindView(R.id.actionButton)
     protected FloatingActionButton actionButton;
 
+    @BindView(R.id.actionBar)
+    protected Toolbar actionBar;
+
+    private ActionBarCallback actionBarCallback;
+
     private MediaFolder mediaFolder;
 
     private GalleryAdapter adapter;
@@ -78,6 +88,7 @@ public class GalleryFragment extends Fragment {
     private MultiMode.Callback callback=new MultiMode.Callback() {
 
         private boolean showButton;
+        private boolean showMenu;
 
         @Override
         public boolean onMenuItemClick(BaseAdapter baseAdapter, MenuItem item) {
@@ -85,31 +96,34 @@ public class GalleryFragment extends Fragment {
                 case R.id.deleteItem:
                     showButton=false;
                     delete();
-                    break;
+                    return  true;
                 case R.id.shareItem:
                     share();
-                    break;
+                    return  true;
                 case R.id.checkAll:
                     adapter.checkAll(true);
-                    break;
+                    return  true;
                 case R.id.copyItem:
+                    showMenu=false;
                     showButton=false;
                     change(false);
-                    break;
+                    return  true;
                 case R.id.moveItem:
+                    showMenu=false;
                     showButton=false;
                     change(true);
-                    break;
+                    return  true;
 
             }
-            return true;
+            return onOptionsItemSelected(item);
         }
 
         @Override
         public void onModeActivated() {
             super.onModeActivated();
-            showButton=true;
+            showButton=showMenu=true;
             hideActionButton();
+            setHasOptionsMenu(false);
         }
 
         @Override
@@ -119,9 +133,17 @@ public class GalleryFragment extends Fragment {
                 showActionButton();
             }
 
+            if(showMenu) {
+                setHasOptionsMenu(true);
+            }
         }
     };
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.actionBarCallback=ActionBarCallback.class.cast(getContext());
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,6 +152,7 @@ public class GalleryFragment extends Fragment {
             savedInstanceState=getArguments();
         }
 
+        setHasOptionsMenu(true);
         setRetainInstance(true);
         restoreMediaDataList(savedInstanceState);
     }
@@ -171,6 +194,49 @@ public class GalleryFragment extends Fragment {
                     .accelerate()
                     .execute();
         }
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.gallery_menu,menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getGroupId()==R.id.sortingChoice) {
+            SortCase<MediaFile> sortCase=SortCase.startWith(adapter.getData());
+            switch (item.getItemId()) {
+                case R.id.byDate:
+                    sortCase.comparator(MediaFile.BY_DATE);
+                    break;
+                case R.id.byName:
+                    sortCase.comparator(MediaFile.BY_NAME);
+                    break;
+                case R.id.bySize:
+                    sortCase.comparator(MediaFile.BY_SIZE);
+                    break;
+            }
+            sortCase.callback(new SortCase.Callback<MediaFile>() {
+                @Override
+                public void onFinished(List<MediaFile> model) {
+                    adapter.notifyDataSetChanged();
+                    changed=true;
+                    DataController.controllerInstance()
+                        .justUpdateOrder(mediaFolder.getAbsolutePathToFolder(),
+                            model);
+                }
+            }).execute();
+            return true;
+        }else {
+            switch (item.getItemId()) {
+                case R.id.sort:
+                    //expand the choices
+                    return true;
+            }
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -230,6 +296,7 @@ public class GalleryFragment extends Fragment {
 
     private void finish() {
         if(changed) {
+            Log.d(TAG,"Changed");
             Intent dummyData = new Intent();
             EventBusProvider.defaultBus().post(new ExitEvent(dummyData));
         }else {
@@ -266,6 +333,10 @@ public class GalleryFragment extends Fragment {
     public View onCreateView(LayoutInflater mInflater, ViewGroup parentGroup, Bundle savedInstanceState) {
         View root= mInflater.inflate(R.layout.fragment_gallery,parentGroup,false);
         unbinder= ButterKnife.bind(this,root);
+        actionBar.setTitle(mediaFolder.name());
+        actionBar.setNavigationOnClickListener(onNavigationIconClick);
+        actionBar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+        actionBarCallback.hookUp(actionBar);
         return root;
     }
 
@@ -273,10 +344,6 @@ public class GalleryFragment extends Fragment {
     @Override
     public void onViewCreated(View root, Bundle savedInstanceState) {
         if(root!=null) {
-            final Toolbar actionBar=findById(root,R.id.actionBar);
-            actionBar.setTitle(mediaFolder.name());
-            actionBar.setNavigationOnClickListener(onNavigationIconClick);
-            actionBar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())
                     .setBackgroundColor(Color.WHITE)
                     .setNavigationIcon(getResources().getDrawable(R.drawable.ic_cancel_black_24dp))
@@ -318,6 +385,7 @@ public class GalleryFragment extends Fragment {
     public void onBackPressed() {
         if(utilAdapter!=null) {
             //change the adapter
+            setHasOptionsMenu(true);
             onChange(null);
 
         } else if(adapter.isMultiModeActivated()) {
@@ -331,6 +399,9 @@ public class GalleryFragment extends Fragment {
     public void onChange(@Nullable final MoveEvent event) {
         utilAdapter=null;
         recyclerView.setAdapter(adapter);
+        if(event!=null) {
+            setHasOptionsMenu(true);
+        }
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
@@ -449,4 +520,8 @@ public class GalleryFragment extends Fragment {
         }
     }
 
+    public interface ActionBarCallback {
+        void hookUp(@NonNull Toolbar toolbar);
+        void invalidateOptionsMenu();
+    }
 }

@@ -15,6 +15,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,6 +49,7 @@ import static com.vpaliy.studioq.common.utils.ProjectUtils.CREATE_MEDIA_FOLDER;
 import static com.vpaliy.studioq.common.utils.ProjectUtils.MEDIA_DATA;
 import static com.vpaliy.studioq.common.utils.ProjectUtils.MODE;
 import static butterknife.ButterKnife.findById;
+import static com.vpaliy.studioq.common.utils.ProjectUtils.TAG;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -251,13 +253,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_choice_menu,menu);
+        getMenuInflater().inflate(R.menu.main_menu,menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getGroupId()==R.id.sorting) {
+        if(item.getGroupId()==R.id.sortingChoice) {
             SortCase<MediaFolder> sortCase=SortCase.startWith
                     (DataController.controllerInstance().getFolders());
             switch (item.getItemId()) {
@@ -280,6 +282,13 @@ public class MainActivity extends AppCompatActivity {
                     adapter.setData(DataController.controllerInstance().getFolders());
                 }
             }).execute();
+            return true;
+        }else {
+            switch (item.getItemId()) {
+                case R.id.sort:
+                    //expand the choices
+                    return true;
+            }
         }
         return super.onOptionsItemSelected(item);
     }

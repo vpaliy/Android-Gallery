@@ -189,10 +189,19 @@ public class DataController {
             return;
         }
 
+
+    //TODO fix here
         int index=0;
         for(Map.Entry<String,MediaFolder> entry:dataModel.entrySet()) {
             entry.setValue(data.get(index));
             index++;
+        }
+    }
+
+    public void justUpdateOrder(@NonNull String key, List<MediaFile> data) {
+        MediaFolder folder=dataModel.get(key);
+        if(folder!=null) {
+            folder.replaceWith(data);
         }
     }
 

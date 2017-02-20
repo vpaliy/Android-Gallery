@@ -13,7 +13,8 @@ import org.parceler.ParcelConstructor;
 import org.parceler.ParcelPropertyConverter;
 
 @org.parceler.Parcel(org.parceler.Parcel.Serialization.BEAN)
-public final class MediaFolder implements Parcelable {
+public final class MediaFolder implements Parcelable,
+    Comparable<MediaFolder>{
 
     private String folderName;
 
@@ -83,6 +84,24 @@ public final class MediaFolder implements Parcelable {
         return this;
     }
 
+    public void replaceWith(Collection<? extends MediaFile> collection) {
+        mediaFileList.clear();
+        videoFileList.clear();
+        imageFileList.clear();
+        if(collection!=null) {
+            for (MediaFile mediaFile : collection) {
+                mediaFileList.add(mediaFile);
+                boolean isVideo=mediaFile.getType()== MediaFile.Type.VIDEO;
+                if(isVideo) {
+                    videoFileList.add(mediaFile);
+                }else {
+                    imageFileList.add(mediaFile);
+                }
+            }
+        }
+    }
+
+
     public boolean isEmpty() {
         return mediaFileList == null || mediaFileList.isEmpty();
     }
@@ -134,6 +153,11 @@ public final class MediaFolder implements Parcelable {
                 }
             }
         }
+    }
+
+    @Override
+    public int compareTo(MediaFolder o) {
+        return BY_NAME.compare(this,o);
     }
 
     //Covers

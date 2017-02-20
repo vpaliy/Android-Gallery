@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.transition.Explode;
 import android.transition.Transition;
 import android.view.Window;
@@ -28,7 +29,8 @@ import com.squareup.otto.Subscribe;
 import static com.vpaliy.studioq.common.utils.ProjectUtils.LAUNCH_SLIDER;
 import static com.vpaliy.studioq.common.utils.ProjectUtils.GALLERY_FRAGMENT;
 
-public class GalleryActivity extends AppCompatActivity {
+public class GalleryActivity extends AppCompatActivity
+            implements GalleryFragment.ActionBarCallback {
 
     private GalleryFragment fragment;
 
@@ -36,7 +38,7 @@ public class GalleryActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
-            requestFeature();
+         //    requestFeature();
         }
         setContentView(R.layout.activity_gallery);
         ButterKnife.bind(this);
@@ -87,6 +89,7 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
+
     @Subscribe
     public void startSliderActivity(Launcher<ArrayList<MediaFile>> launcher) {
         Intent intent=new Intent(this, MediaSliderActivity.class);
@@ -114,6 +117,19 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void hookUp(@NonNull Toolbar toolbar) {
+        if(getSupportActionBar()==null) {
+            setSupportActionBar(toolbar);
+        }
+    }
+
+    @Override
+    public void invalidateOptionsMenu() {
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().invalidateOptionsMenu();
+        }
+    }
 
     @TargetApi(21)
     private void requestFeature() {
@@ -128,4 +144,6 @@ public class GalleryActivity extends AppCompatActivity {
         postponeEnterTransition();
 
     }
+
+
 }

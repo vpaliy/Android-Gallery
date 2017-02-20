@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/sort"
-        android:title="@string/add">
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        app:showAsAction="ifRoom"
+        android:title="@string/sortOption">
         <menu>
-            <item
-                android:id="@+id/byName"
-                android:title="@string/sortByName">
-            </item>
-            <item
-                android:id="@+id/bySize"
-                android:title="@string/sortBySize">
-            </item>
-            <item
-                android:id="@+id/byDate"
-                android:title="@string/sortByDate">
-            </item>
+            <group
+                android:id="@+id/sortingChoice">
+                <item
+                    android:id="@+id/byName"
+                    android:title="@string/sortByName">
+                </item>
+                <item
+                    android:id="@+id/bySize"
+                    android:title="@string/sortBySize">
+                </item>
+                <item
+                    android:id="@+id/byDate"
+                    android:title="@string/sortByDate">
+                </item>
+            </group>
         </menu>
-
     </item>
 </menu>
