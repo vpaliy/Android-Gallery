@@ -13,6 +13,7 @@ import org.parceler.Parcels;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -229,6 +230,38 @@ public class MediaFile implements Parcelable{
         return type;
     }
 
+    public static final  Comparator<MediaFile> BY_SIZE=new Comparator<MediaFile>() {
+        @Override
+        public int compare(MediaFile o1, MediaFile o2) {
+            if(o1.mediaFile().length()>o2.mediaFile().length()) {
+                return 1;
+            }else if(o1.mediaFile().length()<o2.mediaFile().length()) {
+                return -1;
+            }
+            return 0;
+        }
+    };
+
+    public static final  Comparator<MediaFile> BY_DATE=new Comparator<MediaFile>() {
+        @Override
+        public int compare(MediaFile o1, MediaFile o2) {
+            if(o1.mediaFile().lastModified()>o2.mediaFile().lastModified()) {
+                return 1;
+            }else if(o1.mediaFile().lastModified()<o2.mediaFile().lastModified()) {
+                return -1;
+            }
+            return 0;
+        }
+    };
+
+
+    public static final  Comparator<MediaFile> BY_NAME=new Comparator<MediaFile>() {
+        @Override
+        public int compare(MediaFile o1, MediaFile o2) {
+            return o1.mediaFile.compareTo(o2.mediaFile);
+        }
+    };
+
     public enum Type {
 
         IMAGE (1),
@@ -241,7 +274,5 @@ public class MediaFile implements Parcelable{
 
         final int nativeId;
     }
-
-
 
 }

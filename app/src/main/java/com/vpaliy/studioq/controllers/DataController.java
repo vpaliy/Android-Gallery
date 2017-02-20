@@ -3,6 +3,7 @@ package com.vpaliy.studioq.controllers;
 
 import com.vpaliy.studioq.App;
 import com.vpaliy.studioq.common.dataUtils.Subscriber;
+import com.vpaliy.studioq.common.utils.ProjectUtils;
 import com.vpaliy.studioq.model.MediaFile;
 import com.vpaliy.studioq.model.MediaFolder;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 //Hello, CRUD
 public class DataController {
@@ -65,6 +67,7 @@ public class DataController {
     public ArrayList<MediaFolder> getFolders() {
         return new ArrayList<>(dataModel.values());
     }
+
 
     //create
     public void makeQuery() {
@@ -160,15 +163,15 @@ public class DataController {
     }
 
     //update
-    public void sensitiveUpdate(@NonNull String folder, ArrayList<MediaFile> data) {
+    public void sensitiveUpdate(@NonNull String folder, List<MediaFile> data) {
         update(folder,data,true);
     }
 
-    public void justUpdate(@NonNull String folder, ArrayList<MediaFile> data) {
+    public void justUpdate(@NonNull String folder, List<MediaFile> data) {
         update(folder,data,false);
     }
 
-    private void update(@NonNull String folder, ArrayList<MediaFile> data, boolean notify) {
+    private void update(@NonNull String folder, List<MediaFile> data, boolean notify) {
         MediaFolder target=dataModel.get(folder);
         if(target!=null) {
             target.addAll(data);
@@ -176,6 +179,20 @@ public class DataController {
             if(notify) {
                 notifyAboutChange();
             }
+        }
+    }
+
+    //this method updates only order of data
+    public void justUpdateOrder(List<MediaFolder> data) {
+        if(data.size()!=dataModel.size()) {
+            Log.d(ProjectUtils.TAG(DataController.class),"It's not equal");
+            return;
+        }
+
+        int index=0;
+        for(Map.Entry<String,MediaFolder> entry:dataModel.entrySet()) {
+            entry.setValue(data.get(index));
+            index++;
         }
     }
 

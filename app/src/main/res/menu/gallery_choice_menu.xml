@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/deleteItem"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:title="@string/deleteItem">
+    </item>
+
+    <item
+        android:id="@+id/shareItem"
+        android:title="@string/shareItem"
+        app:showAsAction="ifRoom"
+        android:icon="@android:drawable/ic_menu_share">
+    </item>
+
+    <item
+        android:id="@+id/copyItem"
+        app:showAsAction="never"
+        android:title="@string/copy">
+    </item>
+
+    <item
+        android:id="@+id/moveItem"
+        app:showAsAction="never"
+        android:title="@string/move">
+    </item>
+
+    <item
+        android:id="@+id/checkAll"
+        app:showAsAction="never"
+        android:title="@string/checkAll">
+    </item>
+
+</menu>

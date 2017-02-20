@@ -280,7 +280,7 @@ public class GalleryFragment extends Fragment {
             MultiMode mode = new MultiMode.Builder(actionBar, getActivity())
                     .setBackgroundColor(Color.WHITE)
                     .setNavigationIcon(getResources().getDrawable(R.drawable.ic_cancel_black_24dp))
-                    .setMenu(R.menu.gallery_menu, callback)
+                    .setMenu(R.menu.gallery_choice_menu, callback)
                     .build();
             recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3, GridLayoutManager.VERTICAL, false));
             //determine and set the adapter

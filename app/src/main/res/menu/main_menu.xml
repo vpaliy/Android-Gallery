@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/sorting">
+        <item
+            android:id="@+id/sort"
+            android:title="@string/add">
+            <menu>
+                <item
+                    android:id="@+id/byName"
+                    android:title="@string/sortByName">
+                </item>
+                <item
+                    android:id="@+id/bySize"
+                    android:title="@string/sortBySize">
+                </item>
+                <item
+                    android:id="@+id/byDate"
+                    android:title="@string/sortByDate">
+                </item>
+            </menu>
 
-    <item
-        android:id="@+id/deleteAction"
-        app:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_delete"
-        android:title="@string/deleteItem">
-    </item>
-
-
-    <item
-        android:id="@+id/copyAction"
-        app:showAsAction="never"
-        android:title="@string/copy">
-    </item>
-
-    <item
-        android:id="@+id/moveAction"
-        app:showAsAction="never"
-        android:title="@string/move">
-    </item>
-
+        </item>
+    </group>
 </menu>

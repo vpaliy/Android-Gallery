@@ -15,11 +15,13 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 import com.vpaliy.studioq.R;
 import com.vpaliy.studioq.cases.DeleteCase;
+import com.vpaliy.studioq.cases.SortCase;
 import com.vpaliy.studioq.common.graphicalUtils.ScaleBuilder;
 import com.vpaliy.studioq.common.eventBus.Launcher;
 import com.vpaliy.studioq.common.eventBus.Registrator;
@@ -117,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if(getSupportActionBar()!=null) {
-       //     getSupportActionBar().setDisplayShowTitleEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setShowHideAnimationEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -130,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
     private void bindData(Bundle state) {
         if(state==null) {
             state = getIntent().getExtras();
@@ -140,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                .setMenu(R.menu.main_menu, callback)
+                .setMenu(R.menu.main_choice_menu, callback)
                 .setBackgroundColor(Color.WHITE)
                 .build();
         contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
@@ -216,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFinished() {
                         final MultiMode mode=new MultiMode.Builder(actionBar,MainActivity.this)
-                                .setMenu(R.menu.main_menu, callback)
+                                .setMenu(R.menu.main_choice_menu, callback)
                                 .setBackgroundColor(Color.WHITE)
                                 .build();
                         contentGrid.setLayoutManager(new GridLayoutManager(MainActivity.this,
@@ -246,6 +249,40 @@ public class MainActivity extends AppCompatActivity {
         Registrator.unregister(this);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_choice_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getGroupId()==R.id.sorting) {
+            SortCase<MediaFolder> sortCase=SortCase.startWith
+                    (DataController.controllerInstance().getFolders());
+            switch (item.getItemId()) {
+                case R.id.byDate:
+                    sortCase.comparator(MediaFolder.BY_DATE);
+                    break;
+                case R.id.byName:
+                    sortCase.comparator(MediaFolder.BY_NAME);
+                    break;
+                case R.id.bySize:
+                    sortCase.comparator(MediaFolder.BY_SIZE);
+                    break;
+            }
+            sortCase.callback(new SortCase.Callback<MediaFolder>() {
+                @Override
+                public void onFinished(List<MediaFolder> model) {
+                    //make all notifications here
+                    DataController.controllerInstance()
+                        .justUpdateOrder(model);
+                    adapter.setData(DataController.controllerInstance().getFolders());
+                }
+            }).execute();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     @Subscribe
     public void startGalleryActivity(Launcher<Bundle> launcher) {
@@ -253,20 +290,20 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtras(launcher.data);
 
         ScaleBuilder.start(actionButton,0f)
-            .duration(100)
-            .accelerate()
-            .listener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
-                        startActivityForResult(intent, LAUNCH_GALLERY,
-                                ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
-                    }else {
-                        startActivityForResult(intent, LAUNCH_GALLERY);
+                .duration(100)
+                .accelerate()
+                .listener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        if(Permissions.checkForVersion(Build.VERSION_CODES.LOLLIPOP)) {
+                            startActivityForResult(intent, LAUNCH_GALLERY,
+                                    ActivityOptions.makeSceneTransitionAnimation(MainActivity.this).toBundle());
+                        }else {
+                            startActivityForResult(intent, LAUNCH_GALLERY);
+                        }
                     }
-                }
-            }).execute();
+                }).execute();
     }
 
 
@@ -297,24 +334,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void deleteFolder() {
         DeleteCase.startWith(this,adapter)
-            .filter(new DeleteCase.Filter<MediaFolder>() {
-                @Override
-                public ArrayList<MediaFile> filterData(List<MediaFolder> input) {
-                    List<MediaFile> tempList = new LinkedList<>();
-                    FolderAdapter.Mode mode=adapter.getAdapterMode();
-                    for(MediaFolder folder:input) {
-                        if(mode== FolderAdapter.Mode.IMAGE) {
-                            tempList.addAll(folder.imageList());
-                        }else if(mode== FolderAdapter.Mode.VIDEO) {
-                            tempList.addAll(folder.videoList());
-                        }else {
-                            tempList.addAll(folder.list());
+                .filter(new DeleteCase.Filter<MediaFolder>() {
+                    @Override
+                    public ArrayList<MediaFile> filterData(List<MediaFolder> input) {
+                        List<MediaFile> tempList = new LinkedList<>();
+                        FolderAdapter.Mode mode=adapter.getAdapterMode();
+                        for(MediaFolder folder:input) {
+                            if(mode== FolderAdapter.Mode.IMAGE) {
+                                tempList.addAll(folder.imageList());
+                            }else if(mode== FolderAdapter.Mode.VIDEO) {
+                                tempList.addAll(folder.videoList());
+                            }else {
+                                tempList.addAll(folder.list());
+                            }
                         }
+                        return new ArrayList<>(tempList);
                     }
-                    return new ArrayList<>(tempList);
-                }
-            })
-            .execute();
+                })
+                .execute();
     }
 
 
@@ -350,14 +387,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.actionButton)
-    public void onClickFloatingButton(View view) {
+    public void onButtonClick(View view) {
         addMediaFolder();
     }
 
 
     private void addMediaFolder() {
         ArrayList<MediaFile> mediaFileList=DataController.
-            controllerInstance().filterDuplicates();
+                controllerInstance().filterDuplicates();
         if(!mediaFileList.isEmpty()){
             Intent intent=new Intent(this,MediaUtilCreatorScreen.class);
             intent.putParcelableArrayListExtra(MEDIA_DATA,mediaFileList);

@@ -2,13 +2,15 @@ package com.vpaliy.studioq.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.parceler.ParcelConstructor;
-import org.parceler.ParcelPropertyConverter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+
+import android.support.annotation.NonNull;
+import org.parceler.ParcelConstructor;
+import org.parceler.ParcelPropertyConverter;
 
 @org.parceler.Parcel(org.parceler.Parcel.Serialization.BEAN)
 public final class MediaFolder implements Parcelable {
@@ -253,5 +255,34 @@ public final class MediaFolder implements Parcelable {
         int size=folder.mediaFileList!=null?folder.mediaFileList.size():0;
         return new DummyFolder(folder.cover(),folder.folderName,size);
     }
+
+
+    public static final Comparator<MediaFolder> BY_SIZE=new Comparator<MediaFolder>() {
+        @Override
+        public int compare(MediaFolder o1, MediaFolder o2) {
+            if(o1.mediaFileList.size()>o2.mediaFileList.size()) {
+                return 1;
+            }else if(o1.mediaFileList.size()<o2.mediaFileList.size()) {
+                return -1;
+            }
+            return 0;
+        }
+    };
+
+    public static final  Comparator<MediaFolder> BY_DATE=new Comparator<MediaFolder>() {
+        @Override
+        public int compare(MediaFolder o1, MediaFolder o2) {
+
+            return 0;
+        }
+    };
+
+
+    public static final  Comparator<MediaFolder> BY_NAME=new Comparator<MediaFolder>() {
+        @Override
+        public int compare(MediaFolder o1, MediaFolder o2) {
+            return o1.folderName.compareTo(o2.folderName);
+        }
+    };
 
 }

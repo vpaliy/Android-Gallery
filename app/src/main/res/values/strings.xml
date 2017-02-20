@@ -30,4 +30,9 @@
     <string name="videoOnly">Video</string>
     <string name="allMedia">All</string>
 
+    <!-- Sorting !-->
+    <string name="sortByName">By name</string>
+    <string name="sortBySize">By size</string>
+    <string name="sortByDate">By date</string>
+
 </resources>
